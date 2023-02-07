@@ -147,30 +147,50 @@ begin
         event_tlast_missing_0           => event_tlast_missing_0           ,
         event_tlast_unexpected_0        => event_tlast_unexpected_0        
     );
+
+    init_blk: process(clk_200m)
+        variable clk_ctr : integer range 0 to 100000;
+    begin
+        if rising_edge(clk_200m) then
+            clk_ctr := clk_ctr + 1;
+
+            if (clk_ctr > 10) then
+                aclken_0 <= '1';
+                aresetn_0 <= '1';
+            end if;
+        end if;
+
+    end process;
     
     
     DC_Stimulus: process(clk_200m, clk_48k)
         --variable clk_48k_just_rose : integer range 0 to 1;
-        variable clk_ctr : integer range 0 to 10000000;
+        variable clk_ctr : integer range 0 to 100000;
     begin
         -- Don't bother simulating complex inputs - only real inputs allowed!
         IN_DATA_CH1_IM <= (others => '0');
         IN_DATA_CH2_IM <= (others => '0');
+        S_AXIS_DATA_0_tready <= '1';
 
         if rising_edge(clk_200m) then
             clk_ctr := clk_ctr + 1;
-            IN_DATA_CH1_RE <= std_logic_vector(to_signed(5000, IN_DATA_CH1_RE'length));
-            IN_DATA_CH2_RE <= std_logic_vector(to_signed(5000, IN_DATA_CH2_RE'length));
-
-            S_AXIS_DATA_0_tdata <= IN_DATA_CH2_IM &
-                                   IN_DATA_CH2_RE &
-                                   IN_DATA_CH1_IM & 
-                                   IN_DATA_CH1_RE;
-
-            S_AXIS_DATA_0_tvalid <= '1';
+            
+            if (clk_ctr > 500) then
+                IN_DATA_CH1_RE <= std_logic_vector(to_signed(5000, IN_DATA_CH1_RE'length));
+                IN_DATA_CH2_RE <= std_logic_vector(to_signed(5000, IN_DATA_CH2_RE'length));
+    
+                S_AXIS_DATA_0_tdata <= IN_DATA_CH2_IM &
+                                       IN_DATA_CH2_RE &
+                                       IN_DATA_CH1_IM & 
+                                       IN_DATA_CH1_RE;
+    
+                S_AXIS_DATA_0_tvalid <= '1';
+            end if;
  
         end if;
     end process;
+
+
 
 
 end Behavioral;
