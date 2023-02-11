@@ -37,10 +37,11 @@
 
 const int SAMPLE_SLEEP_USEC = 21;
 
-const int AUDIO_SAMPLE_RATE = 48000;
-const int AUDIO_CHANNELS = 2;
-const int MAX_RECORD_SEC = 2;
-const int KENNY_AUDIO_MAX_SAMPLES = AUDIO_SAMPLE_RATE * MAX_RECORD_SEC * AUDIO_CHANNELS;
+//const int AUDIO_SAMPLE_RATE = 48000;
+//const int AUDIO_CHANNELS = 2;
+//const int MAX_RECORD_SEC = 2;
+//const int KENNY_AUDIO_MAX_SAMPLES = AUDIO_SAMPLE_RATE * MAX_RECORD_SEC * AUDIO_CHANNELS;
+const int KENNY_AUDIO_MAX_SAMPLES = 8192;
 
 
 // External data
@@ -71,123 +72,124 @@ void audio_stream(){
 	}
 
 } // audio_stream()
-void kenny_PlaybackAudioFromMem(const int* KENNY_AUDIO_MEM_PTR)
-{
-	u32  in_left, in_right;
-	int * cur_ptr = KENNY_AUDIO_MEM_PTR;
-	u32 num_samples_recorded = 0;
-
-	while (1)
-	{
-		if (!XUartPs_IsReceiveData(UART_BASEADDR)){
-			// Read audio data from memory
-			in_left  = *(cur_ptr++);
-			in_right = *(cur_ptr++);
-			num_samples_recorded += 2;
-
-			// Write audio data to audio codec
-			Xil_Out32(I2S_DATA_TX_L_REG, in_left);
-			Xil_Out32(I2S_DATA_TX_R_REG, in_right);
-
-			usleep(SAMPLE_SLEEP_USEC);
-
-			if (num_samples_recorded >= KENNY_AUDIO_MAX_SAMPLES-1){
-				break;
-			}
-		}
-		else if (XUartPs_ReadReg(UART_BASEADDR, XUARTPS_FIFO_OFFSET) == 'q'){
-			break;
-		}
-	}
-}
-
-void kenny_RecordAudioIntoMem(const int* KENNY_AUDIO_MEM_PTR)
-{
-	u32  in_left, in_right;
-	int * cur_ptr = KENNY_AUDIO_MEM_PTR;
-	u32 num_samples_recorded = 0;
-
-	//memset(KENNY_AUDIO_MEM_START, 0, (KENNY_AUDIO_MEM_END - KENNY_AUDIO_MEM_START));
-
-	/*
-	for ( int* i = KENNY_AUDIO_MEM_START; i < KENNY_AUDIO_MEM_END; ++i)
-	{
-		*(i) = 0;
-	}
-	*/
-
-	while (1){
-		if (!XUartPs_IsReceiveData(UART_BASEADDR)){
-			// Read audio input from codec
-			in_left = Xil_In32(I2S_DATA_RX_L_REG);
-			in_right = Xil_In32(I2S_DATA_RX_R_REG);
-			// Save to memory
-			*(cur_ptr++) = in_left;
-			*(cur_ptr++) = in_right;
-			num_samples_recorded += 2;
-
-			usleep(SAMPLE_SLEEP_USEC);
-
-			if (num_samples_recorded >= KENNY_AUDIO_MAX_SAMPLES-1){
-				break;
-			}
-		}
-		else if (XUartPs_ReadReg(UART_BASEADDR, XUARTPS_FIFO_OFFSET) == 'q'){
-			break;
-		}
-	}
-}
-
-void kenny_convertAudioToCplx(int* inval, cplx_data_t* outval, size_t num_vals_to_cpy)
-{
-	cplx_data_t cur_cplx;
-	short cur_re;
-	short cur_im = 0;
-	for (int i = 0; i < num_vals_to_cpy; ++i)
-	{
-		cur_re = (inval[i] >> 8);
-		cur_im = 0;
-		cur_cplx.data_re = cur_re;
-		cur_cplx.data_im = cur_im;
-		outval[i] = cur_cplx;
-
-		if (i < 5){
-			xil_printf("outval[i] = %d, %d*j \n\r", outval[i].data_re, outval[i].data_im);
-		}
-	}
-}
-
-void kenny_updateFFT_InputData(cplx_data_t* stim_buf, int* recorded_audio_buf)
-{
-	char c = '\0';
-
-	xil_printf("Which input data would you like to use?\n\r");
-	xil_printf("0: Recorded Audio\n\r");
-	xil_printf("1: Generated Values from Xilinx\n\r");
-	xil_printf("2: Exit\n\r");
-	while (1)
-	{
-		c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
-		if (c == '0')
-		{
-			kenny_convertAudioToCplx(recorded_audio_buf, stim_buf, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
-			break;
-		}
-		else if (c == '1')
-		{
-		    memcpy(stim_buf, sig_two_sine_waves, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
-			break;
-		}
-		else if (c == '2')
-		{
-			break;
-		}
-		else
-    	{
-    		xil_printf("Invalid character. Please try again.\n\r");
-    	}
-	}
-}
+//
+//void kenny_PlaybackAudioFromMem(const int* KENNY_AUDIO_MEM_PTR)
+//{
+//	u32  in_left, in_right;
+//	int * cur_ptr = KENNY_AUDIO_MEM_PTR;
+//	u32 num_samples_recorded = 0;
+//
+//	while (1)
+//	{
+//		if (!XUartPs_IsReceiveData(UART_BASEADDR)){
+//			// Read audio data from memory
+//			in_left  = *(cur_ptr++);
+//			in_right = *(cur_ptr++);
+//			num_samples_recorded += 2;
+//
+//			// Write audio data to audio codec
+//			Xil_Out32(I2S_DATA_TX_L_REG, in_left);
+//			Xil_Out32(I2S_DATA_TX_R_REG, in_right);
+//
+//			usleep(SAMPLE_SLEEP_USEC);
+//
+//			if (num_samples_recorded >= KENNY_AUDIO_MAX_SAMPLES-1){
+//				break;
+//			}
+//		}
+//		else if (XUartPs_ReadReg(UART_BASEADDR, XUARTPS_FIFO_OFFSET) == 'q'){
+//			break;
+//		}
+//	}
+//}
+//
+//void kenny_RecordAudioIntoMem(const int* KENNY_AUDIO_MEM_PTR)
+//{
+//	u32  in_left, in_right;
+//	int * cur_ptr = KENNY_AUDIO_MEM_PTR;
+//	u32 num_samples_recorded = 0;
+//
+//	//memset(KENNY_AUDIO_MEM_START, 0, (KENNY_AUDIO_MEM_END - KENNY_AUDIO_MEM_START));
+//
+//	/*
+//	for ( int* i = KENNY_AUDIO_MEM_START; i < KENNY_AUDIO_MEM_END; ++i)
+//	{
+//		*(i) = 0;
+//	}
+//	*/
+//
+//	while (1){
+//		if (!XUartPs_IsReceiveData(UART_BASEADDR)){
+//			// Read audio input from codec
+//			in_left = Xil_In32(I2S_DATA_RX_L_REG);
+//			in_right = Xil_In32(I2S_DATA_RX_R_REG);
+//			// Save to memory
+//			*(cur_ptr++) = in_left;
+//			*(cur_ptr++) = in_right;
+//			num_samples_recorded += 2;
+//
+//			usleep(SAMPLE_SLEEP_USEC);
+//
+//			if (num_samples_recorded >= KENNY_AUDIO_MAX_SAMPLES-1){
+//				break;
+//			}
+//		}
+//		else if (XUartPs_ReadReg(UART_BASEADDR, XUARTPS_FIFO_OFFSET) == 'q'){
+//			break;
+//		}
+//	}
+//}
+//
+//void kenny_convertAudioToCplx(int* inval, cplx_data_t* outval, size_t num_vals_to_cpy)
+//{
+//	cplx_data_t cur_cplx;
+//	short cur_re;
+//	short cur_im = 0;
+//	for (int i = 0; i < num_vals_to_cpy; ++i)
+//	{
+//		cur_re = (inval[i] >> 8);
+//		cur_im = 0;
+//		cur_cplx.data_re = cur_re;
+//		cur_cplx.data_im = cur_im;
+//		outval[i] = cur_cplx;
+//
+//		if (i < 5){
+//			xil_printf("outval[i] = %d, %d*j \n\r", outval[i].data_re, outval[i].data_im);
+//		}
+//	}
+//}
+//
+//void kenny_updateFFT_InputData(cplx_data_t* stim_buf, int* recorded_audio_buf)
+//{
+//	char c = '\0';
+//
+//	xil_printf("Which input data would you like to use?\n\r");
+//	xil_printf("0: Recorded Audio\n\r");
+//	xil_printf("1: Generated Values from Xilinx\n\r");
+//	xil_printf("2: Exit\n\r");
+//	while (1)
+//	{
+//		c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+//		if (c == '0')
+//		{
+//			kenny_convertAudioToCplx(recorded_audio_buf, stim_buf, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+//			break;
+//		}
+//		else if (c == '1')
+//		{
+//		    memcpy(stim_buf, sig_two_sine_waves, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+//			break;
+//		}
+//		else if (c == '2')
+//		{
+//			break;
+//		}
+//		else
+//    	{
+//    		xil_printf("Invalid character. Please try again.\n\r");
+//    	}
+//	}
+//}
 
 
 
@@ -306,7 +308,7 @@ int main()
     	}
     	else if (c == '5')
     	{
-    		kenny_updateFFT_InputData(stim_buf, KENNY_AUDIO_MEM_PTR);
+    		//kenny_updateFFT_InputData(stim_buf, KENNY_AUDIO_MEM_PTR);
     	}
     	else if (c == 's')
     	{
@@ -314,18 +316,18 @@ int main()
 			xil_printf("Press 'q' to return to the main menu\r\n");
 			audio_stream();
     	}
-    	else if (c == 'r')
-		{
-    		xil_printf("RECORDING AUDIO\r\n");
-    		xil_printf("Press 'q' to stop recording early and return to the main menu\r\n");
-    		kenny_RecordAudioIntoMem(KENNY_AUDIO_MEM_PTR);
-		}
-    	else if (c == 'p')
-    	{
-			xil_printf("PLAYING BACK RECORDED AUDIO\r\n");
-			xil_printf("Press 'q' to stop playback early and return to the main menu\r\n");
-			kenny_PlaybackAudioFromMem(KENNY_AUDIO_MEM_PTR);
-    	}
+//    	else if (c == 'r')
+//		{
+//    		xil_printf("RECORDING AUDIO\r\n");
+//    		xil_printf("Press 'q' to stop recording early and return to the main menu\r\n");
+//    		kenny_RecordAudioIntoMem(KENNY_AUDIO_MEM_PTR);
+//		}
+//    	else if (c == 'p')
+//    	{
+//			xil_printf("PLAYING BACK RECORDED AUDIO\r\n");
+//			xil_printf("Press 'q' to stop playback early and return to the main menu\r\n");
+//			kenny_PlaybackAudioFromMem(KENNY_AUDIO_MEM_PTR);
+//    	}
     	else
     	{
     		xil_printf("Invalid character. Please try again.\n\r");
