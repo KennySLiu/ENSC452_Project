@@ -1,0 +1,72 @@
+{
+   "ActiveEmotionalView":"Default View",
+   "Default View_ScaleFactor":"1.59205",
+   "Default View_TopLeft":"2021,55",
+   "ExpandedHierarchyInLayout":"",
+   "guistr":"# # String gsaved with Nlview 7.0r6  2020-01-29 bk=1.5227 VDI=41 GEI=36 GUI=JA:10.0 non-TLS
+#  -string -flagsOSRD
+preplace port DDR -pg 1 -lvl 4 -x 2580 -y 140 -defaultsOSRD
+preplace port FIXED_IO -pg 1 -lvl 4 -x 2580 -y 160 -defaultsOSRD
+preplace port IIC_0_0 -pg 1 -lvl 4 -x 2580 -y 180 -defaultsOSRD
+preplace port SDATA_O_0 -pg 1 -lvl 4 -x 2580 -y 520 -defaultsOSRD
+preplace port LRCLK_0 -pg 1 -lvl 4 -x 2580 -y 500 -defaultsOSRD
+preplace port BCLK_0 -pg 1 -lvl 4 -x 2580 -y 480 -defaultsOSRD
+preplace port SDATA_I_0 -pg 1 -lvl 0 -x 0 -y 890 -defaultsOSRD
+preplace port FCLK_CLK1_0 -pg 1 -lvl 4 -x 2580 -y 320 -defaultsOSRD
+preplace inst accelerator -pg 1 -lvl 1 -x 200 -y 250 -defaultsOSRD
+preplace inst ctrl -pg 1 -lvl 2 -x 640 -y 150 -defaultsOSRD
+preplace inst processing_system7_0 -pg 1 -lvl 3 -x 2310 -y 230 -defaultsOSRD
+preplace inst zed_audio_ctrl_0 -pg 1 -lvl 3 -x 2310 -y 500 -defaultsOSRD
+preplace inst ctrl|edge_detect_0 -pg 1 -lvl 4 -x 1730 -y 540 -defaultsOSRD
+preplace inst ctrl|axi_dma_0 -pg 1 -lvl 2 -x 1060 -y 280 -defaultsOSRD
+preplace inst ctrl|axi_gpio_0 -pg 1 -lvl 3 -x 1440 -y 560 -defaultsOSRD
+preplace inst ctrl|axi_interconnect_0 -pg 1 -lvl 3 -x 1440 -y 310 -defaultsOSRD
+preplace inst ctrl|axi_interconnect_1 -pg 1 -lvl 1 -x 710 -y 450 -defaultsOSRD
+preplace inst ctrl|proc_sys_reset_0 -pg 1 -lvl 3 -x 1440 -y 740 -defaultsOSRD
+preplace inst ctrl|xlconcat_0 -pg 1 -lvl 4 -x 1730 -y 150 -defaultsOSRD
+preplace netloc axi_gpio_0_gpio_io_o 1 0 3 20 860 NJ 860 2040
+preplace netloc edge_detect_0_edge_detected 1 0 3 30 870 NJ 870 2020
+preplace netloc processing_system7_0_FCLK_RESET0_N 1 1 3 380 880 2050J 410 2550
+preplace netloc processing_system7_0_fclk_clk0 1 0 4 30 160 370 20 2040 400 2560
+preplace netloc xlconcat_0_dout 1 2 1 2030 270n
+preplace netloc ctrl_peripheral_aresetn 1 2 1 2060 530n
+preplace netloc zed_audio_ctrl_0_SDATA_O 1 3 1 NJ 520
+preplace netloc zed_audio_ctrl_0_LRCLK 1 3 1 NJ 500
+preplace netloc zed_audio_ctrl_0_BCLK 1 3 1 NJ 480
+preplace netloc SDATA_I_0_1 1 0 3 NJ 890 NJ 890 2070J
+preplace netloc processing_system7_0_FCLK_CLK1 1 3 1 NJ 320
+preplace netloc axi_dma_0_m_axis_mm2s 1 0 3 20 30 NJ 30 2020
+preplace netloc axi_interconnect_0_m00_axi 1 2 1 2020 210n
+preplace netloc s00_axi_1 1 1 3 380 10 NJ 10 2560
+preplace netloc xfft_0_m_axis_data 1 1 1 N 250
+preplace netloc processing_system7_0_ddr 1 3 1 NJ 140
+preplace netloc processing_system7_0_fixed_io 1 3 1 NJ 160
+preplace netloc ctrl_M02_AXI 1 2 1 N 470
+preplace netloc processing_system7_0_IIC_0 1 3 1 NJ 180
+preplace netloc ctrl|axi_dma_0_mm2s_introut 1 2 2 1250 160 NJ
+preplace netloc ctrl|axi_dma_0_s2mm_introut 1 2 2 1240 140 NJ
+preplace netloc ctrl|axi_gpio_0_gpio_io_o 1 3 2 1620 610 NJ
+preplace netloc ctrl|edge_detect_0_edge_detected 1 4 1 1840 540n
+preplace netloc ctrl|proc_sys_reset_0_interconnect_aresetn 1 0 4 560 280 870J 410 1270 460 1610
+preplace netloc ctrl|proc_sys_reset_0_peripheral_aresetn 1 0 5 560 610 880 610 1270 640 1620 650 NJ
+preplace netloc ctrl|processing_system7_0_FCLK_RESET0_N 1 0 3 NJ 720 NJ 720 N
+preplace netloc ctrl|processing_system7_0_fclk_clk0 1 0 4 550 290 890 400 1260 480 1620J
+preplace netloc ctrl|xlconcat_0_dout 1 4 1 1840 150n
+preplace netloc ctrl|axi_dma_0_m_axi_mm2s 1 2 1 N 220
+preplace netloc ctrl|axi_dma_0_m_axi_s2mm 1 2 1 N 240
+preplace netloc ctrl|axi_interconnect_1_m00_axi 1 1 1 860 230n
+preplace netloc ctrl|axi_interconnect_1_m01_axi 1 1 2 860J 540 NJ
+preplace netloc ctrl|axi_dma_0_m_axis_mm2s 1 2 3 1230 80 NJ 80 NJ
+preplace netloc ctrl|axi_interconnect_0_m00_axi 1 3 2 NJ 310 NJ
+preplace netloc ctrl|s00_axi_1 1 0 1 540 230n
+preplace netloc ctrl|xfft_0_m_axis_data 1 0 2 NJ 250 NJ
+preplace netloc ctrl|Conn1 1 1 4 NJ 470 NJ 470 NJ 470 NJ
+levelinfo -pg 1 0 200 640 2310 2580
+levelinfo -hier ctrl * 710 1060 1440 1730 *
+pagesize -pg 1 -db -bbox -sgen -130 0 2730 910
+pagesize -hier ctrl -db -bbox -sgen 510 60 1870 840
+"
+}
+{
+   "da_axi4_cnt":"1"
+}
