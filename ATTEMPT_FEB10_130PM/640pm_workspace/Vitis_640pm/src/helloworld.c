@@ -208,6 +208,43 @@ void kenny_updateFFT_InputData(cplx_data_t* stim_buf, int* recorded_audio_buf)
 	}
 }
 
+int kenny_guessFrequencyOfData(fft_t* p_fft_inst)
+{
+//	int num_pts_in_fft = fft_get_num_pts(p_fft_inst);
+//	char         str[25]; // Large enough to hold 2 ints plus extra characters
+//	int cur_sum = 0;
+//	cplx_data_t* fft_output = fft_get_result_buf(p_fft_inst);
+//	cplx_data_t cur_val;
+//
+//	for (int i = 0; i < num_pts_in_fft; i++)
+//	{
+//		cplx_data_get_string(str, fft_output[i]);
+//		cur_val = fft_output[i];
+//		cur_sum = abs(cur_val.data_re) + abs(cur_val.data_im);
+//		xil_printf("Xk(%d) = %s. Sum = %d \n\r", i, str, cur_sum);
+//	}
+//	return 0;
+
+
+	int num_pts_in_fft = fft_get_num_pts(p_fft_inst);
+	cplx_data_t* fft_output = fft_get_result_buf(p_fft_inst);
+	float freq_per_bucket = AUDIO_SAMPLE_RATE/num_pts_in_fft;
+	int guessed_freq = 0;
+	int max_sum = 0;
+	int cur_sum = 0;
+	cplx_data_t cur_val;
+	for (int i = 0; i < num_pts_in_fft/2; ++i)
+	{
+		cur_val = fft_output[i];
+		cur_sum = abs(cur_val.data_re) + abs(cur_val.data_im);
+		if (cur_sum > max_sum){
+			max_sum = cur_sum;
+			guessed_freq = freq_per_bucket * i;
+			//guessed_freq = i;
+		}
+	}
+	return guessed_freq;
+}
 
 
 // Main entry point
@@ -345,6 +382,11 @@ int main()
 			xil_printf("PLAYING BACK RECORDED AUDIO\r\n");
 			xil_printf("Press 'q' to stop playback early and return to the main menu\r\n");
 			kenny_PlaybackAudioFromMem(KENNY_AUDIO_MEM_PTR);
+    	}
+    	else if (c == 'd')
+    	{
+    		int guessed_freq = kenny_guessFrequencyOfData(p_fft_inst);
+    		xil_printf("The frequency is around: %d \r\n", guessed_freq);
     	}
     	else
     	{
