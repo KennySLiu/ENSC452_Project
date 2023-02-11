@@ -181,6 +181,8 @@ int fft(fft_t* p_fft_inst, cplx_data_t* din, cplx_data_t* dout);
 //  Return
 //    - cplx_data_t*: Stimulus buffer to be used for the FFT.
 //
+void fft_set_stim_buf(fft_t* p_fft_inst, cplx_data_t* stim_buf_update);
+
 cplx_data_t* fft_get_stim_buf(fft_t* p_fft_inst);
 
 //
