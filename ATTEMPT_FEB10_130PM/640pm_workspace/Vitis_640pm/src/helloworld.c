@@ -33,6 +33,15 @@
 #include "fft.h"
 #include "cplx_data.h"
 #include "stim.h"
+#include "adventures_with_ip.h"
+
+const int SAMPLE_SLEEP_USEC = 21;
+
+const int AUDIO_SAMPLE_RATE = 48000;
+const int AUDIO_CHANNELS = 2;
+const int MAX_RECORD_SEC = 2;
+const int KENNY_AUDIO_MAX_SAMPLES = AUDIO_SAMPLE_RATE * MAX_RECORD_SEC * AUDIO_CHANNELS;
+
 
 // External data
 extern int sig_two_sine_waves[FFT_MAX_NUM_PTS]; // FFT input data
@@ -40,21 +49,177 @@ extern int sig_two_sine_waves[FFT_MAX_NUM_PTS]; // FFT input data
 // Function prototypes
 void which_fft_param(fft_t* p_fft_inst);
 
+
+void audio_stream(){
+	u32  in_left, in_right;
+
+	while (1){
+		/* If input from the terminal is 'q', then return.
+		 * Else, continue streaming. */
+
+		if(!XUartPs_IsReceiveData(UART_BASEADDR)){
+			// Read audio input from codec
+			in_left = Xil_In32(I2S_DATA_RX_L_REG);
+			in_right = Xil_In32(I2S_DATA_RX_R_REG);
+			// Write audio output to codec
+			Xil_Out32(I2S_DATA_TX_L_REG, in_left);
+			Xil_Out32(I2S_DATA_TX_R_REG, in_right);
+		}
+		else if (XUartPs_ReadReg(UART_BASEADDR, XUARTPS_FIFO_OFFSET) == 'q'){
+			break;
+		}
+	}
+
+} // audio_stream()
+void kenny_PlaybackAudioFromMem(const int* KENNY_AUDIO_MEM_PTR)
+{
+	u32  in_left, in_right;
+	int * cur_ptr = KENNY_AUDIO_MEM_PTR;
+	u32 num_samples_recorded = 0;
+
+	while (1)
+	{
+		if (!XUartPs_IsReceiveData(UART_BASEADDR)){
+			// Read audio data from memory
+			in_left  = *(cur_ptr++);
+			in_right = *(cur_ptr++);
+			num_samples_recorded += 2;
+
+			// Write audio data to audio codec
+			Xil_Out32(I2S_DATA_TX_L_REG, in_left);
+			Xil_Out32(I2S_DATA_TX_R_REG, in_right);
+
+			usleep(SAMPLE_SLEEP_USEC);
+
+			if (num_samples_recorded >= KENNY_AUDIO_MAX_SAMPLES-1){
+				break;
+			}
+		}
+		else if (XUartPs_ReadReg(UART_BASEADDR, XUARTPS_FIFO_OFFSET) == 'q'){
+			break;
+		}
+	}
+}
+
+void kenny_RecordAudioIntoMem(const int* KENNY_AUDIO_MEM_PTR)
+{
+	u32  in_left, in_right;
+	int * cur_ptr = KENNY_AUDIO_MEM_PTR;
+	u32 num_samples_recorded = 0;
+
+	//memset(KENNY_AUDIO_MEM_START, 0, (KENNY_AUDIO_MEM_END - KENNY_AUDIO_MEM_START));
+
+	/*
+	for ( int* i = KENNY_AUDIO_MEM_START; i < KENNY_AUDIO_MEM_END; ++i)
+	{
+		*(i) = 0;
+	}
+	*/
+
+	while (1){
+		if (!XUartPs_IsReceiveData(UART_BASEADDR)){
+			// Read audio input from codec
+			in_left = Xil_In32(I2S_DATA_RX_L_REG);
+			in_right = Xil_In32(I2S_DATA_RX_R_REG);
+			// Save to memory
+			*(cur_ptr++) = in_left;
+			*(cur_ptr++) = in_right;
+			num_samples_recorded += 2;
+
+			usleep(SAMPLE_SLEEP_USEC);
+
+			if (num_samples_recorded >= KENNY_AUDIO_MAX_SAMPLES-1){
+				break;
+			}
+		}
+		else if (XUartPs_ReadReg(UART_BASEADDR, XUARTPS_FIFO_OFFSET) == 'q'){
+			break;
+		}
+	}
+}
+
+void kenny_convertAudioToCplx(int* inval, cplx_data_t* outval, size_t num_vals_to_cpy)
+{
+	cplx_data_t cur_cplx;
+	short cur_re;
+	short cur_im = 0;
+	for (int i = 0; i < num_vals_to_cpy; ++i)
+	{
+		cur_re = (inval[i] >> 8);
+		cur_im = 0;
+		cur_cplx.data_re = cur_re;
+		cur_cplx.data_im = cur_im;
+		outval[i] = cur_cplx;
+
+		if (i < 5){
+			xil_printf("outval[i] = %d, %d*j \n\r", outval[i].data_re, outval[i].data_im);
+		}
+	}
+}
+
+void kenny_updateFFT_InputData(cplx_data_t* stim_buf, int* recorded_audio_buf)
+{
+	char c = '\0';
+
+	xil_printf("Which input data would you like to use?\n\r");
+	xil_printf("0: Recorded Audio\n\r");
+	xil_printf("1: Generated Values from Xilinx\n\r");
+	xil_printf("2: Exit\n\r");
+	while (1)
+	{
+		c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+		if (c == '0')
+		{
+			kenny_convertAudioToCplx(recorded_audio_buf, stim_buf, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+			break;
+		}
+		else if (c == '1')
+		{
+		    memcpy(stim_buf, sig_two_sine_waves, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+			break;
+		}
+		else if (c == '2')
+		{
+			break;
+		}
+		else
+    	{
+    		xil_printf("Invalid character. Please try again.\n\r");
+    	}
+	}
+}
+
+
+
 // Main entry point
 int main()
 {
 
 	// Local variables
+	int * 		KENNY_AUDIO_MEM_PTR = malloc(sizeof(int) * KENNY_AUDIO_MAX_SAMPLES);
 	int          status = 0;
 	char         c;
 	fft_t*       p_fft_inst;
 	cplx_data_t* stim_buf;
 	cplx_data_t* result_buf;
 
-
 	// Setup UART and enable caches
     init_platform();
-    xil_printf("\fHello World!\n\r");
+	xil_printf("Entering Main\r\n");
+
+	//Configure the IIC data structure
+	IicConfig(XPAR_XIICPS_0_DEVICE_ID);
+
+	//Configure the Audio Codec's PLL
+	AudioPllConfig();
+
+	//Configure the Line in and Line out ports.
+	//Call LineInLineOutConfig() for a configuration that
+	//enables the HP jack too.
+	AudioConfigureJacks();
+
+	xil_printf("ADAU1761 configured\n\r");
+
 
     // Create FFT object
     p_fft_inst = fft_create
@@ -100,7 +265,10 @@ int main()
     	xil_printf("2: Perform FFT using current parameters\n\r");
     	xil_printf("3: Print current stimulus to be used for the FFT operation\n\r");
     	xil_printf("4: Print results of previous FFT operation\n\r");
-    	xil_printf("5: Quit\n\r");
+    	xil_printf("5: Change FFT input data\n\r");
+    	xil_printf("S: Stream Audio\n\r");
+    	xil_printf("R: Record Audio to memory\n\r");
+    	xil_printf("P: Play Audio from memory\n\r");
     	c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
 
     	if (c == '0')
@@ -129,6 +297,7 @@ int main()
 		}
     	else if (c == '3')
     	{
+    		//fft_set_stim_buf(p_fft_inst, stim_buf);
     		fft_print_stim_buf(p_fft_inst);
     	}
     	else if (c == '4')
@@ -137,7 +306,25 @@ int main()
     	}
     	else if (c == '5')
     	{
-    		//fft_print_result_buf(p_fft_inst);
+    		kenny_updateFFT_InputData(stim_buf, KENNY_AUDIO_MEM_PTR);
+    	}
+    	else if (c == 's')
+    	{
+			xil_printf("STREAMING AUDIO\r\n");
+			xil_printf("Press 'q' to return to the main menu\r\n");
+			audio_stream();
+    	}
+    	else if (c == 'r')
+		{
+    		xil_printf("RECORDING AUDIO\r\n");
+    		xil_printf("Press 'q' to stop recording early and return to the main menu\r\n");
+    		kenny_RecordAudioIntoMem(KENNY_AUDIO_MEM_PTR);
+		}
+    	else if (c == 'p')
+    	{
+			xil_printf("PLAYING BACK RECORDED AUDIO\r\n");
+			xil_printf("Press 'q' to stop playback early and return to the main menu\r\n");
+			kenny_PlaybackAudioFromMem(KENNY_AUDIO_MEM_PTR);
     	}
     	else
     	{

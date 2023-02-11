@@ -210,6 +210,11 @@ int fft(fft_t* p_fft_inst, cplx_data_t* din, cplx_data_t* dout)
 	return FFT_SUCCESS;
 }
 
+// void fft_set_stim_buf(fft_t* p_fft_inst, cplx_data_t* stim_buf_update)
+//{
+//	dma_accel_set_stim_buf(p_fft_inst->periphs.p_dma_accel_inst, (void*)stim_buf_update);
+//}
+
 cplx_data_t* fft_get_stim_buf(fft_t* p_fft_inst)
 {
 	return (cplx_data_t*)dma_accel_get_stim_buf(p_fft_inst->periphs.p_dma_accel_inst);
