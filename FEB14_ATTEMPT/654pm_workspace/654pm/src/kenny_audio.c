@@ -115,6 +115,8 @@ void kenny_convertAudioToCplx(int* inval, cplx_data_t* outval, size_t num_vals_t
 	short cur_re;
 	short cur_im = 0;
 
+	xil_printf("KDEBUG: inval ptr = %x \n\r", inval);
+
 	for (int in_idx = 0, out_idx = 0;
 		 in_idx < num_vals_to_cpy*AUDIO_CHANNELS;
 		 in_idx += AUDIO_CHANNELS, ++out_idx)

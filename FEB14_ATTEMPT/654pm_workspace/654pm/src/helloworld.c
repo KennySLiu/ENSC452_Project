@@ -67,7 +67,7 @@ int main()
 
 	// Setup UART and enable caches
     init_platform();
-	xil_printf("Entering Main\r\n");
+	xil_printf("Entering Main. AUDIO MEM PTR = %x \r\n", KENNY_AUDIO_MEM_PTR);
 
 	//Configure the IIC data structure
 	IicConfig(XPAR_XIICPS_0_DEVICE_ID);
@@ -143,6 +143,7 @@ int main()
     // Main control loop
     while (1)
     {
+    	int num_fft_windows = 1;//KENNY_AUDIO_MAX_SAMPLES/FFT_MAX_NUM_PTS;
 
     	// Get command
     	xil_printf("What would you like to do?\n\r");
@@ -150,7 +151,6 @@ int main()
     	xil_printf("7/8: Perform FFT / IFFT using current parameters\n\r");
     	xil_printf("3: Print current INPUT to be used for the FFT operation\n\r");
     	xil_printf("4: Print current INTERMEDIATE data of FFT operation\n\r");
-    	xil_printf("5: Change FFT input data\n\r");
     	xil_printf("S: Stream Pure Audio\n\r");
     	xil_printf("R/P: Record/Play Audio to/from memory\n\r");
     	xil_printf("D: Detect Frequency from FFT output\n\r");
@@ -170,31 +170,35 @@ int main()
     	}
     	else if (c == '7') // Run FFT
 		{
-			kenny_convertAudioToCplx(KENNY_AUDIO_MEM_PTR, input_buf, FFT_MAX_NUM_PTS);
-			// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
-			memset(intermediate_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+    		for (int i = 0; i < num_fft_windows; ++i){
+				kenny_convertAudioToCplx((KENNY_AUDIO_MEM_PTR), input_buf, FFT_MAX_NUM_PTS);
+				// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
+				memset(intermediate_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
 
-			status = fft(p_fft_inst_FWD, (cplx_data_t*)input_buf, (cplx_data_t*)intermediate_buf);
-			if (status != FFT_SUCCESS)
-			{
-				xil_printf("ERROR! FFT failed.\n\r");
-				return -1;
-			}
+				status = fft(p_fft_inst_FWD, (cplx_data_t*)input_buf, (cplx_data_t*)intermediate_buf);
+				if (status != FFT_SUCCESS)
+				{
+					xil_printf("ERROR! FFT failed.\n\r");
+					return -1;
+				}
+    		}
 
 			xil_printf("FFT complete!\n\r\n\r");
 		}
     	else if (c == '8') // Run IFFT
 		{
-			// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
-			memset(result_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+    		for (int i = 0; i < num_fft_windows; ++i){
+				// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
+				memset(result_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
 
-			status = fft(p_fft_inst_INV, (cplx_data_t*)intermediate_buf, (cplx_data_t*)result_buf);
-			if (status != FFT_SUCCESS)
-			{
-				xil_printf("ERROR! Inverse FFT failed.\n\r");
-				return -1;
-			}
-			kenny_convertCplxToAudio(result_buf, KENNY_AUDIO_MEM_PTR, FFT_MAX_NUM_PTS);
+				status = fft(p_fft_inst_INV, (cplx_data_t*)intermediate_buf, (cplx_data_t*)result_buf);
+				if (status != FFT_SUCCESS)
+				{
+					xil_printf("ERROR! Inverse FFT failed.\n\r");
+					return -1;
+				}
+				kenny_convertCplxToAudio(result_buf, (KENNY_AUDIO_MEM_PTR), FFT_MAX_NUM_PTS);
+    		}
 
 			xil_printf("Inverse FFT complete!\n\r\n\r");
 		}
