@@ -57,7 +57,7 @@ int main()
 
 	// Local variables
 	int 		* 	KENNY_AUDIO_MEM_PTR = malloc(sizeof(int) * (KENNY_AUDIO_MAX_SAMPLES));
-	cplx_data_t * 	KENNY_FFTDATA_MEM_PTR = malloc(sizeof(cplx_data_t) * (KENNY_AUDIO_MAX_SAMPLES));
+	cplx_data_t * 	KENNY_FFTDATA_MEM_PTR = malloc(sizeof(cplx_data_t) * (KENNY_AUDIO_MAX_SAMPLES/AUDIO_CHANNELS));
 
 	int          status = 0;
 	char         c;
@@ -186,11 +186,12 @@ int main()
 					return -1;
 				}
 
-			    for (int jj = 0; jj < FFT_MAX_NUM_PTS; ++jj)
-			    {
-			    	//xil_printf("FWD FFT: Writing to index %d, from %d \r\n", i*FFT_MAX_NUM_PTS + jj, jj);
-			    	KENNY_FFTDATA_MEM_PTR[i*FFT_MAX_NUM_PTS + jj] = intermediate_buf[jj];
-			    }
+			    memcpy(&(KENNY_FFTDATA_MEM_PTR[i*FFT_MAX_NUM_PTS]), intermediate_buf, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+//			    for (int jj = 0; jj < FFT_MAX_NUM_PTS; ++jj)
+//			    {
+//			    	//xil_printf("FWD FFT: Writing to index %d, from %d \r\n", i*FFT_MAX_NUM_PTS + jj, jj);
+//			    	KENNY_FFTDATA_MEM_PTR[i*FFT_MAX_NUM_PTS + jj] = intermediate_buf[jj];
+//			    }
     		}
 
 			xil_printf("FFT complete!\n\r\n\r");
@@ -198,11 +199,12 @@ int main()
     	else if (c == '8') // Run IFFT
 		{
     		for (int i = 0; i < num_fft_windows; ++i){
-    			for (int jj = 0; jj < FFT_MAX_NUM_PTS; ++jj)
-				{
-					//xil_printf("IFFT: Writing to index %d, from %d \r\n", jj, i*FFT_MAX_NUM_PTS + jj);
-					 intermediate_buf[jj] = KENNY_FFTDATA_MEM_PTR[i*FFT_MAX_NUM_PTS + jj];
-			    }
+//    			for (int jj = 0; jj < FFT_MAX_NUM_PTS; ++jj)
+//				{
+//					//xil_printf("IFFT: Writing to index %d, from %d \r\n", jj, i*FFT_MAX_NUM_PTS + jj);
+//					 intermediate_buf[jj] = KENNY_FFTDATA_MEM_PTR[i*FFT_MAX_NUM_PTS + jj];
+//			    }
+			    memcpy(intermediate_buf, &(KENNY_FFTDATA_MEM_PTR[i*FFT_MAX_NUM_PTS]), sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
 
     			// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
 				memset(result_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
@@ -227,8 +229,9 @@ int main()
 				char str[25];
 				cplx_data_t tmp;
 				int idx = 0;
-				for (int i = 0; i < num_fft_windows; ++i )
-				{
+				int i = 0;
+//				for (i = 0; i < num_fft_windows; ++i )
+//				{
 					for (int jj = 0; jj < FFT_MAX_NUM_PTS; ++jj)
 					{
 						idx = i*FFT_MAX_NUM_PTS + jj;
@@ -237,14 +240,15 @@ int main()
 						cplx_data_get_string(str, tmp);
 						xil_printf("KDEBUG: fftdata[%d] = %s\n\r", idx, str);
 					}
-				}
+				//}
         	}
         	else if (c == '.')
         	{
 				int tmp;
 				int idx = 0;
-				for (int i = 0; i < num_fft_windows; ++i )
-				{
+				int i = 0;
+//				for (i = 0; i < num_fft_windows; ++i )
+//				{
 					for (int jj = 0; jj < FFT_MAX_NUM_PTS/16; ++jj)
 					{
 						idx = i*FFT_MAX_NUM_PTS + jj;
@@ -252,7 +256,7 @@ int main()
 
 						xil_printf("KDEBUG: audiodata[%d] = %d\n\r", idx, tmp);
 					}
-				}
+				//}
         	}
         	else{
         		xil_printf("Invalid input. Try again\r\n");
