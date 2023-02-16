@@ -385,7 +385,11 @@ int dma_accel_xfer(dma_accel_t* p_dma_accel_inst)
 	}
 
 	// Wait for transfer to complete
-	while (!(g_s2mm_done && g_mm2s_done) && !g_dma_err){ /* The processor could be doing something else here while waiting for an IRQ. */ }
+	while (!(g_s2mm_done && g_mm2s_done) && !g_dma_err){
+		/* The processor could be doing something else here while waiting for an IRQ. */
+		xil_printf("Waiting for an interrupt... %d, %d\n\r", g_mm2s_done, g_s2mm_done);
+		usleep(500000);
+	}
 
 	// Check DMA for errors
 	if (g_dma_err)

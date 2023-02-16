@@ -126,9 +126,9 @@ void kenny_convertAudioToCplx(int* inval, cplx_data_t* outval, size_t num_vals_t
 		cur_cplx.data_im = cur_im;
 		outval[out_idx] = cur_cplx;
 
-		if (out_idx < 5){
-			xil_printf("outval[out_idx] = %d, %d*j \n\r", outval[out_idx].data_re, outval[out_idx].data_im);
-		}
+//		if (out_idx < 5){
+//			xil_printf("outval[out_idx] = %d, %d*j \n\r", outval[out_idx].data_re, outval[out_idx].data_im);
+//		}
 	}
 }
 void kenny_updateFFT_InputData(cplx_data_t* stim_buf, int* recorded_audio_buf)

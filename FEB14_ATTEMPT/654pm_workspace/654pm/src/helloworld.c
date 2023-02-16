@@ -61,7 +61,8 @@ int main()
 	char         c;
 	fft_t*       p_fft_inst_FWD;
 	fft_t* 	     p_fft_inst_INV;
-	cplx_data_t* stim_buf;
+	cplx_data_t* input_buf;
+	cplx_data_t* intermediate_buf;
 	cplx_data_t* result_buf;
 
 	// Setup UART and enable caches
@@ -84,7 +85,8 @@ int main()
 	xil_printf("ADAU1761 configured\n\r");
 
 
-    // Create FFT object
+	/***********************/
+    // Create FFT objects
     p_fft_inst_FWD = fft_create
     (
     	XPAR_GPIO_0_DEVICE_ID,
@@ -98,38 +100,45 @@ int main()
     	xil_printf("ERROR! Failed to create FWD FFT instance.\n\r");
     	return -1;
     }
-    p_fft_inst_INV = fft_create
-    (
-    	XPAR_GPIO_1_DEVICE_ID,
-    	XPAR_AXIDMA_1_DEVICE_ID,
-		&intc_inst,
-		XPAR_FABRIC_AXI_DMA_1_S2MM_INTROUT_INTR,
-		XPAR_FABRIC_AXI_DMA_1_MM2S_INTROUT_INTR
-    );
-    if (p_fft_inst_INV == NULL)
-    {
-    	xil_printf("ERROR! Failed to create INV FFT instance.\n\r");
-    	return -1;
-    }
+	fft_set_fwd_inv(p_fft_inst_FWD, FFT_FORWARD);
 
+
+//    p_fft_inst_INV = fft_create
+//    (
+//    	XPAR_GPIO_1_DEVICE_ID,
+//    	XPAR_AXIDMA_1_DEVICE_ID,
+//		&intc_inst,
+//		XPAR_FABRIC_AXI_DMA_1_S2MM_INTROUT_INTR,
+//		XPAR_FABRIC_AXI_DMA_1_MM2S_INTROUT_INTR
+//    );
+//    if (p_fft_inst_INV == NULL)
+//    {
+//    	xil_printf("ERROR! Failed to create INV FFT instance.\n\r");
+//    	return -1;
+//    }
+//	fft_set_fwd_inv(p_fft_inst_INV, FFT_INVERSE);
+
+	/***********************/
 
     // Allocate data buffers
-    stim_buf = (cplx_data_t*) malloc(sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
-    if (stim_buf == NULL)
-    {
+    input_buf = (cplx_data_t*) malloc(sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+    if (input_buf == NULL){
     	xil_printf("ERROR! Failed to allocate memory for the stimulus buffer.\n\r");
     	return -1;
     }
-
-    result_buf = (cplx_data_t*) malloc(sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
-    if (result_buf == NULL)
-    {
-    	xil_printf("ERROR! Failed to allocate memory for the result buffer.\n\r");
+	intermediate_buf = (cplx_data_t*) malloc(sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+    if (intermediate_buf == NULL){
+    	xil_printf("ERROR! Failed to allocate memory for the intermediate buffer.\n\r");
     	return -1;
     }
+//    result_buf = (cplx_data_t*) malloc(sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+//    if (result_buf == NULL){
+//    	xil_printf("ERROR! Failed to allocate memory for the result buffer.\n\r");
+//    	return -1;
+//    }
 
     // Fill stimulus buffer with some signal
-    memcpy(stim_buf, sig_two_sine_waves, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+    memcpy(input_buf, sig_two_sine_waves, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
 
     // Main control loop
     while (1)
@@ -138,14 +147,12 @@ int main()
     	// Get command
     	xil_printf("What would you like to do?\n\r");
     	xil_printf("0: Print current FFT parameters\n\r");
-    	xil_printf("1: Change FFT parameters\n\r");
-    	xil_printf("2: Perform FFT using current parameters\n\r");
-    	xil_printf("3: Print current stimulus to be used for the FFT operation\n\r");
-    	xil_printf("4: Print results of previous FFT operation\n\r");
+    	xil_printf("7/8: Perform FFT / IFFT using current parameters\n\r");
+    	xil_printf("3: Print current INPUT to be used for the FFT operation\n\r");
+    	xil_printf("4: Print current INTERMEDIATE data of FFT operation\n\r");
     	xil_printf("5: Change FFT input data\n\r");
-    	xil_printf("S: Stream Audio\n\r");
-    	xil_printf("R: Record Audio to memory\n\r");
-    	xil_printf("P: Play Audio from memory\n\r");
+    	xil_printf("S: Stream Pure Audio\n\r");
+    	xil_printf("R/P: Record/Play Audio to/from memory\n\r");
     	xil_printf("D: Detect Frequency from FFT output\n\r");
     	c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
 
@@ -154,28 +161,44 @@ int main()
     		xil_printf("---------------------------------------------\n\r");
     		fft_print_params(p_fft_inst_FWD);
     		xil_printf("---------------------------------------------\n\r");
+    		fft_print_params(p_fft_inst_INV);
+    		xil_printf("---------------------------------------------\n\r");
     	}
     	else if (c == '1')
     	{
     		which_fft_param(p_fft_inst_FWD);
     	}
-    	else if (c == '2') // Run FFT
+    	else if (c == '7') // Run FFT
 		{
 			// Make sure the buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
-			memset(result_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+			memset(intermediate_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
 
-			status = fft(p_fft_inst_FWD, (cplx_data_t*)stim_buf, (cplx_data_t*)result_buf);
+			status = fft(p_fft_inst_FWD, (cplx_data_t*)input_buf, (cplx_data_t*)intermediate_buf);
 			if (status != FFT_SUCCESS)
 			{
 				xil_printf("ERROR! FFT failed.\n\r");
 				return -1;
 			}
 
-			xil_printf("FFT complete!\n\r");
+			xil_printf("FFT complete!\n\r\n\r");
+		}
+    	else if (c == '8') // Run IFFT
+		{
+			// Make sure the buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
+			memset(result_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+
+			status = fft(p_fft_inst_INV, (cplx_data_t*)intermediate_buf, (cplx_data_t*)result_buf);
+			if (status != FFT_SUCCESS)
+			{
+				xil_printf("ERROR! Inverse FFT failed.\n\r");
+				return -1;
+			}
+
+			xil_printf("Inverse FFT complete!\n\r\n\r");
 		}
     	else if (c == '3')
     	{
-    		fft_set_stim_buf(p_fft_inst_FWD, stim_buf);
+    		fft_set_stim_buf(p_fft_inst_FWD, input_buf);
     		fft_print_stim_buf(p_fft_inst_FWD);
     	}
     	else if (c == '4')
@@ -184,7 +207,7 @@ int main()
     	}
     	else if (c == '5')
     	{
-    		kenny_updateFFT_InputData(stim_buf, KENNY_AUDIO_MEM_PTR);
+    		kenny_updateFFT_InputData(input_buf, KENNY_AUDIO_MEM_PTR);
     	}
     	else if (c == 's')
     	{
@@ -216,7 +239,7 @@ int main()
 
     }
 
-    free(stim_buf);
+    free(input_buf);
     free(result_buf);
     fft_destroy(p_fft_inst_FWD);
 
