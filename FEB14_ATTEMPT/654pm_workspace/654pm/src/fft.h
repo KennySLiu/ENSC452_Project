@@ -219,7 +219,7 @@ void fft_print_stim_buf(fft_t* p_fft_inst);
 //  Arguments
 //    - p_fft_inst: Pointer to the fft_t object.
 //
-void fft_print_result_buf(fft_t* p_fft_inst);
+void fft_print_result_buf(fft_t* p_fft_inst, int num_pts_to_print);
 
 #endif /* FFT_H_ */
 

@@ -56,7 +56,9 @@ int main()
 	XScuGic intc_inst;
 
 	// Local variables
-	int * 		KENNY_AUDIO_MEM_PTR = malloc(sizeof(int) * KENNY_AUDIO_MAX_SAMPLES);
+	int 		* 	KENNY_AUDIO_MEM_PTR = malloc(sizeof(int) * (KENNY_AUDIO_MAX_SAMPLES));
+	cplx_data_t * 	KENNY_FFTDATA_MEM_PTR = malloc(sizeof(cplx_data_t) * (KENNY_AUDIO_MAX_SAMPLES));
+
 	int          status = 0;
 	char         c;
 	fft_t*       p_fft_inst_FWD;
@@ -67,7 +69,9 @@ int main()
 
 	// Setup UART and enable caches
     init_platform();
-	xil_printf("Entering Main. AUDIO MEM PTR = %x \r\n", KENNY_AUDIO_MEM_PTR);
+	xil_printf("Entering Main. AUDIO MEM PTR = %x to %x\r\n",
+				KENNY_AUDIO_MEM_PTR, &(KENNY_AUDIO_MEM_PTR[KENNY_AUDIO_MAX_SAMPLES-1])
+				);
 
 	//Configure the IIC data structure
 	IicConfig(XPAR_XIICPS_0_DEVICE_ID);
@@ -143,7 +147,7 @@ int main()
     // Main control loop
     while (1)
     {
-    	int num_fft_windows = 1;//KENNY_AUDIO_MAX_SAMPLES/FFT_MAX_NUM_PTS;
+    	int num_fft_windows = KENNY_AUDIO_MAX_SAMPLES/(FFT_MAX_NUM_PTS*AUDIO_CHANNELS);
 
     	// Get command
     	xil_printf("What would you like to do?\n\r");
@@ -171,7 +175,7 @@ int main()
     	else if (c == '7') // Run FFT
 		{
     		for (int i = 0; i < num_fft_windows; ++i){
-				kenny_convertAudioToCplx((KENNY_AUDIO_MEM_PTR), input_buf, FFT_MAX_NUM_PTS);
+				kenny_convertAudioToCplx(&(KENNY_AUDIO_MEM_PTR[i*AUDIO_CHANNELS*FFT_MAX_NUM_PTS]), input_buf, FFT_MAX_NUM_PTS);
 				// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
 				memset(intermediate_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
 
@@ -181,6 +185,12 @@ int main()
 					xil_printf("ERROR! FFT failed.\n\r");
 					return -1;
 				}
+
+			    for (int jj = 0; jj < FFT_MAX_NUM_PTS; ++jj)
+			    {
+			    	//xil_printf("FWD FFT: Writing to index %d, from %d \r\n", i*FFT_MAX_NUM_PTS + jj, jj);
+			    	KENNY_FFTDATA_MEM_PTR[i*FFT_MAX_NUM_PTS + jj] = intermediate_buf[jj];
+			    }
     		}
 
 			xil_printf("FFT complete!\n\r\n\r");
@@ -188,7 +198,13 @@ int main()
     	else if (c == '8') // Run IFFT
 		{
     		for (int i = 0; i < num_fft_windows; ++i){
-				// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
+    			for (int jj = 0; jj < FFT_MAX_NUM_PTS; ++jj)
+				{
+					//xil_printf("IFFT: Writing to index %d, from %d \r\n", jj, i*FFT_MAX_NUM_PTS + jj);
+					 intermediate_buf[jj] = KENNY_FFTDATA_MEM_PTR[i*FFT_MAX_NUM_PTS + jj];
+			    }
+
+    			// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
 				memset(result_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
 
 				status = fft(p_fft_inst_INV, (cplx_data_t*)intermediate_buf, (cplx_data_t*)result_buf);
@@ -197,11 +213,51 @@ int main()
 					xil_printf("ERROR! Inverse FFT failed.\n\r");
 					return -1;
 				}
-				kenny_convertCplxToAudio(result_buf, (KENNY_AUDIO_MEM_PTR), FFT_MAX_NUM_PTS);
+				kenny_convertCplxToAudio(result_buf, &(KENNY_AUDIO_MEM_PTR[i*AUDIO_CHANNELS*FFT_MAX_NUM_PTS]), FFT_MAX_NUM_PTS);
     		}
 
 			xil_printf("Inverse FFT complete!\n\r\n\r");
 		}
+    	else if (c == ',')
+    	{
+        	c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+
+        	if (c == ',')
+        	{
+				char str[25];
+				cplx_data_t tmp;
+				int idx = 0;
+				for (int i = 0; i < num_fft_windows; ++i )
+				{
+					for (int jj = 0; jj < FFT_MAX_NUM_PTS; ++jj)
+					{
+						idx = i*FFT_MAX_NUM_PTS + jj;
+						tmp = KENNY_FFTDATA_MEM_PTR[idx];
+
+						cplx_data_get_string(str, tmp);
+						xil_printf("KDEBUG: fftdata[%d] = %s\n\r", idx, str);
+					}
+				}
+        	}
+        	else if (c == '.')
+        	{
+				int tmp;
+				int idx = 0;
+				for (int i = 0; i < num_fft_windows; ++i )
+				{
+					for (int jj = 0; jj < FFT_MAX_NUM_PTS/16; ++jj)
+					{
+						idx = i*FFT_MAX_NUM_PTS + jj;
+						tmp = KENNY_AUDIO_MEM_PTR[idx];
+
+						xil_printf("KDEBUG: audiodata[%d] = %d\n\r", idx, tmp);
+					}
+				}
+        	}
+        	else{
+        		xil_printf("Invalid input. Try again\r\n");
+        	}
+    	}
     	else if (c == '3')
     	{
     		fft_set_stim_buf(p_fft_inst_FWD, input_buf);
@@ -209,7 +265,11 @@ int main()
     	}
     	else if (c == '4')
     	{
-    		fft_print_result_buf(p_fft_inst_FWD);
+    		fft_print_result_buf(p_fft_inst_FWD, FFT_MAX_NUM_PTS/8);
+    	}
+    	else if (c == '5')
+    	{
+    		fft_print_result_buf(p_fft_inst_INV, FFT_MAX_NUM_PTS/8);
     	}
     	else if (c == 's')
     	{

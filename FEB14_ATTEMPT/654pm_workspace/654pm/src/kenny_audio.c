@@ -30,7 +30,7 @@ void kenny_PlaybackAudioFromMem(const int* KENNY_AUDIO_MEM_PTR)
 {
 	u32  in_left, in_right;
 	int * cur_ptr = KENNY_AUDIO_MEM_PTR;
-	u32 num_samples_recorded = 0;
+	u32 num_samples_played = 0;
 
 	while (1)
 	{
@@ -38,7 +38,7 @@ void kenny_PlaybackAudioFromMem(const int* KENNY_AUDIO_MEM_PTR)
 			// Read audio data from memory
 			in_left  = *(cur_ptr++);
 			in_right = *(cur_ptr++);
-			num_samples_recorded += 2;
+			num_samples_played += 2;
 
 			// Write audio data to audio codec
 			Xil_Out32(I2S_DATA_TX_L_REG, in_left);
@@ -46,7 +46,7 @@ void kenny_PlaybackAudioFromMem(const int* KENNY_AUDIO_MEM_PTR)
 
 			usleep(SAMPLE_SLEEP_USEC);
 
-			if (num_samples_recorded >= KENNY_AUDIO_MAX_SAMPLES-1){
+			if (num_samples_played >= KENNY_AUDIO_MAX_SAMPLES-1){
 				break;
 			}
 		}
@@ -96,7 +96,7 @@ void kenny_RecordAudioIntoMem(const int* KENNY_AUDIO_MEM_PTR)
 
 /********************************************/
 
-int kenny_signextend_24bit(int inval){
+int kenny_signextend_24bit_to_int(int inval){
 	int sign_val;
 	int retval = 0;
 	sign_val = (inval >> 23);
@@ -122,19 +122,24 @@ void kenny_convertAudioToCplx(int* inval, cplx_data_t* outval, size_t num_vals_t
 		 in_idx += AUDIO_CHANNELS, ++out_idx)
 	{
 		// Convert input data to mono (assume 2 input channels)
-		cur_re_int = (inval[in_idx] + inval[in_idx+1]) / 2;
-		cur_re_int = kenny_signextend_24bit(cur_re_int);
+		//cur_re_int = (inval[in_idx] + inval[in_idx+1]) / 2;
+		cur_re_int = inval[in_idx];
+		cur_re_int = kenny_signextend_24bit_to_int(cur_re_int);
 		cur_re_int = cur_re_int >> 8;
 		cur_re = cur_re_int;
 		cur_im = 0;
 		cur_cplx.data_re = cur_re;
 		cur_cplx.data_im = cur_im;
 		outval[out_idx] = cur_cplx;
-
-//		if (out_idx < 5){
-//			xil_printf("outval[out_idx] = %d, %d*j \n\r", outval[out_idx].data_re, outval[out_idx].data_im);
-//		}
 	}
+}
+
+// THIS FUNCTION ASSUMES the input is already representable in 24 bits.
+int kenny_convert_short_to_24bit(short inval){
+	int retval = 0;
+	retval = 0x00ffffff & inval; // Mask out the higher bits.
+	retval = inval << 8;		// scale it up so it's audible
+	return retval;
 }
 
 void kenny_convertCplxToAudio(cplx_data_t* inval, int* outval, size_t num_vals_to_cpy)
@@ -142,13 +147,14 @@ void kenny_convertCplxToAudio(cplx_data_t* inval, int* outval, size_t num_vals_t
 	cplx_data_t cur_cplx;
 	int cur_re_int;
 	short cur_re = 0;
+	xil_printf("KDEBUG: outval ptr = %x \n\r", outval);
 	for (int in_idx = 0, out_idx = 0;
 		 in_idx < num_vals_to_cpy;
 		 ++in_idx, out_idx += AUDIO_CHANNELS)
 	{
 		cur_cplx = inval[in_idx];
 		cur_re = cur_cplx.data_re;	// In testing, I find that ignoring the imaginary part is ok. But maybe it should be re + im.
-		cur_re_int = (int) cur_re;
+		cur_re_int = kenny_convert_short_to_24bit(cur_re);
 
 		// Write to output channels (assume 2 channels)
 		outval[out_idx] = cur_re_int;

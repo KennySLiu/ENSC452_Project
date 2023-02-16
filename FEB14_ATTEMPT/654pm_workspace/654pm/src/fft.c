@@ -249,9 +249,12 @@ void fft_print_stim_buf(fft_t* p_fft_inst)
 
 }
 
-void fft_print_result_buf(fft_t* p_fft_inst)
+void fft_print_result_buf(fft_t* p_fft_inst, int num_pts_to_print)
 {
-
+	if (num_pts_to_print < 1)
+	{
+		num_pts_to_print = FFT_MAX_NUM_PTS;
+	}
 	// Local variables
 	int          ii = 0;
 	char         str[25]; // Large enough to hold 2 ints plus extra characters
@@ -259,7 +262,7 @@ void fft_print_result_buf(fft_t* p_fft_inst)
 
 	tmp = (cplx_data_t*)dma_accel_get_result_buf(p_fft_inst->periphs.p_dma_accel_inst);
 
-	for (ii = 0; ii < FFT_MAX_NUM_PTS; ii++)
+	for (ii = 0; ii < num_pts_to_print; ii++)
 	{
 		cplx_data_get_string(str, tmp[ii]);
 		xil_printf("Xk(%d) = %s\n\r", ii, str);
