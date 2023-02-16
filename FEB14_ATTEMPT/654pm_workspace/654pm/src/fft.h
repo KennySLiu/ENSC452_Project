@@ -109,19 +109,19 @@ void fft_set_fwd_inv(fft_t* p_fft_inst, fft_fwd_inv_t fwd_inv);
 //
 fft_fwd_inv_t fft_get_fwd_inv(fft_t* p_fft_inst);
 
-//
-// fft_set_num_pts - Set the number of points to use for the FFT.
-//
-//  Arguments
-//    - p_fft_inst:          Pointer to the fft_t object.
-//    - num_pts:             Number of points to be used for the FFT.
-//
-//  Return
-//    - FFT_SUCCESS:         num_pts is legal and the object is set.
-//    - FFT_ILLEGAL_NUM_PTS: num_pts is either not a power of two or it
-//                           exceeds FFT_MAX_NUM_PTS per hardware configuration.
-//
-int fft_set_num_pts(fft_t* p_fft_inst, int num_pts);
+////
+//// fft_set_num_pts - Set the number of points to use for the FFT.
+////
+////  Arguments
+////    - p_fft_inst:          Pointer to the fft_t object.
+////    - num_pts:             Number of points to be used for the FFT.
+////
+////  Return
+////    - FFT_SUCCESS:         num_pts is legal and the object is set.
+////    - FFT_ILLEGAL_NUM_PTS: num_pts is either not a power of two or it
+////                           exceeds FFT_MAX_NUM_PTS per hardware configuration.
+////
+//int fft_set_num_pts(fft_t* p_fft_inst, int num_pts);
 
 //
 // fft_get_num_pts - Get the current setting for the number of points to use

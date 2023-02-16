@@ -16,21 +16,20 @@ typedef struct fft
 {
 	fft_periphs_t periphs;
 	fft_fwd_inv_t fwd_inv;
-	int           num_pts;
 	int           scale_sch;
 } fft_t;
 
-// Private functions
-static int is_power_of_2(int x)
-// Determines if the input integer is a power of two.
-{
-	while ((x % 2 == 0) && (x > 1))
-	{
-		x /= 2;
-	}
-
-	return (x == 1);
-}
+//// Private functions
+//static int is_power_of_2(int x)
+//// Determines if the input integer is a power of two.
+//{
+//	while ((x % 2 == 0) && (x > 1))
+//	{
+//		x /= 2;
+//	}
+//
+//	return (x == 1);
+//}
 
 static int int_log2(int x)
 // Computes the log2 of the input integer. Remainder is floored.
@@ -74,7 +73,7 @@ static void fft_commit_params(fft_t* p_fft_inst)
 
 	reg  = (p_fft_inst->scale_sch         << FFT_SCALE_SCH_SHIFT) & FFT_SCALE_SCH_MASK;
 	reg |= (p_fft_inst->fwd_inv           << FFT_FWD_INV_SHIFT)   & FFT_FWD_INV_MASK;
-	reg |= (int_log2(p_fft_inst->num_pts) << FFT_NUM_PTS_SHIFT)   & FFT_NUM_PTS_MASK;
+	reg |= (int_log2(FFT_MAX_NUM_PTS) << FFT_NUM_PTS_SHIFT)   & FFT_NUM_PTS_MASK;
 
 	XGpio_DiscreteWrite(&p_fft_inst->periphs.gpio_inst, 1, reg);
 
@@ -103,7 +102,8 @@ fft_t* fft_create(int gpio_device_id, int dma_device_id, XScuGic* p_intc_inst, i
 		p_intc_inst,
 		s2mm_intr_id,
 		mm2s_intr_id,
-		sizeof(cplx_data_t)
+		sizeof(cplx_data_t),
+		FFT_MAX_NUM_PTS
 	);
 	if (p_obj->periphs.p_dma_accel_inst == NULL)
 	{
@@ -123,7 +123,6 @@ fft_t* fft_create(int gpio_device_id, int dma_device_id, XScuGic* p_intc_inst, i
 
 	// Initialize FFT parameters
 	fft_set_fwd_inv(p_obj, FFT_FORWARD);
-	status = fft_set_num_pts(p_obj, 1024);
 	if (status != FFT_SUCCESS)
 	{
 		xil_printf("ERROR! Failed to initialize the number of points in the FFT.\n\r");
@@ -152,29 +151,29 @@ fft_fwd_inv_t fft_get_fwd_inv(fft_t* p_fft_inst)
 	return (p_fft_inst->fwd_inv);
 }
 
-int fft_set_num_pts(fft_t* p_fft_inst, int num_pts)
-{
-	if (num_pts > FFT_MAX_NUM_PTS)
-	{
-		xil_printf("ERROR! Attempted to set too large number of points in the FFT.\n\r");
-		return FFT_ILLEGAL_NUM_PTS;
-	}
-	else if (!is_power_of_2(num_pts))
-	{
-		xil_printf("ERROR! Attempted to set a non-power-of-2 value for the number of points in the FFT.\n\r");
-		return FFT_ILLEGAL_NUM_PTS;
-	}
-	else
-	{
-		p_fft_inst->num_pts = num_pts;
-		dma_accel_set_buf_length(p_fft_inst->periphs.p_dma_accel_inst, p_fft_inst->num_pts);
-		return FFT_SUCCESS;
-	}
-}
+//int fft_set_num_pts(fft_t* p_fft_inst, int num_pts)
+//{
+//	if (num_pts > FFT_MAX_NUM_PTS)
+//	{
+//		xil_printf("ERROR! Attempted to set too large number of points in the FFT.\n\r");
+//		return FFT_ILLEGAL_NUM_PTS;
+//	}
+//	else if (!is_power_of_2(num_pts))
+//	{
+//		xil_printf("ERROR! Attempted to set a non-power-of-2 value for the number of points in the FFT.\n\r");
+//		return FFT_ILLEGAL_NUM_PTS;
+//	}
+//	else
+//	{
+//		p_fft_inst->num_pts = num_pts;
+//		dma_accel_set_buf_length(p_fft_inst->periphs.p_dma_accel_inst, p_fft_inst->num_pts);
+//		return FFT_SUCCESS;
+//	}
+//}
 
 int fft_get_num_pts(fft_t* p_fft_inst)
 {
-	return (p_fft_inst->num_pts);
+	return FFT_MAX_NUM_PTS;
 }
 
 void fft_set_scale_sch(fft_t* p_fft_inst, int scale_sch)
@@ -228,7 +227,7 @@ cplx_data_t* fft_get_result_buf(fft_t* p_fft_inst)
 void fft_print_params(fft_t* p_fft_inst)
 {
 	xil_printf("fwd_inv   = %s\n\r", (p_fft_inst->fwd_inv == FFT_FORWARD ? "forward" : "inverse"));
-	xil_printf("num_pts   = %d\n\r", p_fft_inst->num_pts);
+	xil_printf("num_pts   = %d\n\r", FFT_MAX_NUM_PTS);
 	xil_printf("scale_sch = 0x%X\n\r", p_fft_inst->scale_sch);
 }
 
@@ -242,7 +241,7 @@ void fft_print_stim_buf(fft_t* p_fft_inst)
 
 	tmp = (cplx_data_t*)dma_accel_get_stim_buf(p_fft_inst->periphs.p_dma_accel_inst);
 
-	for (ii = 0; ii < p_fft_inst->num_pts; ii++)
+	for (ii = 0; ii < FFT_MAX_NUM_PTS; ii++)
 	{
 		cplx_data_get_string(str, tmp[ii]);
 		xil_printf("xn(%d) = %s\n\r", ii, str);
@@ -260,7 +259,7 @@ void fft_print_result_buf(fft_t* p_fft_inst)
 
 	tmp = (cplx_data_t*)dma_accel_get_result_buf(p_fft_inst->periphs.p_dma_accel_inst);
 
-	for (ii = 0; ii < p_fft_inst->num_pts; ii++)
+	for (ii = 0; ii < FFT_MAX_NUM_PTS; ii++)
 	{
 		cplx_data_get_string(str, tmp[ii]);
 		xil_printf("Xk(%d) = %s\n\r", ii, str);

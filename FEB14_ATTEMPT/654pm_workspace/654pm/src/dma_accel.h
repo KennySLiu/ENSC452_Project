@@ -69,7 +69,7 @@ typedef struct dma_accel dma_accel_t;
 //    - NULL:              NULL if something failed.
 //
 dma_accel_t* dma_accel_create(int dma_device_id, XScuGic* p_intc_inst, int s2mm_intr_id,
-		                      int mm2s_intr_id, int sample_size_bytes);
+		                      int mm2s_intr_id, int sample_size_bytes, int init_buf_size);
 
 //
 // dma_accel_destroy - Destroy DMA Accelerator object.

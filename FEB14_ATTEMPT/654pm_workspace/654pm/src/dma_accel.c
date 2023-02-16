@@ -239,7 +239,7 @@ static int init_dma(XAxiDma* p_dma_inst, int dma_device_id)
 
 // Public functions
 dma_accel_t* dma_accel_create(int dma_device_id, XScuGic* p_intc_inst, int s2mm_intr_id,
-		                      int mm2s_intr_id, int sample_size_bytes)
+		                      int mm2s_intr_id, int sample_size_bytes, int init_buf_size)
 {
 
 	// Local variables
@@ -284,7 +284,7 @@ dma_accel_t* dma_accel_create(int dma_device_id, XScuGic* p_intc_inst, int s2mm_
 	dma_accel_set_result_buf(p_obj, NULL);
 
 	// Initialize buffer length
-	dma_accel_set_buf_length(p_obj, 1024);
+	dma_accel_set_buf_length(p_obj, init_buf_size);
 
 	// Initialize sample size
 	dma_accel_set_sample_size_bytes(p_obj, sample_size_bytes);
@@ -387,8 +387,6 @@ int dma_accel_xfer(dma_accel_t* p_dma_accel_inst)
 	// Wait for transfer to complete
 	while (!(g_s2mm_done && g_mm2s_done) && !g_dma_err){
 		/* The processor could be doing something else here while waiting for an IRQ. */
-		xil_printf("Waiting for an interrupt... %d, %d\n\r", g_mm2s_done, g_s2mm_done);
-		usleep(500000);
 	}
 
 	// Check DMA for errors
