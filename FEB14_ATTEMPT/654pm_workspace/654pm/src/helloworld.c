@@ -103,20 +103,20 @@ int main()
 	fft_set_fwd_inv(p_fft_inst_FWD, FFT_FORWARD);
 
 
-//    p_fft_inst_INV = fft_create
-//    (
-//    	XPAR_GPIO_1_DEVICE_ID,
-//    	XPAR_AXIDMA_1_DEVICE_ID,
-//		&intc_inst,
-//		XPAR_FABRIC_AXI_DMA_1_S2MM_INTROUT_INTR,
-//		XPAR_FABRIC_AXI_DMA_1_MM2S_INTROUT_INTR
-//    );
-//    if (p_fft_inst_INV == NULL)
-//    {
-//    	xil_printf("ERROR! Failed to create INV FFT instance.\n\r");
-//    	return -1;
-//    }
-//	fft_set_fwd_inv(p_fft_inst_INV, FFT_INVERSE);
+	p_fft_inst_INV = fft_create
+    (
+		XPAR_GPIO_1_DEVICE_ID,
+		XPAR_AXIDMA_1_DEVICE_ID,
+		&intc_inst,
+		XPAR_FABRIC_AXI_DMA_1_S2MM_INTROUT_INTR,
+		XPAR_FABRIC_AXI_DMA_1_MM2S_INTROUT_INTR
+    );
+    if (p_fft_inst_INV == NULL)
+    {
+		xil_printf("ERROR! Failed to create INV FFT instance.\n\r");
+		return -1;
+    }
+	fft_set_fwd_inv(p_fft_inst_INV, FFT_INVERSE);
 
 	/***********************/
 
@@ -131,11 +131,11 @@ int main()
     	xil_printf("ERROR! Failed to allocate memory for the intermediate buffer.\n\r");
     	return -1;
     }
-//    result_buf = (cplx_data_t*) malloc(sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
-//    if (result_buf == NULL){
-//    	xil_printf("ERROR! Failed to allocate memory for the result buffer.\n\r");
-//    	return -1;
-//    }
+    result_buf = (cplx_data_t*) malloc(sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+    if (result_buf == NULL){
+		xil_printf("ERROR! Failed to allocate memory for the result buffer.\n\r");
+		return -1;
+    }
 
     // Fill stimulus buffer with some signal
     memcpy(input_buf, sig_two_sine_waves, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
@@ -170,7 +170,8 @@ int main()
     	}
     	else if (c == '7') // Run FFT
 		{
-			// Make sure the buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
+			kenny_convertAudioToCplx(KENNY_AUDIO_MEM_PTR, input_buf, FFT_MAX_NUM_PTS);
+			// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
 			memset(intermediate_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
 
 			status = fft(p_fft_inst_FWD, (cplx_data_t*)input_buf, (cplx_data_t*)intermediate_buf);
@@ -184,7 +185,7 @@ int main()
 		}
     	else if (c == '8') // Run IFFT
 		{
-			// Make sure the buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
+			// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
 			memset(result_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
 
 			status = fft(p_fft_inst_INV, (cplx_data_t*)intermediate_buf, (cplx_data_t*)result_buf);
@@ -193,6 +194,7 @@ int main()
 				xil_printf("ERROR! Inverse FFT failed.\n\r");
 				return -1;
 			}
+			kenny_convertCplxToAudio(result_buf, KENNY_AUDIO_MEM_PTR, FFT_MAX_NUM_PTS);
 
 			xil_printf("Inverse FFT complete!\n\r\n\r");
 		}
@@ -204,10 +206,6 @@ int main()
     	else if (c == '4')
     	{
     		fft_print_result_buf(p_fft_inst_FWD);
-    	}
-    	else if (c == '5')
-    	{
-    		kenny_updateFFT_InputData(input_buf, KENNY_AUDIO_MEM_PTR);
     	}
     	else if (c == 's')
     	{
