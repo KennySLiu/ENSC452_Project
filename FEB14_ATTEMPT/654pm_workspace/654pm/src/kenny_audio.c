@@ -138,7 +138,7 @@ void kenny_convertAudioToCplx(int* inval, cplx_data_t* outval, size_t num_vals_t
 int kenny_convert_short_to_24bit(short inval){
 	int retval = 0;
 	retval = 0x00ffffff & inval; // Mask out the higher bits.
-	retval = inval << 8;		// scale it up so it's audible
+	retval = inval << 9;		// scale it up so it's audible
 	return retval;
 }
 
@@ -162,6 +162,19 @@ void kenny_convertCplxToAudio(cplx_data_t* inval, int* outval, size_t num_vals_t
 	}
 }
 
+
+
+// NOTE: The filter should be symmetric.
+void kenny_apply_filter(int filter[FFT_MAX_NUM_PTS], cplx_data_t* fft_data)
+{
+	for (int i = 0 ; i < FFT_MAX_NUM_PTS; ++i)
+	{
+		fft_data[i].data_re *= filter[i];
+		fft_data[i].data_im *= filter[i];
+	}
+}
+
+/*************************************/
 
 //void kenny_updateFFT_InputData(cplx_data_t* stim_buf, int* recorded_audio_buf)
 //{

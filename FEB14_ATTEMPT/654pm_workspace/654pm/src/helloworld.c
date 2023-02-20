@@ -220,7 +220,22 @@ int main()
 
 			xil_printf("Inverse FFT complete!\n\r\n\r");
 		}
-    	else if (c == ',')
+    	else if (c == '9')
+    	{
+    		int filterdata[FFT_MAX_NUM_PTS];
+    		for (int i = 0; i < FFT_MAX_NUM_PTS/2; ++i)
+    		{
+    			if (i < FFT_MAX_NUM_PTS/8) {
+    				filterdata[i] = filterdata[FFT_MAX_NUM_PTS-1-i] = 1;
+    			} else {
+    				filterdata[i] = filterdata[FFT_MAX_NUM_PTS-1-i] = 0;
+    			}
+    		}
+    		for (int i = 0; i < num_fft_windows; ++i){
+    			kenny_apply_filter(filterdata, &KENNY_FFTDATA_MEM_PTR[i*FFT_MAX_NUM_PTS]);
+    		}
+    	}
+    	else if (c == ',')	// Debugging - print part of the FFT/Audio data.
     	{
         	c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
 
