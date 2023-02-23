@@ -44,7 +44,7 @@
 extern int sig_two_sine_waves[FFT_MAX_NUM_PTS]; // FFT input data
 
 // Function prototypes
-void which_fft_param(int* cur_num_fft_pts);
+void which_fft_param(int* cur_num_fft_pts, fft_t* p_fft_inst_FWD, fft_t* p_fft_inst_INV);
 
 
 
@@ -154,6 +154,7 @@ int main()
     	// Get command
     	xil_printf("What would you like to do?\n\r");
     	xil_printf("0: Print current FFT parameters\n\r");
+    	xil_printf("1: Reconfigure FFT point size\n\r");
     	xil_printf("7/8: Perform FFT / IFFT using current parameters\n\r");
     	xil_printf("3: Print current INPUT to be used for the FFT operation\n\r");
     	xil_printf("4: Print current INTERMEDIATE data of FFT operation\n\r");
@@ -172,9 +173,7 @@ int main()
     	}
     	else if (c == '1')
     	{
-    		which_fft_param(&cur_num_fft_pts);
-    		fft_set_num_pts(p_fft_inst_FWD, cur_num_fft_pts);
-    		fft_set_num_pts(p_fft_inst_INV, cur_num_fft_pts);
+    		which_fft_param(&cur_num_fft_pts, p_fft_inst_FWD, p_fft_inst_INV);
     	}
     	else if (c == '7') // Run FFT
 		{
@@ -337,7 +336,7 @@ int main()
 
 }
 
-void which_fft_param(int *cur_num_fft_pts)
+void which_fft_param(int *cur_num_fft_pts, fft_t* p_fft_inst_FWD, fft_t* p_fft_inst_INV)
 {
 	// Local variables
 	char c;
@@ -345,7 +344,8 @@ void which_fft_param(int *cur_num_fft_pts)
 	xil_printf("Okay, which parameter would you like to change?\n\r");
 	xil_printf("0: Point length\n\r");
 	//xil_printf("1: Direction\n\r");
-	xil_printf("2: Exit\n\r");
+	xil_printf("2: Scaling schedule\n\r");
+	xil_printf("3: Exit\n\r");
 	while (1)
 	{
 		c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
@@ -430,6 +430,8 @@ void which_fft_param(int *cur_num_fft_pts)
 				else
 		    		xil_printf("Invalid character. Please try again.\n\r");
 			}
+    		fft_set_num_pts(p_fft_inst_FWD, *cur_num_fft_pts);
+    		fft_set_num_pts(p_fft_inst_INV, *cur_num_fft_pts);
 			break;
 		}
 		/*
@@ -461,7 +463,107 @@ void which_fft_param(int *cur_num_fft_pts)
 			break;
 		}
 		*/
-		if (c == '2')
+		else if (c == '2')
+		{
+			fft_t* target_fft = NULL;
+			xil_printf("Would you like to apply this to the forward (f) or reverse (r) FFT, or BOTH (b)?\n\r");
+			while (1)
+			{
+				c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+				if (c == 'f'){
+					target_fft = p_fft_inst_FWD;
+					break;
+				}
+				else if (c == 'r'){
+					target_fft = p_fft_inst_INV;
+					break;
+				}
+				else if (c == 'b'){
+					target_fft = NULL;
+					break;
+				}
+				else{
+					xil_printf("Invalid entry, try again.\n\r");
+				}
+			}
+
+
+			char input;
+			int new_sched = 0;
+			int lshift_amount = 0;
+
+			xil_printf("What would you like the scaling schedule to become? Enter in hex:\n\r");
+			for (int input_num = 0; input_num < 3; ++input_num)
+			{
+				c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+
+				lshift_amount = (4 * (3 - input_num - 1));
+				switch (c){
+					case '0':
+						new_sched += 0;
+						break;
+					case '1':
+						new_sched += 1 << lshift_amount;
+						break;
+					case '2':
+						new_sched += 2 << lshift_amount;
+						break;
+					case '3':
+						new_sched += 3 << lshift_amount;
+						break;
+					case '4':
+						new_sched += 4 << lshift_amount;
+						break;
+					case '5':
+						new_sched += 5 << lshift_amount;
+						break;
+					case '6':
+						new_sched += 6 << lshift_amount;
+						break;
+					case '7':
+						new_sched += 7 << lshift_amount;
+						break;
+					case '8':
+						new_sched += 8 << lshift_amount;
+						break;
+					case '9':
+						new_sched += 9 << lshift_amount;
+						break;
+					case 'a':
+						new_sched += 10 << lshift_amount;
+						break;
+					case 'b':
+						new_sched += 11 << lshift_amount;
+						break;
+					case 'c':
+						new_sched += 12 << lshift_amount;
+						break;
+					case 'd':
+						new_sched += 13 << lshift_amount;
+						break;
+					case 'e':
+						new_sched += 14 << lshift_amount;
+						break;
+					case 'f':
+						new_sched += 15 << lshift_amount;
+						break;
+					default:
+						input_num = -1;
+						xil_printf("INVALID ENTRY. Please try again. Enter in hex:\n\r");
+						break;
+				}
+			}
+			xil_printf("New scaling schedule: 0x%x\n\r", new_sched);
+
+			if (target_fft != NULL) {
+				fft_set_scale_sch(target_fft, new_sched);
+			} else {
+				fft_set_scale_sch(p_fft_inst_FWD, new_sched);
+				fft_set_scale_sch(p_fft_inst_INV, new_sched);
+			}
+			break;
+		}
+		else if (c == '3')
 		{
 			return;
 		}

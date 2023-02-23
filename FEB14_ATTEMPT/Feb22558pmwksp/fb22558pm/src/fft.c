@@ -130,7 +130,8 @@ fft_t* fft_create(int gpio_device_id, int dma_device_id, XScuGic* p_intc_inst, i
 		fft_destroy(p_obj);
 		return NULL;
 	}
-	fft_set_scale_sch(p_obj, 0x2AB);
+	fft_set_scale_sch(p_obj, 0xaaa);
+	//fft_set_scale_sch(p_obj, 0x2AB);
 
 	return p_obj;
 
@@ -176,6 +177,35 @@ int fft_get_num_pts(fft_t* p_fft_inst)
 {
 	return (p_fft_inst->num_pts);
 }
+
+/*
+void fft_set_scale_sch_based_on_pts(fft_t* p_fft_inst)
+{
+	int scale_sch = 0xfff;
+	int num_pts = fft_get_num_pts(p_fft_inst);
+	if (num_pts == 16){
+		scale_sch = 0xaaa;
+	} else if (num_pts == 32){
+		scale_sch = 0xaaa;
+	} else if (num_pts == 64){
+		scale_sch = 0xaaa;
+	} else if (num_pts == 128){
+		scale_sch = 0xaaa;
+	} else if (num_pts == 256){
+		scale_sch = 0xaaa;
+	} else if (num_pts == 512){
+		scale_sch = 0xaaa;
+	} else if (num_pts == 1024){
+		scale_sch = 0xaaa;
+	} else if (num_pts == 2048){
+		scale_sch = 0x55a;
+	} else if (num_pts == 4096){
+		scale_sch = 0xaaa;
+	}
+
+	p_fft_inst->scale_sch = scale_sch;
+}
+*/
 
 void fft_set_scale_sch(fft_t* p_fft_inst, int scale_sch)
 {

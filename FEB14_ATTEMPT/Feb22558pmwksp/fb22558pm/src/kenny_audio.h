@@ -22,6 +22,7 @@
 void audio_stream();
 void kenny_PlaybackAudioFromMem(const int* KENNY_AUDIO_MEM_PTR);
 void kenny_RecordAudioIntoMem(const int* KENNY_AUDIO_MEM_PTR);
+void kenny_apply_filter(int num_fft_pts, int filter[num_fft_pts], cplx_data_t* fft_data);
 
 int kenny_guessFrequencyOfData(fft_t* p_fft_inst);
 //void kenny_updateFFT_InputData(cplx_data_t* stim_buf, int* recorded_audio_buf);
