@@ -26,6 +26,93 @@ void audio_stream(){
 
 } // audio_stream()
 
+void kenny_init_eq(float parametric_eq_vect[EQ_NUM_FREQ_BUCKETS])
+{
+	for (int i = 0; i < EQ_NUM_FREQ_BUCKETS; ++i)
+	{
+		parametric_eq_vect[i] = 1.0;
+	}
+}
+
+void kenny_print_eq(float parametric_eq_vect[EQ_NUM_FREQ_BUCKETS])
+{
+	for (int eq_idx = 0; eq_idx < EQ_NUM_FREQ_BUCKETS; ++eq_idx)
+	{
+		printf("%1.1f\t", parametric_eq_vect[eq_idx]);
+	}
+	printf("\r\n");
+}
+
+void kenny_update_eq(float parametric_eq_vect[EQ_NUM_FREQ_BUCKETS])
+{
+	xil_printf("What would you like to do?\r\n");
+	xil_printf("1: Print current EQ settings\r\n");
+	xil_printf("2: Modify EQ settings\r\n");
+	char c;
+
+	while(1)
+	{
+		c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+
+		if (c == '1') {
+			kenny_print_eq(parametric_eq_vect);
+			break;
+		}
+		else if (c == '2') {
+			xil_printf("Please enter the new values for the EQ. (ones, tenths)");
+			for (int eq_idx = 0; eq_idx < EQ_NUM_FREQ_BUCKETS; ++eq_idx)
+			{
+				float cur_eq_val = 0;
+				for (int dec_ctr = 0; dec_ctr < 2; ++dec_ctr)
+				{
+					float divider = (dec_ctr == 0 ? 1 : 10);
+					c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+					switch (c){
+						case '0':
+							cur_eq_val += 0;
+							break;
+						case '1':
+							cur_eq_val += 1.0/divider;
+							break;
+						case '2':
+							cur_eq_val += 2.0/divider;
+							break;
+						case '3':
+							cur_eq_val += 3.0/divider;
+							break;
+						case '4':
+							cur_eq_val += 4.0/divider;
+							break;
+						case '5':
+							cur_eq_val += 5.0/divider;
+							break;
+						case '6':
+							cur_eq_val += 6.0/divider;
+							break;
+						case '7':
+							cur_eq_val += 7.0/divider;
+							break;
+						case '8':
+							cur_eq_val += 8.0/divider;
+							break;
+						case '9':
+							cur_eq_val += 9.0/divider;
+							break;
+					}
+				}
+				parametric_eq_vect[eq_idx] = cur_eq_val;
+			}
+			xil_printf("Done. Your new EQ vector is:\r\n");
+			kenny_print_eq(parametric_eq_vect);
+			break;
+		}
+		else
+		{
+			xil_printf("Invalid entry. Please try again \r\n");
+		}
+	}
+}
+
 void kenny_PlaybackAudioFromMem(const int* KENNY_AUDIO_MEM_PTR)
 {
 	u32  in_left, in_right;
@@ -138,7 +225,7 @@ void kenny_convertAudioToCplx(int* inval, cplx_data_t* outval, size_t num_vals_t
 int kenny_convert_short_to_24bit(short inval){
 	int retval = 0;
 	retval = 0x00ffffff & inval; // Mask out the higher bits.
-	retval = inval << 13;		// scale it up so it's audible
+	retval = retval << 12;		// scale it up so it's audible
 	return retval;
 }
 

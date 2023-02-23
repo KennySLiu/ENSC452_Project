@@ -130,7 +130,7 @@ fft_t* fft_create(int gpio_device_id, int dma_device_id, XScuGic* p_intc_inst, i
 		fft_destroy(p_obj);
 		return NULL;
 	}
-	fft_set_scale_sch(p_obj, 0xaaa);
+	fft_set_scale_sch(p_obj, 0x2ab);
 	//fft_set_scale_sch(p_obj, 0x2AB);
 
 	return p_obj;

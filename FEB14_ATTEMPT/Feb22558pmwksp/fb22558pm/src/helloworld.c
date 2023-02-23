@@ -53,6 +53,7 @@ void which_fft_param(int* cur_num_fft_pts, fft_t* p_fft_inst_FWD, fft_t* p_fft_i
 int main()
 {
 	int cur_num_fft_pts = INIT_NUM_FFT_PTS;
+	float parametric_eq_vect[EQ_NUM_FREQ_BUCKETS] = {1.0};
 
 	// Hardware stuff:
 	XScuGic intc_inst;
@@ -90,7 +91,11 @@ int main()
 
 	xil_printf("ADAU1761 configured\n\r");
 
-
+	kenny_init_eq(parametric_eq_vect);
+	for (int i = 0; i < EQ_NUM_FREQ_BUCKETS; ++i)
+	{
+		printf("KDEBUG: parametric_eq_vect[%d] = %f\r\n", i, parametric_eq_vect[i]);
+	}
 	/***********************/
     // Create FFT objects
     p_fft_inst_FWD = fft_create
@@ -155,6 +160,7 @@ int main()
     	xil_printf("What would you like to do?\n\r");
     	xil_printf("0: Print current FFT parameters\n\r");
     	xil_printf("1: Reconfigure FFT point size\n\r");
+    	xil_printf("2: Reconfigure EQ settings \n\r");
     	xil_printf("7/8: Perform FFT / IFFT using current parameters\n\r");
     	xil_printf("3: Print current INPUT to be used for the FFT operation\n\r");
     	xil_printf("4: Print current INTERMEDIATE data of FFT operation\n\r");
@@ -174,6 +180,10 @@ int main()
     	else if (c == '1')
     	{
     		which_fft_param(&cur_num_fft_pts, p_fft_inst_FWD, p_fft_inst_INV);
+    	}
+    	else if (c == '2')
+    	{
+    		kenny_update_eq(parametric_eq_vect);
     	}
     	else if (c == '7') // Run FFT
 		{
@@ -225,7 +235,6 @@ int main()
 		}
     	else if (c == '9')
     	{
-    		int num_fft_pts = fft_get_num_pts(p_fft_inst_FWD);
     		int filterdata[cur_num_fft_pts];
     		for (int i = 0; i < cur_num_fft_pts/2; ++i)
     		{
@@ -487,8 +496,6 @@ void which_fft_param(int *cur_num_fft_pts, fft_t* p_fft_inst_FWD, fft_t* p_fft_i
 				}
 			}
 
-
-			char input;
 			int new_sched = 0;
 			int lshift_amount = 0;
 
