@@ -26,24 +26,24 @@ void audio_stream(){
 
 } // audio_stream()
 
-void kenny_init_eq(float parametric_eq_vect[EQ_NUM_FREQ_BUCKETS])
+void kenny_init_eq(float parametric_eq_vect[EQ_MAX_NUM_FREQ_BUCKETS])
 {
-	for (int i = 0; i < EQ_NUM_FREQ_BUCKETS; ++i)
+	for (int i = 0; i < EQ_MAX_NUM_FREQ_BUCKETS; ++i)
 	{
 		parametric_eq_vect[i] = 1.0;
 	}
 }
 
-void kenny_print_eq(float parametric_eq_vect[EQ_NUM_FREQ_BUCKETS])
+void kenny_print_eq(float parametric_eq_vect[EQ_cur_num_freq_buckets])
 {
-	for (int eq_idx = 0; eq_idx < EQ_NUM_FREQ_BUCKETS; ++eq_idx)
+	for (int eq_idx = 0; eq_idx < EQ_cur_num_freq_buckets; ++eq_idx)
 	{
 		printf("%1.1f\t", parametric_eq_vect[eq_idx]);
 	}
 	printf("\r\n");
 }
 
-void kenny_update_eq(float parametric_eq_vect[EQ_NUM_FREQ_BUCKETS])
+void kenny_update_eq(float parametric_eq_vect[EQ_MAX_NUM_FREQ_BUCKETS])
 {
 	xil_printf("What would you like to do?\r\n");
 	xil_printf("1: Print current EQ settings\r\n");
@@ -60,7 +60,7 @@ void kenny_update_eq(float parametric_eq_vect[EQ_NUM_FREQ_BUCKETS])
 		}
 		else if (c == '2') {
 			xil_printf("Please enter the new values for the EQ. (ones, tenths)");
-			for (int eq_idx = 0; eq_idx < EQ_NUM_FREQ_BUCKETS; ++eq_idx)
+			for (int eq_idx = 0; eq_idx < EQ_cur_num_freq_buckets; ++eq_idx)
 			{
 				float cur_eq_val = 0;
 				for (int dec_ctr = 0; dec_ctr < 2; ++dec_ctr)
@@ -102,8 +102,13 @@ void kenny_update_eq(float parametric_eq_vect[EQ_NUM_FREQ_BUCKETS])
 				}
 				parametric_eq_vect[eq_idx] = cur_eq_val;
 			}
+			for (int eq_idx = EQ_cur_num_freq_buckets; eq_idx < EQ_MAX_NUM_FREQ_BUCKETS; ++eq_idx)
+			{
+				parametric_eq_vect[eq_idx] = 1.0;
+			}
 			xil_printf("Done. Your new EQ vector is:\r\n");
 			kenny_print_eq(parametric_eq_vect);
+			xil_printf("Where %d are valid values.\r\n", EQ_cur_num_freq_buckets);
 			break;
 		}
 		else
@@ -252,7 +257,7 @@ void kenny_convertCplxToAudio(cplx_data_t* inval, int* outval, size_t num_vals_t
 
 
 // NOTE: The filter should be symmetric.
-void kenny_apply_filter(int num_fft_pts, int filter[num_fft_pts], cplx_data_t* fft_data)
+void kenny_apply_filter(int num_fft_pts, float filter[num_fft_pts], cplx_data_t* fft_data)
 {
 	for (int i = 0 ; i < num_fft_pts; ++i)
 	{

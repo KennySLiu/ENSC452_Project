@@ -28,6 +28,7 @@
 // Includes
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "platform.h"
 #include "xuartps_hw.h"
 #include "fft.h"
@@ -42,6 +43,7 @@
 
 // External data
 extern int sig_two_sine_waves[FFT_MAX_NUM_PTS]; // FFT input data
+extern int EQ_cur_num_freq_buckets;
 
 // Function prototypes
 void which_fft_param(int* cur_num_fft_pts, fft_t* p_fft_inst_FWD, fft_t* p_fft_inst_INV);
@@ -53,7 +55,8 @@ void which_fft_param(int* cur_num_fft_pts, fft_t* p_fft_inst_FWD, fft_t* p_fft_i
 int main()
 {
 	int cur_num_fft_pts = INIT_NUM_FFT_PTS;
-	float parametric_eq_vect[EQ_NUM_FREQ_BUCKETS] = {1.0};
+	EQ_cur_num_freq_buckets = (int) log2f(INIT_NUM_FFT_PTS) - 1;
+	float parametric_eq_vect[EQ_MAX_NUM_FREQ_BUCKETS] = {1.0};
 
 	// Hardware stuff:
 	XScuGic intc_inst;
@@ -92,7 +95,7 @@ int main()
 	xil_printf("ADAU1761 configured\n\r");
 
 	kenny_init_eq(parametric_eq_vect);
-	for (int i = 0; i < EQ_NUM_FREQ_BUCKETS; ++i)
+	for (int i = 0; i < EQ_MAX_NUM_FREQ_BUCKETS; ++i)
 	{
 		printf("KDEBUG: parametric_eq_vect[%d] = %f\r\n", i, parametric_eq_vect[i]);
 	}
@@ -180,6 +183,9 @@ int main()
     	else if (c == '1')
     	{
     		which_fft_param(&cur_num_fft_pts, p_fft_inst_FWD, p_fft_inst_INV);
+    		// Since the #FFT points can only be a power of 2, this can always be cast to an int.
+    		// Minus one because the FFT will be symmetric
+    		EQ_cur_num_freq_buckets = (int) log2f(cur_num_fft_pts) - 1;
     	}
     	else if (c == '2')
     	{
@@ -235,15 +241,25 @@ int main()
 		}
     	else if (c == '9')
     	{
-    		int filterdata[cur_num_fft_pts];
+    		float filterdata[cur_num_fft_pts];
+    		int current_freq_bucket = 0;
+
     		for (int i = 0; i < cur_num_fft_pts/2; ++i)
     		{
-    			if (i < cur_num_fft_pts/8) {
-    				filterdata[i] = filterdata[cur_num_fft_pts-1-i] = 1;
-    			} else {
-    				filterdata[i] = filterdata[cur_num_fft_pts-1-i] = 0;
+    			// Floor of the log2 of the current index.
+    			current_freq_bucket = (int) log2f(i + 1);
+    			if (i == cur_num_fft_pts/2 - 1) {
+    				// Special handling for the last index, which would overflow otherwise.
+    				current_freq_bucket = (int) log2f(i);
     			}
+    			filterdata[i] = parametric_eq_vect[current_freq_bucket];
+    			//printf("KDEBUG: Filterdata[%d] = %f\r\n", i, filterdata[i]);
     		}
+    		for (int i = cur_num_fft_pts/2; i < cur_num_fft_pts; ++i)
+    		{
+    			filterdata[i] = filterdata[cur_num_fft_pts - i - 1];
+    		}
+
     		for (int i = 0; i < num_fft_windows; ++i){
     			kenny_apply_filter(cur_num_fft_pts, filterdata, &KENNY_FFTDATA_MEM_PTR[i*cur_num_fft_pts]);
     		}
