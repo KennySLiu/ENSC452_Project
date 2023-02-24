@@ -191,6 +191,8 @@ int main()
     	{
     		kenny_update_eq(parametric_eq_vect);
     	}
+    	/*******************************************************/
+    	// FFT & FILTERING STUFF
     	else if (c == '7') // Run FFT
 		{
     		for (int i = 0; i < num_fft_windows; ++i){
@@ -236,6 +238,11 @@ int main()
 				}
 				kenny_convertCplxToAudio(result_buf, &(KENNY_AUDIO_MEM_PTR[i*AUDIO_CHANNELS*cur_num_fft_pts]), cur_num_fft_pts);
     		}
+    		int last_audioidx_written = (num_fft_windows-1)*AUDIO_CHANNELS*cur_num_fft_pts;
+    		// Zero out the part of the audio memory that wasn't part of the FFT, due to windowing.
+    		for (int i = last_audioidx_written; i < KENNY_AUDIO_MAX_SAMPLES; ++i){
+    			KENNY_AUDIO_MEM_PTR[i] = 0;
+    		}
 
 			xil_printf("Inverse FFT complete!\n\r\n\r");
 		}
@@ -264,6 +271,7 @@ int main()
     			kenny_apply_filter(cur_num_fft_pts, filterdata, &KENNY_FFTDATA_MEM_PTR[i*cur_num_fft_pts]);
     		}
     	}
+    	/*******************************************************/
     	else if (c == ',')	// Debugging - print part of the FFT/Audio data.
     	{
         	c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
@@ -306,6 +314,7 @@ int main()
         		xil_printf("Invalid input. Try again\r\n");
         	}
     	}
+    	/*******************************************************/
     	else if (c == '3')
     	{
     		fft_set_stim_buf(p_fft_inst_FWD, input_buf);
