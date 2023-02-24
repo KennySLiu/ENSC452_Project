@@ -187,7 +187,7 @@ void kenny_RecordAudioIntoMem(const int* KENNY_AUDIO_MEM_PTR)
 
 
 /********************************************/
-
+// HELPER DATA FUNCTIONS:
 int kenny_signextend_24bit_to_int(int inval){
 	int sign_val;
 	int retval = 0;
@@ -234,7 +234,7 @@ int kenny_convert_short_to_24bit(short inval){
 	return retval;
 }
 
-void kenny_convertCplxToAudio(cplx_data_t* inval, int* outval, size_t num_vals_to_cpy)
+void kenny_convertCplxToAudio(cplx_data_t* inval, int* outval, float *STFT_window_func, size_t num_vals_to_cpy)
 {
 	cplx_data_t cur_cplx;
 	int cur_re_int;
@@ -249,8 +249,8 @@ void kenny_convertCplxToAudio(cplx_data_t* inval, int* outval, size_t num_vals_t
 		cur_re_int = kenny_convert_short_to_24bit(cur_re);
 
 		// Write to output channels (assume 2 channels)
-		outval[out_idx] = cur_re_int;
-		outval[out_idx+1] = cur_re_int;
+		outval[out_idx] 	+= cur_re_int * STFT_window_func[in_idx];
+		outval[out_idx+1] 	+= cur_re_int * STFT_window_func[in_idx];
 	}
 }
 

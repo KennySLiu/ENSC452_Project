@@ -384,9 +384,16 @@ int dma_accel_xfer(dma_accel_t* p_dma_accel_inst)
 		return DMA_ACCEL_XFER_FAIL;
 	}
 
+	int debug_val = 0;
 	// Wait for transfer to complete
 	while (!(g_s2mm_done && g_mm2s_done) && !g_dma_err){
 		/* The processor could be doing something else here while waiting for an IRQ. */
+		if (debug_val < 99999999) {
+			debug_val++;
+		} else {
+			usleep(500000);
+			printf("Waiting for DMA transfer... %d, %d\r\n", g_mm2s_done, g_s2mm_done);
+		}
 	}
 
 	// Check DMA for errors

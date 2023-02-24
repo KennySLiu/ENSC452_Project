@@ -49,21 +49,21 @@ extern int EQ_cur_num_freq_buckets;
 void which_fft_param(int* cur_num_fft_pts, fft_t* p_fft_inst_FWD, fft_t* p_fft_inst_INV);
 
 
-
-
 // Main entry point
 int main()
 {
 	int cur_num_fft_pts = INIT_NUM_FFT_PTS;
 	EQ_cur_num_freq_buckets = (int) log2f(INIT_NUM_FFT_PTS) - 1;
 	float parametric_eq_vect[EQ_MAX_NUM_FREQ_BUCKETS] = {1.0};
+	float STFT_window_func[FFT_MAX_NUM_PTS] = {0};
+	int num_fft_windows = 0;
 
 	// Hardware stuff:
 	XScuGic intc_inst;
 
 	// Local variables
 	int 		* 	KENNY_AUDIO_MEM_PTR = malloc(sizeof(int) * (KENNY_AUDIO_MAX_SAMPLES));
-	cplx_data_t * 	KENNY_FFTDATA_MEM_PTR = malloc(sizeof(cplx_data_t) * (KENNY_AUDIO_MAX_SAMPLES/AUDIO_CHANNELS));
+	cplx_data_t * 	KENNY_FFTDATA_MEM_PTR = malloc(sizeof(cplx_data_t) * (KENNY_AUDIO_MAX_SAMPLES/AUDIO_CHANNELS) * STFT_STRIDE_FACTOR);
 
 	int          status = 0;
 	char         c;
@@ -157,8 +157,6 @@ int main()
     // Main control loop
     while (1)
     {
-    	int num_fft_windows = KENNY_AUDIO_MAX_SAMPLES/(cur_num_fft_pts*AUDIO_CHANNELS);
-
     	// Get command
     	xil_printf("What would you like to do?\n\r");
     	xil_printf("0: Print current FFT parameters\n\r");
@@ -170,6 +168,7 @@ int main()
     	xil_printf("S: Stream Pure Audio\n\r");
     	xil_printf("R/P: Record/Play Audio to/from memory\n\r");
     	xil_printf("D: Detect Frequency from FFT output\n\r");
+    	xil_printf("Q: Quit\n\r");
     	c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
 
     	if (c == '0')
@@ -186,6 +185,20 @@ int main()
     		// Since the #FFT points can only be a power of 2, this can always be cast to an int.
     		// Minus one because the FFT will be symmetric
     		EQ_cur_num_freq_buckets = (int) log2f(cur_num_fft_pts) - 1;
+        	num_fft_windows = STFT_STRIDE_FACTOR * KENNY_AUDIO_MAX_SAMPLES/(cur_num_fft_pts*AUDIO_CHANNELS);
+
+            for (int i = 0; i < cur_num_fft_pts/2; ++i){
+                STFT_window_func[i] = 1 / (cur_num_fft_pts/2.0 / (i+1));
+            }
+            STFT_window_func[cur_num_fft_pts/2] = 1;
+            for (int i = cur_num_fft_pts/2+1; i < cur_num_fft_pts; ++i) {
+            	STFT_window_func[i] = STFT_window_func[cur_num_fft_pts - i - 1];
+            }
+
+            for (int i = 0; i < cur_num_fft_pts; i += 100)
+            {
+            	printf("KDEBUG: STFT_window_func[%d] = %f\r\n", i, STFT_window_func[i]);
+            }
     	}
     	else if (c == '2')
     	{
@@ -195,8 +208,9 @@ int main()
     	// FFT & FILTERING STUFF
     	else if (c == '7') // Run FFT
 		{
-    		for (int i = 0; i < num_fft_windows; ++i){
-				kenny_convertAudioToCplx(&(KENNY_AUDIO_MEM_PTR[i*AUDIO_CHANNELS*cur_num_fft_pts]), input_buf, cur_num_fft_pts);
+    		int AUDIO_IDX_FACTOR = AUDIO_CHANNELS*cur_num_fft_pts/STFT_STRIDE_FACTOR;
+    		for (int fft_window_idx = 0; fft_window_idx < num_fft_windows; ++fft_window_idx){
+				kenny_convertAudioToCplx(&(KENNY_AUDIO_MEM_PTR[fft_window_idx*AUDIO_IDX_FACTOR]), input_buf, cur_num_fft_pts);
 				// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
 				memset(intermediate_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
 
@@ -207,25 +221,18 @@ int main()
 					return -1;
 				}
 
-			    memcpy(&(KENNY_FFTDATA_MEM_PTR[i*cur_num_fft_pts]), intermediate_buf, sizeof(cplx_data_t)*cur_num_fft_pts);
-//			    for (int jj = 0; jj < FFT_MAX_NUM_PTS; ++jj)
-//			    {
-//			    	//xil_printf("FWD FFT: Writing to index %d, from %d \r\n", i*FFT_MAX_NUM_PTS + jj, jj);
-//			    	KENNY_FFTDATA_MEM_PTR[i*FFT_MAX_NUM_PTS + jj] = intermediate_buf[jj];
-//			    }
+			    memcpy(&(KENNY_FFTDATA_MEM_PTR[fft_window_idx*cur_num_fft_pts]), intermediate_buf, sizeof(cplx_data_t)*cur_num_fft_pts);
     		}
 
 			xil_printf("FFT complete!\n\r\n\r");
 		}
     	else if (c == '8') // Run IFFT
 		{
-    		for (int i = 0; i < num_fft_windows; ++i){
-//    			for (int jj = 0; jj < FFT_MAX_NUM_PTS; ++jj)
-//				{
-//					//xil_printf("IFFT: Writing to index %d, from %d \r\n", jj, i*FFT_MAX_NUM_PTS + jj);
-//					 intermediate_buf[jj] = KENNY_FFTDATA_MEM_PTR[i*FFT_MAX_NUM_PTS + jj];
-//			    }
-			    memcpy(intermediate_buf, &(KENNY_FFTDATA_MEM_PTR[i*cur_num_fft_pts]), sizeof(cplx_data_t)*cur_num_fft_pts);
+    		int AUDIO_IDX_FACTOR = AUDIO_CHANNELS*cur_num_fft_pts/STFT_STRIDE_FACTOR;
+
+			memset(KENNY_AUDIO_MEM_PTR, 0, sizeof(int)*KENNY_AUDIO_MAX_SAMPLES);
+    		for (int fft_window_idx = 0; fft_window_idx < num_fft_windows; ++fft_window_idx){
+			    memcpy(intermediate_buf, &(KENNY_FFTDATA_MEM_PTR[fft_window_idx*cur_num_fft_pts]), sizeof(cplx_data_t)*cur_num_fft_pts);
 
     			// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
 				memset(result_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
@@ -236,9 +243,10 @@ int main()
 					xil_printf("ERROR! Inverse FFT failed.\n\r");
 					return -1;
 				}
-				kenny_convertCplxToAudio(result_buf, &(KENNY_AUDIO_MEM_PTR[i*AUDIO_CHANNELS*cur_num_fft_pts]), cur_num_fft_pts);
+
+				kenny_convertCplxToAudio(result_buf, &(KENNY_AUDIO_MEM_PTR[fft_window_idx*AUDIO_IDX_FACTOR]), STFT_window_func, cur_num_fft_pts);
     		}
-    		int last_audioidx_written = (num_fft_windows-1)*AUDIO_CHANNELS*cur_num_fft_pts;
+    		int last_audioidx_written = (num_fft_windows-1)*AUDIO_IDX_FACTOR;
     		// Zero out the part of the audio memory that wasn't part of the FFT, due to windowing.
     		for (int i = last_audioidx_written; i < KENNY_AUDIO_MAX_SAMPLES; ++i){
     			KENNY_AUDIO_MEM_PTR[i] = 0;
@@ -282,33 +290,27 @@ int main()
 				cplx_data_t tmp;
 				int idx = 0;
 				int i = 0;
-//				for (i = 0; i < num_fft_windows; ++i )
-//				{
-					for (int jj = 0; jj < cur_num_fft_pts; ++jj)
-					{
-						idx = i*cur_num_fft_pts + jj;
-						tmp = KENNY_FFTDATA_MEM_PTR[idx];
+				for (int jj = 0; jj < cur_num_fft_pts; ++jj)
+				{
+					idx = i*cur_num_fft_pts + jj;
+					tmp = KENNY_FFTDATA_MEM_PTR[idx];
 
-						cplx_data_get_string(str, tmp);
-						xil_printf("KDEBUG: fftdata[%d] = %s\n\r", idx, str);
-					}
-				//}
+					cplx_data_get_string(str, tmp);
+					xil_printf("KDEBUG: fftdata[%d] = %s\n\r", idx, str);
+				}
         	}
         	else if (c == '.')
         	{
 				int tmp;
 				int idx = 0;
 				int i = 0;
-//				for (i = 0; i < num_fft_windows; ++i )
-//				{
-					for (int jj = 0; jj < cur_num_fft_pts; ++jj)
-					{
-						idx = i*cur_num_fft_pts + jj;
-						tmp = KENNY_AUDIO_MEM_PTR[idx];
+				for (int jj = 0; jj < cur_num_fft_pts; ++jj)
+				{
+					idx = i*cur_num_fft_pts + jj;
+					tmp = KENNY_AUDIO_MEM_PTR[idx];
 
-						xil_printf("KDEBUG: audiodata[%d] = %d\n\r", idx, tmp);
-					}
-				//}
+					xil_printf("KDEBUG: audiodata[%d] = %d\n\r", idx, tmp);
+				}
         	}
         	else{
         		xil_printf("Invalid input. Try again\r\n");
@@ -351,11 +353,27 @@ int main()
     		int guessed_freq = kenny_guessFrequencyOfData(p_fft_inst_FWD);
     		xil_printf("The frequency is around: %d \r\n", guessed_freq);
     	}
+    	else if (c == 'q')
+    	{
+    		xil_printf("Are you sure you want to quit? (YES)\r\n");
+        	c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+        	if ( c == 'y' )
+        	{
+            	c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+            	if (c == 'e')
+            	{
+                	c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+                	if (c == 's')
+                	{
+                		break;
+                	}
+            	}
+        	}
+    	}
     	else
     	{
     		xil_printf("Invalid character. Please try again.\n\r");
     	}
-
     }
 
     free(input_buf);

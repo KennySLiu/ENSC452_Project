@@ -19,6 +19,7 @@
 //#define KENNY_AUDIO_MAX_SAMPLES (8192)
 
 #define EQ_MAX_NUM_FREQ_BUCKETS (16)
+#define STFT_STRIDE_FACTOR (2)
 int EQ_cur_num_freq_buckets;
 
 void audio_stream();
@@ -33,7 +34,7 @@ void kenny_apply_filter(int num_fft_pts, float filter[num_fft_pts], cplx_data_t*
 int kenny_guessFrequencyOfData(fft_t* p_fft_inst);
 //void kenny_updateFFT_InputData(cplx_data_t* stim_buf, int* recorded_audio_buf);
 void kenny_convertAudioToCplx(int* inval, cplx_data_t* outval, size_t num_vals_to_cpy);
-void kenny_convertCplxToAudio(cplx_data_t* inval, int* outval, size_t num_vals_to_cpy);
+void kenny_convertCplxToAudio(cplx_data_t* inval, int* outval, float *STFT_window_func, size_t num_vals_to_cpy);
 
 
 #endif
