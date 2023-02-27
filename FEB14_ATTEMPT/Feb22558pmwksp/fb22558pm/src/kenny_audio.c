@@ -170,20 +170,21 @@ void kenny_eq_print(eq_settings_t *p_eq_settings)
 void kenny_eq_update_interactive(eq_settings_t *p_eq_settings)
 {
 	xil_printf("What would you like to do?\r\n");
-	xil_printf("1: Print current EQ settings\r\n");
-	xil_printf("2: Modify EQ values\r\n");
-	xil_printf("3: Toggle EQ Bypass\r\n");
+	xil_printf("p: Print current EQ settings\r\n");
+	xil_printf("1: Modify EQ values\r\n");
+	xil_printf("2: Toggle EQ Bypass\r\n");
+	xil_printf("q: Quit back to main menu\r\n");
 	char c;
 
 	while(1)
 	{
 		c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
 
-		if (c == '1') {
+		if (c == 'p') {
 			kenny_eq_print(p_eq_settings);
 			break;
 		}
-		else if (c == '2') {
+		else if (c == '1') {
 			xil_printf("Please enter the new values for the EQ. (ones, tenths)");
 			for (int eq_idx = 0; eq_idx < p_eq_settings->EQ_cur_num_freq_buckets; ++eq_idx)
 			{
@@ -234,11 +235,13 @@ void kenny_eq_update_interactive(eq_settings_t *p_eq_settings)
 			kenny_eq_print(p_eq_settings);
 			break;
 		}
-		else if (c == '3') {
+		else if (c == '2') {
 			p_eq_settings->bypass = (p_eq_settings->bypass ? 0 : 1);
 			kenny_eq_print_bypass(p_eq_settings);
-			break;
 		}
+        else if (c == 'q') {
+            break;
+        }
 		else
 		{
 			xil_printf("Invalid entry. Please try again \r\n");

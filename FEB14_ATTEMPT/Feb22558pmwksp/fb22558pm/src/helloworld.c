@@ -166,33 +166,25 @@ int main()
     {
     	// Get command
     	xil_printf("What would you like to do?\n\r");
-    	xil_printf("0: Print current FFT parameters\n\r");
-    	xil_printf("1: Reconfigure FFT point size\n\r");
-    	xil_printf("2: Reconfigure EQ settings \n\r");
+    	xil_printf("0: FFT Configuration submenu\n\r");
+    	xil_printf("1: EQ Configuration submenu\n\r");
+    	xil_printf("2: Compressor Configuration submenu\n\r");
     	xil_printf("7/8: Perform FFT / IFFT using current parameters\n\r");
     	xil_printf("9: Run audio system (EQ and compressor)\n\r");
-    	xil_printf("3: Print current INPUT to be used for the FFT operation\n\r");
-    	xil_printf("4: Print current INTERMEDIATE data of FFT operation\n\r");
+    	//xil_printf("3: Print current INPUT to be used for the FFT operation\n\r");
+    	//xil_printf("4: Print current INTERMEDIATE data of FFT operation\n\r");
     	xil_printf("S: Stream Pure Audio\n\r");
     	xil_printf("R/P: Record/Play Audio to/from memory\n\r");
-    	xil_printf("D: Detect Frequency from FFT output\n\r");
+    	//xil_printf("D: Detect Frequency from FFT output\n\r");
     	xil_printf("Q: Quit\n\r");
     	c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
 
     	if (c == '0')
     	{
-    		xil_printf("---------------------------------------------\n\r");
-    		fft_print_params(p_fft_inst_FWD);
-    		xil_printf("---------------------------------------------\n\r");
-    		fft_print_params(p_fft_inst_INV);
-    		xil_printf("---------------------------------------------\n\r");
-    	}
-    	else if (c == '1')
-    	{
     		which_fft_param(&cur_num_fft_pts, p_fft_inst_FWD, p_fft_inst_INV);
     		kenny_update_num_fft_pts(&eq_settings, &stft_settings, cur_num_fft_pts);
     	}
-    	else if (c == '2')
+    	else if (c == '1')
     	{
     		kenny_eq_update_interactive(&eq_settings);
     	}
@@ -343,15 +335,24 @@ void which_fft_param(int *cur_num_fft_pts, fft_t* p_fft_inst_FWD, fft_t* p_fft_i
 	char c;
 
 	xil_printf("Okay, which parameter would you like to change?\n\r");
+	xil_printf("p: Print current settings\n\r");
 	xil_printf("0: Point length\n\r");
 	//xil_printf("1: Direction\n\r");
 	xil_printf("2: Scaling schedule\n\r");
-	xil_printf("3: Exit\n\r");
+	xil_printf("q: Quit back to main menu\n\r");
 	while (1)
 	{
 		c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
 
-		if (c == '0')
+    	if (c == 'p')
+    	{
+    		xil_printf("---------------------------------------------\n\r");
+    		fft_print_params(p_fft_inst_FWD);
+    		xil_printf("---------------------------------------------\n\r");
+    		fft_print_params(p_fft_inst_INV);
+    		xil_printf("---------------------------------------------\n\r");
+    	}
+		else if (c == '0')
 		{
 			xil_printf("What would you like to set the FFT point length to? Type:\n\r");
 			xil_printf("0: FFT point length = 16\n\r");
@@ -562,13 +563,18 @@ void which_fft_param(int *cur_num_fft_pts, fft_t* p_fft_inst_FWD, fft_t* p_fft_i
 			}
 			break;
 		}
-		else if (c == '3')
+		else if (c == 'q')
 		{
 			return;
 		}
 		else
 		{
 			xil_printf("Invalid character. Please try again.\n\r");
+	        xil_printf("p: Print current settings\n\r");
+	        xil_printf("0: Point length\n\r");
+	        //xil_printf("1: Direction\n\r");
+	        xil_printf("2: Scaling schedule\n\r");
+	        xil_printf("q: Exit\n\r");
 		}
 	}
 }
