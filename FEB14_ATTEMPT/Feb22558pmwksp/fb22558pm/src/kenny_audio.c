@@ -62,12 +62,12 @@ void kenny_stft_convert_window_to_audiodata(
     kenny_convertCplxToAudio(inval, outval, p_stft_settings->STFT_window_func, num_vals_to_cpy);
 }
 
-void kenny_stft_run_fwd_fft(
+void kenny_stft_run_fwd(
     stft_settings_t *p_stft_settings, 
     fft_t* p_fft_inst_FWD,
-    int* inval,
+    int* KENNY_AUDIO_MEM_PTR,
     cplx_data_t* input_buf,
-    cplx_data_t* outval,
+    cplx_data_t* KENNY_FFTDATA_MEM_PTR,
     cplx_data_t* output_buf
 ) {
 	int status = 0;
@@ -76,7 +76,7 @@ void kenny_stft_run_fwd_fft(
     int AUDIO_IDX_FACTOR = AUDIO_CHANNELS*num_fft_pts/STFT_STRIDE_FACTOR;
 
     for (int fft_window_idx = 0; fft_window_idx < num_fft_windows; ++fft_window_idx){
-		kenny_convertAudioToCplx(&(inval[fft_window_idx*AUDIO_IDX_FACTOR]), input_buf, num_fft_pts);
+		kenny_convertAudioToCplx(&(KENNY_AUDIO_MEM_PTR[fft_window_idx*AUDIO_IDX_FACTOR]), input_buf, num_fft_pts);
 		// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
 		memset(output_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
 
@@ -87,7 +87,48 @@ void kenny_stft_run_fwd_fft(
 			return -1;
 		}
 
-	    memcpy(&(outval[fft_window_idx*num_fft_pts]), output_buf, sizeof(cplx_data_t)*num_fft_pts);
+	    memcpy(&(KENNY_FFTDATA_MEM_PTR[fft_window_idx*num_fft_pts]), output_buf, sizeof(cplx_data_t)*num_fft_pts);
+    }
+}
+
+
+void kenny_stft_run_inv(
+    stft_settings_t *p_stft_settings, 
+    fft_t* p_fft_inst_INV,
+    cplx_data_t* KENNY_FFTDATA_MEM_PTR,
+    cplx_data_t* input_buf,
+    int* KENNY_AUDIO_MEM_PTR,
+    cplx_data_t* output_buf
+) {
+	int status = 0;
+    int num_fft_pts = p_stft_settings->num_fft_pts;
+    int num_fft_windows = p_stft_settings->num_fft_windows;
+    int AUDIO_IDX_FACTOR = AUDIO_CHANNELS*num_fft_pts/STFT_STRIDE_FACTOR;
+
+	memset(KENNY_AUDIO_MEM_PTR, 0, sizeof(int)*KENNY_AUDIO_MAX_SAMPLES);
+    for (int fft_window_idx = 0; fft_window_idx < num_fft_windows; ++fft_window_idx){
+	    memcpy(input_buf, &(KENNY_FFTDATA_MEM_PTR[fft_window_idx*num_fft_pts]), sizeof(cplx_data_t)*num_fft_pts);
+
+    	// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
+		memset(output_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+
+		status = fft(p_fft_inst_INV, (cplx_data_t*)input_buf, (cplx_data_t*)output_buf);
+		if (status != FFT_SUCCESS)
+		{
+			xil_printf("ERROR! Inverse FFT failed.\n\r");
+			return -1;
+		}
+
+        kenny_stft_convert_window_to_audiodata(
+            p_stft_settings, output_buf, 
+            &(KENNY_AUDIO_MEM_PTR[fft_window_idx*AUDIO_IDX_FACTOR]),
+            num_fft_pts
+        );
+    }
+    int last_audioidx_written = (num_fft_windows-1)*AUDIO_IDX_FACTOR;
+    // Zero out the part of the audio memory that wasn't part of the FFT, due to windowing.
+    for (int i = last_audioidx_written; i < KENNY_AUDIO_MAX_SAMPLES; ++i){
+    	KENNY_AUDIO_MEM_PTR[i] = 0;
     }
 }
 

@@ -200,23 +200,7 @@ int main()
     	// FFT & FILTERING STUFF
     	else if (c == '7') // Run FFT
 		{
-    		//int AUDIO_IDX_FACTOR = AUDIO_CHANNELS*cur_num_fft_pts/STFT_STRIDE_FACTOR;
-    		//for (int fft_window_idx = 0; fft_window_idx < stft_settings.num_fft_windows; ++fft_window_idx){
-			//	kenny_convertAudioToCplx(&(KENNY_AUDIO_MEM_PTR[fft_window_idx*AUDIO_IDX_FACTOR]), input_buf, cur_num_fft_pts);
-			//	// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
-			//	memset(intermediate_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
-
-			//	status = fft(p_fft_inst_FWD, (cplx_data_t*)input_buf, (cplx_data_t*)intermediate_buf);
-			//	if (status != FFT_SUCCESS)
-			//	{
-			//		xil_printf("ERROR! FFT failed.\n\r");
-			//		return -1;
-			//	}
-
-			//    memcpy(&(KENNY_FFTDATA_MEM_PTR[fft_window_idx*cur_num_fft_pts]), intermediate_buf, sizeof(cplx_data_t)*cur_num_fft_pts);
-    		//}
-
-            kenny_stft_run_fwd_fft(
+            kenny_stft_run_fwd(
                 &stft_settings, 
                 p_fft_inst_FWD,
                 KENNY_AUDIO_MEM_PTR,
@@ -229,35 +213,14 @@ int main()
 		}
     	else if (c == '8') // Run IFFT
 		{
-    		int AUDIO_IDX_FACTOR = AUDIO_CHANNELS*cur_num_fft_pts/STFT_STRIDE_FACTOR;
-
-			memset(KENNY_AUDIO_MEM_PTR, 0, sizeof(int)*KENNY_AUDIO_MAX_SAMPLES);
-    		for (int fft_window_idx = 0; fft_window_idx < stft_settings.num_fft_windows; ++fft_window_idx){
-			    memcpy(intermediate_buf, &(KENNY_FFTDATA_MEM_PTR[fft_window_idx*cur_num_fft_pts]), sizeof(cplx_data_t)*cur_num_fft_pts);
-
-    			// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
-				memset(result_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
-
-				status = fft(p_fft_inst_INV, (cplx_data_t*)intermediate_buf, (cplx_data_t*)result_buf);
-				if (status != FFT_SUCCESS)
-				{
-					xil_printf("ERROR! Inverse FFT failed.\n\r");
-					return -1;
-				}
-
-                kenny_stft_convert_window_to_audiodata(
-                    &stft_settings, result_buf, 
-                    &(KENNY_AUDIO_MEM_PTR[fft_window_idx*AUDIO_IDX_FACTOR]),
-                    cur_num_fft_pts
-                );
-                                        
-				//kenny_convertCplxToAudio(result_buf, &(KENNY_AUDIO_MEM_PTR[fft_window_idx*AUDIO_IDX_FACTOR]), STFT_window_func, cur_num_fft_pts);
-    		}
-    		int last_audioidx_written = (stft_settings.num_fft_windows-1)*AUDIO_IDX_FACTOR;
-    		// Zero out the part of the audio memory that wasn't part of the FFT, due to windowing.
-    		for (int i = last_audioidx_written; i < KENNY_AUDIO_MAX_SAMPLES; ++i){
-    			KENNY_AUDIO_MEM_PTR[i] = 0;
-    		}
+            kenny_stft_run_inv(
+                &stft_settings, 
+                p_fft_inst_INV,
+                KENNY_FFTDATA_MEM_PTR,
+                intermediate_buf,
+                KENNY_AUDIO_MEM_PTR,
+                result_buf
+            );
 
 			xil_printf("Inverse FFT complete!\n\r\n\r");
 		}
