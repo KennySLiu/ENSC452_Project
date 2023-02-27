@@ -67,7 +67,6 @@ int main()
 	int 		* 	KENNY_AUDIO_MEM_PTR = malloc(sizeof(int) * (KENNY_AUDIO_MAX_SAMPLES));
 	cplx_data_t * 	KENNY_FFTDATA_MEM_PTR = malloc(sizeof(cplx_data_t) * KENNY_FFTDATA_SZ);
 
-	int          status = 0;
 	char         c;
 	fft_t*       p_fft_inst_FWD;
 	fft_t* 	     p_fft_inst_INV;
@@ -103,7 +102,7 @@ int main()
 
 	kenny_stft_init(&stft_settings);
 	kenny_eq_init(&eq_settings, &stft_settings);
-	kenny_compressor_init(&compressor_settings);
+	kenny_compressor_init(&compressor_settings, &stft_settings);
 
 	/***********************/
 
@@ -169,6 +168,7 @@ int main()
     	xil_printf("0: FFT Configuration submenu\n\r");
     	xil_printf("1: EQ Configuration submenu\n\r");
     	xil_printf("2: Compressor Configuration submenu\n\r");
+    	xil_printf("3: Print STFT stuff\n\r");
     	xil_printf("7/8: Perform FFT / IFFT using current parameters\n\r");
     	xil_printf("9: Run audio system (EQ and compressor)\n\r");
     	//xil_printf("3: Print current INPUT to be used for the FFT operation\n\r");
@@ -187,6 +187,14 @@ int main()
     	else if (c == '1')
     	{
     		kenny_eq_update_interactive(&eq_settings);
+    	}
+    	else if (c == '2')
+    	{
+            kenny_compressor_update_interactive(&compressor_settings);
+    	}
+    	else if (c == '3')
+    	{
+            kenny_stft_print(&stft_settings);
     	}
     	/*******************************************************/
     	// FFT & FILTERING STUFF
@@ -219,6 +227,7 @@ int main()
     	else if (c == '9')		// Run audio system stuff (EQ and Compressor)
     	{
     		kenny_eq_run(&eq_settings, KENNY_FFTDATA_MEM_PTR);
+    		kenny_compressor_run(&compressor_settings, KENNY_FFTDATA_MEM_PTR);
     	}
     	/*******************************************************/
     	else if (c == ',')	// Debugging - print part of the FFT/Audio data.
@@ -258,19 +267,19 @@ int main()
         	}
     	}
     	/*******************************************************/
-    	else if (c == '3')
-    	{
-    		fft_set_stim_buf(p_fft_inst_FWD, input_buf);
-    		fft_print_stim_buf(p_fft_inst_FWD);
-    	}
-    	else if (c == '4')
-    	{
-    		fft_print_result_buf(p_fft_inst_FWD, -1);
-    	}
-    	else if (c == '5')
-    	{
-    		fft_print_result_buf(p_fft_inst_INV, -1);
-    	}
+    	//else if (c == '3')
+    	//{
+    	//	fft_set_stim_buf(p_fft_inst_FWD, input_buf);
+    	//	fft_print_stim_buf(p_fft_inst_FWD);
+    	//}
+    	//else if (c == '4')
+    	//{
+    	//	fft_print_result_buf(p_fft_inst_FWD, -1);
+    	//}
+    	//else if (c == '5')
+    	//{
+    	//	fft_print_result_buf(p_fft_inst_INV, -1);
+    	//}
     	else if (c == 's')
     	{
 			xil_printf("STREAMING AUDIO\r\n");
@@ -334,14 +343,15 @@ void which_fft_param(int *cur_num_fft_pts, fft_t* p_fft_inst_FWD, fft_t* p_fft_i
 	// Local variables
 	char c;
 
-	xil_printf("Okay, which parameter would you like to change?\n\r");
-	xil_printf("p: Print current settings\n\r");
-	xil_printf("0: Point length\n\r");
-	//xil_printf("1: Direction\n\r");
-	xil_printf("2: Scaling schedule\n\r");
-	xil_printf("q: Quit back to main menu\n\r");
 	while (1)
 	{
+	    xil_printf("Okay, which FFT parameter would you like to change?\n\r");
+	    xil_printf("p: Print current settings\n\r");
+	    xil_printf("0: Point length\n\r");
+	    //xil_printf("1: Direction\n\r");
+	    xil_printf("2: Scaling schedule\n\r");
+	    xil_printf("q: Quit back to main menu\n\r");
+
 		c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
 
     	if (c == 'p')
@@ -434,7 +444,6 @@ void which_fft_param(int *cur_num_fft_pts, fft_t* p_fft_inst_FWD, fft_t* p_fft_i
 			}
     		fft_set_num_pts(p_fft_inst_FWD, *cur_num_fft_pts);
     		fft_set_num_pts(p_fft_inst_INV, *cur_num_fft_pts);
-			break;
 		}
 		/*
 		if (c == '1')
@@ -561,7 +570,6 @@ void which_fft_param(int *cur_num_fft_pts, fft_t* p_fft_inst_FWD, fft_t* p_fft_i
 				fft_set_scale_sch(p_fft_inst_FWD, new_sched);
 				fft_set_scale_sch(p_fft_inst_INV, new_sched);
 			}
-			break;
 		}
 		else if (c == 'q')
 		{
