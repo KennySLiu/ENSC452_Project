@@ -391,8 +391,13 @@ int dma_accel_xfer(dma_accel_t* p_dma_accel_inst)
 		if (debug_val < 99999999) {
 			debug_val++;
 		} else {
-			usleep(500000);
-			printf("Waiting for DMA transfer... %d, %d\r\n", g_mm2s_done, g_s2mm_done);
+			printf("Waiting for DMA transfer... mm2s_done = %d, s2mm_done = %d\r\n", g_mm2s_done, g_s2mm_done);
+			printf("DMA instance = 0x%x. \r\nstim_buf addr = 0x%x.\r\n Result_buf addr = 0x%x.\r\n num_bytes = 0x%x\r\n",
+					&p_dma_accel_inst->periphs.dma_inst,
+					(int)p_dma_accel_inst->p_stim_buf,
+					(int)p_dma_accel_inst->p_result_buf,
+					num_bytes);
+			usleep(5000000);
 		}
 	}
 

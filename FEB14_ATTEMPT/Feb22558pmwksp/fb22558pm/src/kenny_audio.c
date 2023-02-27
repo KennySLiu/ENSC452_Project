@@ -4,6 +4,10 @@
 extern int sig_two_sine_waves[FFT_MAX_NUM_PTS]; // FFT input data
 
 
+/********************/
+/********************/
+/********************/
+
 void audio_stream(){
 	u32  in_left, in_right;
 
@@ -26,28 +30,76 @@ void audio_stream(){
 
 } // audio_stream()
 
-void kenny_init_eq(float parametric_eq_vect[EQ_MAX_NUM_FREQ_BUCKETS])
+/******************************/
+// STFT SETTINGS
+void kenny_stft_init(stft_settings_t *p_stft_settings)
 {
-	for (int i = 0; i < EQ_MAX_NUM_FREQ_BUCKETS; ++i)
-	{
-		parametric_eq_vect[i] = 1.0;
-	}
+    kenny_stft_update_window(p_stft_settings, INIT_NUM_FFT_PTS);
 }
 
-void kenny_print_eq(float parametric_eq_vect[EQ_cur_num_freq_buckets])
+void kenny_stft_update_window(stft_settings_t *p_stft_settings, int new_num_fft_pts)
 {
-	for (int eq_idx = 0; eq_idx < EQ_cur_num_freq_buckets; ++eq_idx)
+	p_stft_settings->num_fft_windows = 
+        STFT_STRIDE_FACTOR * KENNY_AUDIO_MAX_SAMPLES/(new_num_fft_pts*AUDIO_CHANNELS);
+
+    for (int i = 0; i < new_num_fft_pts/2; ++i){
+        p_stft_settings->STFT_window_func[i] = 1 / (new_num_fft_pts/2.0 / (i+1));
+    }
+    p_stft_settings->STFT_window_func[new_num_fft_pts/2] = 1;
+    for (int i = new_num_fft_pts/2+1; i < new_num_fft_pts; ++i) {
+    	p_stft_settings->STFT_window_func[i] = p_stft_settings->STFT_window_func[new_num_fft_pts - i - 1];
+    }
+}
+
+void kenny_stft_convert_window_to_audiodata(
+    stft_settings_t *p_stft_settings, 
+    cplx_data_t* inval, 
+    int* outval, 
+    size_t num_vals_to_cpy
+) {
+    kenny_convertCplxToAudio(inval, outval, p_stft_settings->STFT_window_func, num_vals_to_cpy);
+}
+
+
+/******************************/
+// PARAMETRIC EQ
+
+void kenny_eq_init(eq_settings_t *p_eq_settings, stft_settings_t *p_stft_settings)
+{
+	p_eq_settings->EQ_cur_num_freq_buckets = (int) log2f(INIT_NUM_FFT_PTS) - 1;
+	p_eq_settings->bypass = 0;
+
+	for (int i = 0; i < EQ_MAX_NUM_FREQ_BUCKETS; ++i)
 	{
-		printf("%1.1f\t", parametric_eq_vect[eq_idx]);
+		p_eq_settings->parametric_eq_vect[i] = 1.0;
+	}
+    p_eq_settings->p_stft_settings = p_stft_settings;
+}
+
+void kenny_eq_print_bypass(eq_settings_t *p_eq_settings){
+	xil_printf("The EQ Is %s\r\n", (p_eq_settings->bypass ? "DISABLED" : "ENABLED"));
+}
+void kenny_eq_print_vector(eq_settings_t *p_eq_settings){
+	xil_printf("The EQ vector is:\r\n");
+	for (int eq_idx = 0; eq_idx < p_eq_settings->EQ_cur_num_freq_buckets; ++eq_idx)
+	{
+		printf("%1.1f\t", p_eq_settings->parametric_eq_vect[eq_idx]);
 	}
 	printf("\r\n");
 }
 
-void kenny_update_eq(float parametric_eq_vect[EQ_MAX_NUM_FREQ_BUCKETS])
+void kenny_eq_print(eq_settings_t *p_eq_settings)
+{
+	kenny_eq_print_bypass(p_eq_settings);
+	kenny_eq_print_vector(p_eq_settings);
+}
+
+void kenny_eq_update_interactive(eq_settings_t *p_eq_settings)
 {
 	xil_printf("What would you like to do?\r\n");
 	xil_printf("1: Print current EQ settings\r\n");
-	xil_printf("2: Modify EQ settings\r\n");
+	xil_printf("2: Modify EQ values\r\n");
+	xil_printf("3: Toggle EQ Bypass\r\n");
 	char c;
 
 	while(1)
@@ -55,12 +107,12 @@ void kenny_update_eq(float parametric_eq_vect[EQ_MAX_NUM_FREQ_BUCKETS])
 		c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
 
 		if (c == '1') {
-			kenny_print_eq(parametric_eq_vect);
+			kenny_eq_print(p_eq_settings);
 			break;
 		}
 		else if (c == '2') {
 			xil_printf("Please enter the new values for the EQ. (ones, tenths)");
-			for (int eq_idx = 0; eq_idx < EQ_cur_num_freq_buckets; ++eq_idx)
+			for (int eq_idx = 0; eq_idx < p_eq_settings->EQ_cur_num_freq_buckets; ++eq_idx)
 			{
 				float cur_eq_val = 0;
 				for (int dec_ctr = 0; dec_ctr < 2; ++dec_ctr)
@@ -100,15 +152,18 @@ void kenny_update_eq(float parametric_eq_vect[EQ_MAX_NUM_FREQ_BUCKETS])
 							break;
 					}
 				}
-				parametric_eq_vect[eq_idx] = cur_eq_val;
+				p_eq_settings->parametric_eq_vect[eq_idx] = cur_eq_val;
 			}
-			for (int eq_idx = EQ_cur_num_freq_buckets; eq_idx < EQ_MAX_NUM_FREQ_BUCKETS; ++eq_idx)
+			for (int eq_idx = p_eq_settings->EQ_cur_num_freq_buckets; eq_idx < EQ_MAX_NUM_FREQ_BUCKETS; ++eq_idx)
 			{
-				parametric_eq_vect[eq_idx] = 1.0;
+				p_eq_settings->parametric_eq_vect[eq_idx] = 1.0;
 			}
-			xil_printf("Done. Your new EQ vector is:\r\n");
-			kenny_print_eq(parametric_eq_vect);
-			xil_printf("Where %d are valid values.\r\n", EQ_cur_num_freq_buckets);
+			kenny_eq_print(p_eq_settings);
+			break;
+		}
+		else if (c == '3') {
+			p_eq_settings->bypass = (p_eq_settings->bypass ? 0 : 1);
+			kenny_eq_print_bypass(p_eq_settings);
 			break;
 		}
 		else
@@ -117,6 +172,65 @@ void kenny_update_eq(float parametric_eq_vect[EQ_MAX_NUM_FREQ_BUCKETS])
 		}
 	}
 }
+void kenny_eq_run(eq_settings_t *p_eq_settings, 
+                    int cur_num_fft_pts, 
+                    cplx_data_t KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ])
+{
+	if (p_eq_settings->bypass) {
+		return;
+	}
+
+	float filterdata[cur_num_fft_pts];
+	int current_freq_bucket = 0;
+
+	for (int i = 0; i < cur_num_fft_pts/2; ++i)
+	{
+		// Floor of the log2 of the current index.
+		current_freq_bucket = (int) log2f(i + 1);
+		if (i == cur_num_fft_pts/2 - 1) {
+			// Special handling for the last index, which would overflow otherwise.
+			current_freq_bucket = (int) log2f(i);
+		}
+		filterdata[i] = p_eq_settings->parametric_eq_vect[current_freq_bucket];
+		//printf("KDEBUG: Filterdata[%d] = %f\r\n", i, filterdata[i]);
+	}
+	for (int i = cur_num_fft_pts/2; i < cur_num_fft_pts; ++i)
+	{
+		filterdata[i] = filterdata[cur_num_fft_pts - i - 1];
+	}
+
+	for (int i = 0; i < (p_eq_settings->p_stft_settings)->num_fft_windows; ++i){
+		kenny_apply_filter(cur_num_fft_pts, filterdata, &KENNY_FFTDATA_MEM_PTR[i*cur_num_fft_pts]);
+	}
+}
+
+
+
+/******************************/
+// COMPRESSOR FUNCTIONS
+
+//void kenny_compressor_init(compressor_settings_t *compressor_settings)
+//{
+//	compressor_settings->ratio = 1.0;
+//	compressor_settings->threshold_energy = 50000;
+//	compressor_settings->bypass = 1;
+//}
+
+
+
+/******************************/
+// MISC:
+
+void kenny_update_num_fft_pts(eq_settings_t *p_eq_settings, stft_settings_t *p_stft_settings, int new_num_fft_pts) {
+	// Since the #FFT points can only be a power of 2, this can always be cast to an int.
+	// Minus one because the FFT will be symmetric
+	p_eq_settings->EQ_cur_num_freq_buckets = (int) log2f(new_num_fft_pts) - 1;
+    kenny_stft_update_window(p_stft_settings, new_num_fft_pts);
+}
+
+
+/******************************/
+// PLAYING/RECORDING
 
 void kenny_PlaybackAudioFromMem(const int* KENNY_AUDIO_MEM_PTR)
 {
@@ -245,7 +359,9 @@ void kenny_convertCplxToAudio(cplx_data_t* inval, int* outval, float *STFT_windo
 		 ++in_idx, out_idx += AUDIO_CHANNELS)
 	{
 		cur_cplx = inval[in_idx];
-		cur_re = cur_cplx.data_re;	// In testing, I find that ignoring the imaginary part is ok. But maybe it should be re + im.
+
+        // In testing, I find that ignoring the imaginary part is ok. But maybe it should be re + im.
+		cur_re = cur_cplx.data_re;
 		cur_re_int = kenny_convert_short_to_24bit(cur_re);
 
 		// Write to output channels (assume 2 channels)
@@ -267,40 +383,6 @@ void kenny_apply_filter(int num_fft_pts, float filter[num_fft_pts], cplx_data_t*
 }
 
 /*************************************/
-
-//void kenny_updateFFT_InputData(cplx_data_t* stim_buf, int* recorded_audio_buf)
-//{
-//	char c = '\0';
-//
-//	xil_printf("Which input data would you like to use?\n\r");
-//	xil_printf("0: Recorded Audio\n\r");
-//	xil_printf("1: Generated Values from Xilinx\n\r");
-//	xil_printf("2: Exit\n\r");
-//	while (1)
-//	{
-//		c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
-//		if (c == '0')
-//		{
-//			kenny_convertAudioToCplx(recorded_audio_buf, stim_buf, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
-//			break;
-//		}
-//		else if (c == '1')
-//		{
-//		    memcpy(stim_buf, sig_two_sine_waves, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
-//			break;
-//		}
-//		else if (c == '2')
-//		{
-//			break;
-//		}
-//		else
-//    	{
-//    		xil_printf("Invalid character. Please try again.\n\r");
-//    	}
-//	}
-//}
-
-
 int kenny_guessFrequencyOfData(fft_t* p_fft_inst)
 {
 	int num_pts_in_fft = fft_get_num_pts(p_fft_inst);

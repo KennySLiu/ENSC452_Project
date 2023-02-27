@@ -23,10 +23,11 @@ _UNDEF_STACK_SIZE = DEFINED(_UNDEF_STACK_SIZE) ? _UNDEF_STACK_SIZE : 1024;
 
 MEMORY
 {
-   ps7_ddr_0 : ORIGIN = 0x100000, LENGTH = 0x1FF00000
+   ps7_ddr_0 : ORIGIN = 0x100000, LENGTH = 0x10000000
    ps7_qspi_linear_0 : ORIGIN = 0xFC000000, LENGTH = 0x1000000
    ps7_ram_0 : ORIGIN = 0x0, LENGTH = 0x30000
    ps7_ram_1 : ORIGIN = 0xFFFF0000, LENGTH = 0xFE00
+   KENNY_HeapandStack  : ORIGIN = 0x10100000, LENGTH = 0x0fefffff
 }
 
 /* Specify the default entry point to the program */
@@ -255,7 +256,7 @@ _SDA2_BASE_ = __sdata2_start + ((__sbss2_end - __sdata2_start) / 2 );
    . += _HEAP_SIZE;
    _heap_end = .;
    HeapLimit = .;
-} > ps7_ddr_0
+} > KENNY_HeapandStack
 
 .stack (NOLOAD) : {
    . = ALIGN(16);
@@ -285,7 +286,7 @@ _SDA2_BASE_ = __sdata2_start + ((__sbss2_end - __sdata2_start) / 2 );
    . += _UNDEF_STACK_SIZE;
    . = ALIGN(16);
    __undef_stack = .;
-} > ps7_ddr_0
+} > KENNY_HeapandStack
 
 _end = .;
 }
