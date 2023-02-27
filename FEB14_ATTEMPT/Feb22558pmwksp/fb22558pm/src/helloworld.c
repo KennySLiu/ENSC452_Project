@@ -200,21 +200,30 @@ int main()
     	// FFT & FILTERING STUFF
     	else if (c == '7') // Run FFT
 		{
-    		int AUDIO_IDX_FACTOR = AUDIO_CHANNELS*cur_num_fft_pts/STFT_STRIDE_FACTOR;
-    		for (int fft_window_idx = 0; fft_window_idx < stft_settings.num_fft_windows; ++fft_window_idx){
-				kenny_convertAudioToCplx(&(KENNY_AUDIO_MEM_PTR[fft_window_idx*AUDIO_IDX_FACTOR]), input_buf, cur_num_fft_pts);
-				// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
-				memset(intermediate_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+    		//int AUDIO_IDX_FACTOR = AUDIO_CHANNELS*cur_num_fft_pts/STFT_STRIDE_FACTOR;
+    		//for (int fft_window_idx = 0; fft_window_idx < stft_settings.num_fft_windows; ++fft_window_idx){
+			//	kenny_convertAudioToCplx(&(KENNY_AUDIO_MEM_PTR[fft_window_idx*AUDIO_IDX_FACTOR]), input_buf, cur_num_fft_pts);
+			//	// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
+			//	memset(intermediate_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
 
-				status = fft(p_fft_inst_FWD, (cplx_data_t*)input_buf, (cplx_data_t*)intermediate_buf);
-				if (status != FFT_SUCCESS)
-				{
-					xil_printf("ERROR! FFT failed.\n\r");
-					return -1;
-				}
+			//	status = fft(p_fft_inst_FWD, (cplx_data_t*)input_buf, (cplx_data_t*)intermediate_buf);
+			//	if (status != FFT_SUCCESS)
+			//	{
+			//		xil_printf("ERROR! FFT failed.\n\r");
+			//		return -1;
+			//	}
 
-			    memcpy(&(KENNY_FFTDATA_MEM_PTR[fft_window_idx*cur_num_fft_pts]), intermediate_buf, sizeof(cplx_data_t)*cur_num_fft_pts);
-    		}
+			//    memcpy(&(KENNY_FFTDATA_MEM_PTR[fft_window_idx*cur_num_fft_pts]), intermediate_buf, sizeof(cplx_data_t)*cur_num_fft_pts);
+    		//}
+
+            kenny_stft_run_fwd_fft(
+                &stft_settings, 
+                p_fft_inst_FWD,
+                KENNY_AUDIO_MEM_PTR,
+                input_buf,
+                KENNY_FFTDATA_MEM_PTR,
+                intermediate_buf
+            );
 
 			xil_printf("FFT complete!\n\r\n\r");
 		}
@@ -254,29 +263,7 @@ int main()
 		}
     	else if (c == '9')		// Run audio system stuff (EQ and Compressor)
     	{
-//    		float filterdata[cur_num_fft_pts];
-//    		int current_freq_bucket = 0;
-//
-//    		for (int i = 0; i < cur_num_fft_pts/2; ++i)
-//    		{
-//    			// Floor of the log2 of the current index.
-//    			current_freq_bucket = (int) log2f(i + 1);
-//    			if (i == cur_num_fft_pts/2 - 1) {
-//    				// Special handling for the last index, which would overflow otherwise.
-//    				current_freq_bucket = (int) log2f(i);
-//    			}
-//    			filterdata[i] = parametric_eq_vect[current_freq_bucket];
-//    			//printf("KDEBUG: Filterdata[%d] = %f\r\n", i, filterdata[i]);
-//    		}
-//    		for (int i = cur_num_fft_pts/2; i < cur_num_fft_pts; ++i)
-//    		{
-//    			filterdata[i] = filterdata[cur_num_fft_pts - i - 1];
-//    		}
-//
-//    		for (int i = 0; i < stft_settings.num_fft_windows; ++i){
-//    			kenny_apply_filter(cur_num_fft_pts, filterdata, &KENNY_FFTDATA_MEM_PTR[i*cur_num_fft_pts]);
-//    		}
-    		kenny_eq_run(&eq_settings, cur_num_fft_pts, KENNY_FFTDATA_MEM_PTR);
+    		kenny_eq_run(&eq_settings, KENNY_FFTDATA_MEM_PTR);
     	}
     	/*******************************************************/
     	else if (c == ',')	// Debugging - print part of the FFT/Audio data.

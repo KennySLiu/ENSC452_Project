@@ -28,6 +28,7 @@ int EQ_cur_num_freq_buckets;
 typedef struct kenny_stft_settings
 {
     int num_fft_windows;
+    int num_fft_pts;
 	float STFT_window_func[FFT_MAX_NUM_PTS];
 } stft_settings_t;
 
@@ -60,12 +61,19 @@ void kenny_stft_convert_window_to_audiodata(
     cplx_data_t* inval, 
     int* outval, 
     size_t num_vals_to_cpy);
+void kenny_stft_run_fwd_fft(
+    stft_settings_t *p_stft_settings, 
+    fft_t* p_fft_inst_FWD,
+    int* inval,
+    cplx_data_t* input_buf,
+    cplx_data_t* outval,
+    cplx_data_t* output_buf);
 
 void kenny_eq_init(eq_settings_t *p_eq_settings, stft_settings_t *p_stft_settings);
 void kenny_eq_print(eq_settings_t *eq_settings);
 void kenny_eq_update_buckets(eq_settings_t *eq_settings, int new_num_fft_pts);
 void kenny_eq_update_interactive(eq_settings_t *eq_settings);
-void kenny_eq_run(eq_settings_t *eq_settings, int cur_num_fft_pts, cplx_data_t KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ]);
+void kenny_eq_run(eq_settings_t *eq_settings, cplx_data_t KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ]);
 
 void kenny_update_num_fft_pts(eq_settings_t *p_eq_settings, stft_settings_t *p_stft_settings, int new_num_fft_pts);
 

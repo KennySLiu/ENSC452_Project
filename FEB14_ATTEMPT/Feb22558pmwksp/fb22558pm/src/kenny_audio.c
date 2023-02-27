@@ -34,11 +34,13 @@ void audio_stream(){
 // STFT SETTINGS
 void kenny_stft_init(stft_settings_t *p_stft_settings)
 {
+    p_stft_settings->num_fft_pts = INIT_NUM_FFT_PTS;
     kenny_stft_update_window(p_stft_settings, INIT_NUM_FFT_PTS);
 }
 
 void kenny_stft_update_window(stft_settings_t *p_stft_settings, int new_num_fft_pts)
 {
+    p_stft_settings->num_fft_pts = new_num_fft_pts;
 	p_stft_settings->num_fft_windows = 
         STFT_STRIDE_FACTOR * KENNY_AUDIO_MAX_SAMPLES/(new_num_fft_pts*AUDIO_CHANNELS);
 
@@ -58,6 +60,35 @@ void kenny_stft_convert_window_to_audiodata(
     size_t num_vals_to_cpy
 ) {
     kenny_convertCplxToAudio(inval, outval, p_stft_settings->STFT_window_func, num_vals_to_cpy);
+}
+
+void kenny_stft_run_fwd_fft(
+    stft_settings_t *p_stft_settings, 
+    fft_t* p_fft_inst_FWD,
+    int* inval,
+    cplx_data_t* input_buf,
+    cplx_data_t* outval,
+    cplx_data_t* output_buf
+) {
+	int status = 0;
+    int num_fft_pts = p_stft_settings->num_fft_pts;
+    int num_fft_windows = p_stft_settings->num_fft_windows;
+    int AUDIO_IDX_FACTOR = AUDIO_CHANNELS*num_fft_pts/STFT_STRIDE_FACTOR;
+
+    for (int fft_window_idx = 0; fft_window_idx < num_fft_windows; ++fft_window_idx){
+		kenny_convertAudioToCplx(&(inval[fft_window_idx*AUDIO_IDX_FACTOR]), input_buf, num_fft_pts);
+		// Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
+		memset(output_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+
+		status = fft(p_fft_inst_FWD, (cplx_data_t*)input_buf, (cplx_data_t*)output_buf);
+		if (status != FFT_SUCCESS)
+		{
+			xil_printf("ERROR! FFT failed.\n\r");
+			return -1;
+		}
+
+	    memcpy(&(outval[fft_window_idx*num_fft_pts]), output_buf, sizeof(cplx_data_t)*num_fft_pts);
+    }
 }
 
 
@@ -173,13 +204,13 @@ void kenny_eq_update_interactive(eq_settings_t *p_eq_settings)
 	}
 }
 void kenny_eq_run(eq_settings_t *p_eq_settings, 
-                    int cur_num_fft_pts, 
                     cplx_data_t KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ])
 {
 	if (p_eq_settings->bypass) {
 		return;
 	}
 
+    int cur_num_fft_pts = (p_eq_settings->p_stft_settings)->num_fft_pts;
 	float filterdata[cur_num_fft_pts];
 	int current_freq_bucket = 0;
 
