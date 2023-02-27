@@ -53,14 +53,14 @@ void kenny_stft_update_window(stft_settings_t *p_stft_settings, int new_num_fft_
     }
 }
 
-void kenny_stft_convert_window_to_audiodata(
-    stft_settings_t *p_stft_settings, 
-    cplx_data_t* inval, 
-    int* outval, 
-    size_t num_vals_to_cpy
-) {
-    kenny_convertCplxToAudio(inval, outval, p_stft_settings->STFT_window_func, num_vals_to_cpy);
-}
+//void kenny_stft_convert_window_to_audiodata(
+//    stft_settings_t *p_stft_settings, 
+//    cplx_data_t* inval, 
+//    int* outval, 
+//    size_t num_vals_to_cpy
+//) {
+//    kenny_convertCplxToAudio(inval, outval, p_stft_settings->STFT_window_func, num_vals_to_cpy);
+//}
 
 void kenny_stft_run_fwd(
     stft_settings_t *p_stft_settings, 
@@ -83,8 +83,8 @@ void kenny_stft_run_fwd(
 		status = fft(p_fft_inst_FWD, (cplx_data_t*)input_buf, (cplx_data_t*)output_buf);
 		if (status != FFT_SUCCESS)
 		{
-			xil_printf("ERROR! FFT failed.\n\r");
-			return -1;
+			xil_printf("\r\n\r\n !!!!!!!!!!!!!!ERROR!!!!!!!!!!!!! FFT failed.\n\r\n\r\n\r");
+			return;
 		}
 
 	    memcpy(&(KENNY_FFTDATA_MEM_PTR[fft_window_idx*num_fft_pts]), output_buf, sizeof(cplx_data_t)*num_fft_pts);
@@ -115,13 +115,14 @@ void kenny_stft_run_inv(
 		status = fft(p_fft_inst_INV, (cplx_data_t*)input_buf, (cplx_data_t*)output_buf);
 		if (status != FFT_SUCCESS)
 		{
-			xil_printf("ERROR! Inverse FFT failed.\n\r");
-			return -1;
+			xil_printf("\r\n\r\n !!!!!!!!!!!!!!ERROR!!!!!!!!!!!!! Inverse FFT failed.\n\r\n\r\n\r");
+			return;
 		}
 
-        kenny_stft_convert_window_to_audiodata(
-            p_stft_settings, output_buf, 
+        kenny_convertCplxToAudio(
+            output_buf,
             &(KENNY_AUDIO_MEM_PTR[fft_window_idx*AUDIO_IDX_FACTOR]),
+            p_stft_settings->STFT_window_func, 
             num_fft_pts
         );
     }
@@ -281,12 +282,12 @@ void kenny_eq_run(eq_settings_t *p_eq_settings,
 /******************************/
 // COMPRESSOR FUNCTIONS
 
-//void kenny_compressor_init(compressor_settings_t *compressor_settings)
-//{
-//	compressor_settings->ratio = 1.0;
-//	compressor_settings->threshold_energy = 50000;
-//	compressor_settings->bypass = 1;
-//}
+void kenny_compressor_init(compressor_settings_t *compressor_settings)
+{
+	compressor_settings->ratio = 1.0;
+	compressor_settings->threshold_energy = 50000;
+	compressor_settings->bypass = 0;
+}
 
 
 

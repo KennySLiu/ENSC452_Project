@@ -57,11 +57,6 @@ void audio_stream();
 /******************/
 void kenny_stft_init(stft_settings_t *p_stft_settings);
 void kenny_stft_update_window(stft_settings_t *p_stft_settings, int new_num_fft_pts);
-void kenny_stft_convert_window_to_audiodata(
-    stft_settings_t *p_stft_settings, 
-    cplx_data_t* inval, 
-    int* outval, 
-    size_t num_vals_to_cpy);
 
 void kenny_stft_run_fwd(
     stft_settings_t *p_stft_settings, 
@@ -85,6 +80,9 @@ void kenny_eq_print(eq_settings_t *eq_settings);
 void kenny_eq_update_buckets(eq_settings_t *eq_settings, int new_num_fft_pts);
 void kenny_eq_update_interactive(eq_settings_t *eq_settings);
 void kenny_eq_run(eq_settings_t *eq_settings, cplx_data_t KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ]);
+
+/******************/
+void kenny_compressor_init(compressor_settings_t *compressor_settings);
 
 /******************/
 void kenny_update_num_fft_pts(eq_settings_t *p_eq_settings, stft_settings_t *p_stft_settings, int new_num_fft_pts);

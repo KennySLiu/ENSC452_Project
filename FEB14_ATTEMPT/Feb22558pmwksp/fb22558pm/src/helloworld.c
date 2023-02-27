@@ -103,7 +103,7 @@ int main()
 
 	kenny_stft_init(&stft_settings);
 	kenny_eq_init(&eq_settings, &stft_settings);
-	//kenny_compressor_init(&compressor_settings);
+	kenny_compressor_init(&compressor_settings);
 
 	/***********************/
 
