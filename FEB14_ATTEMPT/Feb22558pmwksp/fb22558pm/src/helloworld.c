@@ -64,8 +64,12 @@ int main()
 	XScuGic intc_inst;
 
 	// Local variables
-	int 		* 	KENNY_AUDIO_MEM_PTR = malloc(sizeof(int) * (KENNY_AUDIO_MAX_SAMPLES));
-	cplx_data_t * 	KENNY_FFTDATA_MEM_PTR = malloc(sizeof(cplx_data_t) * KENNY_FFTDATA_SZ);
+	//int 		* 	KENNY_AUDIO_IN_MEM_PTR = malloc(sizeof(int) * (KENNY_AUDIO_MAX_SAMPLES));
+	//cplx_data_t * 	KENNY_FFTDATA_MEM_PTR = malloc(sizeof(cplx_data_t) * KENNY_FFTDATA_SZ);
+	//int 		* 	KENNY_AUDIO_OUT_MEM_PTR = malloc(sizeof(int) * (KENNY_AUDIO_MAX_SAMPLES));
+	int 		KENNY_AUDIO_IN_MEM_PTR  [KENNY_AUDIO_MAX_SAMPLES];
+	cplx_data_t KENNY_FFTDATA_MEM_PTR   [KENNY_FFTDATA_SZ];
+	int 		KENNY_AUDIO_OUT_MEM_PTR [KENNY_AUDIO_MAX_SAMPLES];
 
 	char         c;
 	fft_t*       p_fft_inst_FWD;
@@ -78,11 +82,14 @@ int main()
     init_platform();
 	xil_printf("\r\n\r\n\r\n\r\n\r\n\r\n\r\n");
 	xil_printf("Entering Main \r\n");
-	xil_printf("AUDIO MEM PTR = %x to %x\r\n",
-				KENNY_AUDIO_MEM_PTR, &(KENNY_AUDIO_MEM_PTR[KENNY_AUDIO_MAX_SAMPLES-1])
+	xil_printf("AUDIO IN MEM PTR = %x to %x\r\n",
+				KENNY_AUDIO_IN_MEM_PTR, &(KENNY_AUDIO_IN_MEM_PTR[KENNY_AUDIO_MAX_SAMPLES-1])
 				);
 	xil_printf("FFT PTR = %x to %x\r\n",
 				KENNY_FFTDATA_MEM_PTR, &(KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ-1])
+				);
+	xil_printf("AUDIO OUT MEM PTR = %x to %x\r\n",
+				KENNY_AUDIO_OUT_MEM_PTR, &(KENNY_AUDIO_OUT_MEM_PTR[KENNY_AUDIO_MAX_SAMPLES-1])
 				);
 
 	//Configure the IIC data structure
@@ -203,7 +210,7 @@ int main()
             kenny_stft_run_fwd(
                 &stft_settings, 
                 p_fft_inst_FWD,
-                KENNY_AUDIO_MEM_PTR,
+                KENNY_AUDIO_IN_MEM_PTR,
                 input_buf,
                 KENNY_FFTDATA_MEM_PTR,
                 intermediate_buf
@@ -218,7 +225,7 @@ int main()
                 p_fft_inst_INV,
                 KENNY_FFTDATA_MEM_PTR,
                 intermediate_buf,
-                KENNY_AUDIO_MEM_PTR,
+                KENNY_AUDIO_OUT_MEM_PTR,
                 result_buf
             );
 
@@ -226,6 +233,7 @@ int main()
 		}
     	else if (c == '9')		// Run audio system stuff (EQ and Compressor)
     	{
+			xil_printf("Press 'd' to enable debug prints, or anything else to disable debug prints.\n\r");
     	    c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
 
             if (c == 'd') {
@@ -264,7 +272,7 @@ int main()
 				for (int jj = 0; jj < cur_num_fft_pts; ++jj)
 				{
 					idx = i*cur_num_fft_pts + jj;
-					tmp = KENNY_AUDIO_MEM_PTR[idx];
+					tmp = KENNY_AUDIO_OUT_MEM_PTR[idx];
 
 					xil_printf("KDEBUG: audiodata[%d] = %d\n\r", idx, tmp);
 				}
@@ -297,13 +305,20 @@ int main()
 		{
     		xil_printf("RECORDING AUDIO\r\n");
     		xil_printf("Press 'q' to stop recording early and return to the main menu\r\n");
-    		kenny_RecordAudioIntoMem(KENNY_AUDIO_MEM_PTR);
+    		kenny_RecordAudioIntoMem(KENNY_AUDIO_IN_MEM_PTR);
 		}
     	else if (c == 'p')
     	{
+			xil_printf("Press 'o' to play the ORIGINAL (nonprocessed) sound, or anything else to play processed sound.\n\r");
+    	    c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+
 			xil_printf("PLAYING BACK RECORDED AUDIO\r\n");
 			xil_printf("Press 'q' to stop playback early and return to the main menu\r\n");
-			kenny_PlaybackAudioFromMem(KENNY_AUDIO_MEM_PTR);
+            if (c == 'o') {
+			    kenny_PlaybackAudioFromMem(KENNY_AUDIO_IN_MEM_PTR);
+            } else {
+			    kenny_PlaybackAudioFromMem(KENNY_AUDIO_OUT_MEM_PTR);
+            }
     	}
     	else if (c == 'd')
     	{
@@ -336,8 +351,9 @@ int main()
     free(input_buf);
     free(intermediate_buf);
     free(result_buf);
-    free(KENNY_FFTDATA_MEM_PTR);
-    free(KENNY_AUDIO_MEM_PTR);
+    //free(KENNY_FFTDATA_MEM_PTR);
+    //free(KENNY_AUDIO_IN_MEM_PTR);
+    //free(KENNY_AUDIO_OUT_MEM_PTR);
     fft_destroy(p_fft_inst_FWD);
     fft_destroy(p_fft_inst_INV);
 

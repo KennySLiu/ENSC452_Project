@@ -350,7 +350,9 @@ void kenny_compressor_run(
         } else {
             multiplier = 1.0;
         }
-        printf("Compressor multiplier = %lf\r\n", multiplier);
+        if (debug_mode){
+            printf("Compressor multiplier = %lf\r\n", multiplier);
+        }
 
         for (int pt_idx = 0; pt_idx < num_fft_pts; ++pt_idx) {
             KENNY_FFTDATA_MEM_PTR[win_idx * num_fft_pts + pt_idx].data_re *= multiplier;
