@@ -80,7 +80,7 @@ void kenny_eq_init(eq_settings_t *p_eq_settings, stft_settings_t *p_stft_setting
 void kenny_eq_print(eq_settings_t *eq_settings);
 void kenny_eq_update_buckets(eq_settings_t *eq_settings, int new_num_fft_pts);
 void kenny_eq_update_interactive(eq_settings_t *eq_settings);
-void kenny_eq_run(eq_settings_t *eq_settings, cplx_data_t KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ]);
+void kenny_eq_run(eq_settings_t *eq_settings, cplx_data_t KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ], int debug_mode);
 
 /******************/
 void kenny_compressor_init(
@@ -88,7 +88,7 @@ void kenny_compressor_init(
                 stft_settings_t *p_stft_settings);
 void kenny_compressor_update_interactive(compressor_settings_t *p_compressor_settings);
 void kenny_compressor_print(compressor_settings_t *p_compressor_settings);
-void kenny_compressor_run(compressor_settings_t *p_compressor_settings, cplx_data_t KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ]);
+void kenny_compressor_run(compressor_settings_t *p_compressor_settings, cplx_data_t KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ], int debug_mode);
 
 /******************/
 void kenny_update_num_fft_pts(eq_settings_t *p_eq_settings, stft_settings_t *p_stft_settings, int new_num_fft_pts);

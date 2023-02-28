@@ -244,8 +244,9 @@ void kenny_eq_update_interactive(eq_settings_t *p_eq_settings)
 	}
 }
 void kenny_eq_run(eq_settings_t *p_eq_settings, 
-                    cplx_data_t KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ])
-{
+                    cplx_data_t KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ],
+                    int debug_mode
+) {
 	if (p_eq_settings->bypass) {
 		return;
 	}
@@ -263,7 +264,9 @@ void kenny_eq_run(eq_settings_t *p_eq_settings,
 			current_freq_bucket = (int) log2f(i);
 		}
 		filterdata[i] = p_eq_settings->parametric_eq_vect[current_freq_bucket];
-		//printf("KDEBUG: Filterdata[%d] = %f\r\n", i, filterdata[i]);
+        if (debug_mode) {
+		    printf("KDEBUG: Filterdata[%d] = %f\r\n", i, filterdata[i]);
+        }
 	}
 	for (int i = cur_num_fft_pts/2; i < cur_num_fft_pts; ++i)
 	{
@@ -284,8 +287,8 @@ void kenny_compressor_init(
                 compressor_settings_t *p_compressor_settings,
                 stft_settings_t *p_stft_settings
 ) {
-	p_compressor_settings->ratio = 1.0;
-	p_compressor_settings->threshold_energy = 10000;
+	p_compressor_settings->ratio = 2.0;
+	p_compressor_settings->threshold_energy = 500;
 	p_compressor_settings->bypass = 0;
     p_compressor_settings->p_stft_settings = p_stft_settings;
 }
@@ -307,7 +310,8 @@ void kenny_compressor_print(compressor_settings_t *p_compressor_settings) {
 
 void kenny_compressor_run(
             compressor_settings_t *p_compressor_settings,
-            cplx_data_t KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ]
+            cplx_data_t KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ],
+            int debug_mode
 ) {
     //if (p_compressor_settings->bypass) {
     //    return;
@@ -319,28 +323,48 @@ void kenny_compressor_run(
     float ratio = p_compressor_settings->ratio;
 
     cplx_data_t cur_fft_pt;
-    unsigned int window_energy = 0;
-    float multiplier = 0;
+    long long int avg_window_energy = 0;
+    double multiplier = 0;
 
     for (int win_idx = 0; win_idx < num_fft_windows; ++win_idx)
     {
-        window_energy = 0;
+        avg_window_energy = 0;
         for (int pt_idx = 0; pt_idx < num_fft_pts; ++pt_idx) {
             cur_fft_pt = KENNY_FFTDATA_MEM_PTR[win_idx * num_fft_pts + pt_idx];
-            window_energy += kenny_cplx_get_magnitude_squared(cur_fft_pt);
+            avg_window_energy += kenny_cplx_get_magnitude_squared(cur_fft_pt);
         }
 
-        printf("The %d'th window energy = %d\r\n", win_idx, window_energy);
+        avg_window_energy = avg_window_energy/num_fft_pts;
 
-        if (window_energy > p_compressor_settings->threshold_energy) {
-            multiplier = (threshold + (window_energy - threshold)/ratio) / window_energy;
+        if (debug_mode){
+            printf("BEFORE COMPRESSION: The %d'th window average energy = %lld\r\n", win_idx, avg_window_energy);
+        }
+
+        if (avg_window_energy > p_compressor_settings->threshold_energy) {
+            // The RAW multiplier, for the total energy:
+            multiplier = (threshold + (avg_window_energy - threshold)/ratio) / avg_window_energy;
+
+            // But we're multiplying individual values... so we need to sqrt of the multiplier to be effective.
+            multiplier = sqrt(multiplier);
+
         } else {
             multiplier = 1.0;
         }
+        printf("Compressor multiplier = %lf\r\n", multiplier);
 
         for (int pt_idx = 0; pt_idx < num_fft_pts; ++pt_idx) {
             KENNY_FFTDATA_MEM_PTR[win_idx * num_fft_pts + pt_idx].data_re *= multiplier;
             KENNY_FFTDATA_MEM_PTR[win_idx * num_fft_pts + pt_idx].data_im *= multiplier;
+        }
+
+        if (debug_mode){
+            for (int pt_idx = 0; pt_idx < num_fft_pts; ++pt_idx) {
+                cur_fft_pt = KENNY_FFTDATA_MEM_PTR[win_idx * num_fft_pts + pt_idx];
+                avg_window_energy += kenny_cplx_get_magnitude_squared(cur_fft_pt);
+            }
+            avg_window_energy = avg_window_energy/num_fft_pts;
+
+            printf("AFTER COMPRESSION: The %d'th window average energy = %lld\r\n", win_idx, avg_window_energy);
         }
     }
 }

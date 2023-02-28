@@ -226,8 +226,15 @@ int main()
 		}
     	else if (c == '9')		// Run audio system stuff (EQ and Compressor)
     	{
-    		kenny_eq_run(&eq_settings, KENNY_FFTDATA_MEM_PTR);
-    		kenny_compressor_run(&compressor_settings, KENNY_FFTDATA_MEM_PTR);
+    	    c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+
+            if (c == 'd') {
+    		    kenny_eq_run(&eq_settings, KENNY_FFTDATA_MEM_PTR, 1);
+    		    kenny_compressor_run(&compressor_settings, KENNY_FFTDATA_MEM_PTR, 1);
+            } else {
+    		    kenny_eq_run(&eq_settings, KENNY_FFTDATA_MEM_PTR, 0);
+    		    kenny_compressor_run(&compressor_settings, KENNY_FFTDATA_MEM_PTR, 0);
+            }
     	}
     	/*******************************************************/
     	else if (c == ',')	// Debugging - print part of the FFT/Audio data.
@@ -267,19 +274,19 @@ int main()
         	}
     	}
     	/*******************************************************/
-    	//else if (c == '3')
-    	//{
-    	//	fft_set_stim_buf(p_fft_inst_FWD, input_buf);
-    	//	fft_print_stim_buf(p_fft_inst_FWD);
-    	//}
-    	//else if (c == '4')
-    	//{
-    	//	fft_print_result_buf(p_fft_inst_FWD, -1);
-    	//}
-    	//else if (c == '5')
-    	//{
-    	//	fft_print_result_buf(p_fft_inst_INV, -1);
-    	//}
+    	else if (c == '4')
+    	{
+    		fft_set_stim_buf(p_fft_inst_FWD, input_buf);
+    		fft_print_stim_buf(p_fft_inst_FWD);
+    	}
+    	else if (c == '5')
+    	{
+    		fft_print_result_buf(p_fft_inst_FWD, -1);
+    	}
+    	else if (c == '6')
+    	{
+    		fft_print_result_buf(p_fft_inst_INV, -1);
+    	}
     	else if (c == 's')
     	{
 			xil_printf("STREAMING AUDIO\r\n");
