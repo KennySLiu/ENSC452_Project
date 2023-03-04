@@ -7,24 +7,23 @@
 		  // This is the input clock rate / 48000.
 		  // Default input clock = 100 MHz
         parameter integer K_CLOCK_DIVISOR       =  2083,
+
+        // data width that we read from the audio ctrler
+		parameter integer TDATA_WIDTH	= 32,
+
 		// User parameters ends
-		// Do not modify the parameters beyond this line
 
 
 		// Parameters of Axi Master Bus Interface M00_AXIS
-		parameter integer C_M00_AXIS_TDATA_WIDTH	= 32,
-		parameter integer C_M00_AXIS_START_COUNT	= 32,
+		parameter integer C_M00_AXIS_START_COUNT	= 1000,
 
 		// Parameters of Axi Master Bus Interface M00_AXI
-		parameter  C_M00_AXI_START_DATA_VALUE	= 32'hAA000000,
 		parameter  C_M00_AXI_TARGET_SLAVE_BASE_ADDR	= 32'h40000000,
-		parameter integer C_M00_AXI_ADDR_WIDTH	= 32,
-		parameter integer C_M00_AXI_DATA_WIDTH	= 32,
-		parameter integer C_M00_AXI_TRANSACTIONS_NUM	= 4
+		parameter integer C_M00_AXI_ADDR_WIDTH	= 32
 	)
 	(
 		// Users to add ports here
-        output wire [C_M00_AXIS_TDATA_WIDTH-1 : 0] kdebug_read_data_o,
+        output wire [TDATA_WIDTH-1 : 0] kdebug_read_data_o,
 		// User ports ends
 		// Do not modify the ports beyond this line
 
@@ -33,23 +32,23 @@
 		input wire  m00_axis_aclk,
 		input wire  m00_axis_aresetn,
 		output wire  m00_axis_tvalid,
-		output wire [C_M00_AXIS_TDATA_WIDTH-1 : 0] m00_axis_tdata,
-		output wire [(C_M00_AXIS_TDATA_WIDTH/8)-1 : 0] m00_axis_tstrb,
+		output wire [TDATA_WIDTH-1 : 0] m00_axis_tdata,
+		output wire [(TDATA_WIDTH/8)-1 : 0] m00_axis_tstrb,
 		output wire  m00_axis_tlast,
 		input wire  m00_axis_tready,
 
 		// Ports of Axi Master Bus Interface M00_AXI
-		input wire  m00_axi_init_axi_txn,
-		output wire  m00_axi_error,
-		output wire  m00_axi_txn_done,
+		//input wire  m00_axi_init_axi_txn,
+		//output wire  m00_axi_error,
+		//output wire  m00_axi_txn_done,
 		input wire  m00_axi_aclk,
 		input wire  m00_axi_aresetn,
 		output wire [C_M00_AXI_ADDR_WIDTH-1 : 0] m00_axi_awaddr,
 		output wire [2 : 0] m00_axi_awprot,
 		output wire  m00_axi_awvalid,
 		input wire  m00_axi_awready,
-		output wire [C_M00_AXI_DATA_WIDTH-1 : 0] m00_axi_wdata,
-		output wire [C_M00_AXI_DATA_WIDTH/8-1 : 0] m00_axi_wstrb,
+		output wire [TDATA_WIDTH-1 : 0] m00_axi_wdata,
+		output wire [TDATA_WIDTH/8-1 : 0] m00_axi_wstrb,
 		output wire  m00_axi_wvalid,
 		input wire  m00_axi_wready,
 		input wire [1 : 0] m00_axi_bresp,
@@ -59,16 +58,24 @@
 		output wire [2 : 0] m00_axi_arprot,
 		output wire  m00_axi_arvalid,
 		input wire  m00_axi_arready,
-		input wire [C_M00_AXI_DATA_WIDTH-1 : 0] m00_axi_rdata,
+		input wire [TDATA_WIDTH-1 : 0] m00_axi_rdata,
 		input wire [1 : 0] m00_axi_rresp,
 		input wire  m00_axi_rvalid,
 		output wire  m00_axi_rready
 	);
+    wire  init_txn;
+    wire  k_m00_axi_error;
+    wire  k_m00_axi_txn_done;
+    wire [TDATA_WIDTH-1 : 0] k_read_data;
+
+
 // Instantiation of Axi Bus Interface M00_AXIS
 	k_audio_to_stream_v1_0_M00_AXIS # (
-		.C_M_AXIS_TDATA_WIDTH(C_M00_AXIS_TDATA_WIDTH),
+		.C_M_AXIS_TDATA_WIDTH(TDATA_WIDTH),
 		.C_M_START_COUNT(C_M00_AXIS_START_COUNT)
 	) k_audio_to_stream_v1_0_M00_AXIS_inst (
+		.INIT_AXIS_TXN(init_txn),
+		.DATA_TO_SEND(k_read_data),
 		.M_AXIS_ACLK(m00_axis_aclk),
 		.M_AXIS_ARESETN(m00_axis_aresetn),
 		.M_AXIS_TVALID(m00_axis_tvalid),
@@ -80,15 +87,14 @@
 
 // Instantiation of Axi Bus Interface M00_AXI
 	k_audio_to_stream_v1_0_M00_AXI # (
-		.C_M_START_DATA_VALUE(C_M00_AXI_START_DATA_VALUE),
 		.C_M_TARGET_SLAVE_BASE_ADDR(C_M00_AXI_TARGET_SLAVE_BASE_ADDR),
 		.C_M_AXI_ADDR_WIDTH(C_M00_AXI_ADDR_WIDTH),
-		.C_M_AXI_DATA_WIDTH(C_M00_AXI_DATA_WIDTH),
-		.C_M_TRANSACTIONS_NUM(C_M00_AXI_TRANSACTIONS_NUM)
+		.C_M_AXI_DATA_WIDTH(TDATA_WIDTH)
 	) k_audio_to_stream_v1_0_M00_AXI_inst (
-		.INIT_AXI_TXN(m00_axi_init_axi_txn),
-		.ERROR(m00_axi_error),
-		.TXN_DONE(m00_axi_txn_done),
+		.INIT_AXI_TXN(init_txn),
+		.READ_DATA(k_read_data),
+		.ERROR(k_m00_axi_error),
+		.TXN_DONE(k_m00_axi_txn_done),
 		.M_AXI_ACLK(m00_axi_aclk),
 		.M_AXI_ARESETN(m00_axi_aresetn),
 		.M_AXI_AWADDR(m00_axi_awaddr),
@@ -115,14 +121,15 @@
 	// Add user logic here
     // function called clogb2 that returns an integer which has the
 	// value of the ceiling of the log base 2.
-	function integer clogb2 (input integer bit_depth);
-	  begin
-	    for(clogb2=0; bit_depth>0; clogb2=clogb2+1)
-	      bit_depth = bit_depth >> 1;
-	  end
-	endfunction
+	//function integer clogb2 (input integer bit_depth);
+	//  begin
+	//    for(clogb2=0; bit_depth>0; clogb2=clogb2+1)
+	//      bit_depth = bit_depth >> 1;
+	//  end
+	//endfunction
     //localparam integer CLK_DIVIDER_BITS= clogb2(K_CLOCK_DIVISOR-1);
 
+    // 24 bits is big enough.
     reg [24 : 0] clk_divider_ctr;
     reg audio_clk;
 
@@ -132,35 +139,12 @@
         clk_divider_ctr <= clk_divider_ctr + 24'd1;
         if (clk_divider_ctr >= (K_CLOCK_DIVISOR-1))
            clk_divider_ctr <= 24'd0;
-        audio_clk <= (clk_divider_ctr < K_CLOCK_DIVISOR/2)?1'b1:1'b0;
+        audio_clk <= (clk_divider_ctr < K_CLOCK_DIVISOR/2) ? 1'b1 : 1'b0;
     end
 
+    // Tell the AXI master to read every time the audio clock ticks
+    assign init_txn = audio_clk;
 
-    // Read from master
-    // AXI register poller
-    reg [31:0] axi_reg_data;
-    reg awvalid
-
-    always @(posedge m00_axi_aclk) begin
-        // Initiate read transaction on AXI Master interface
-        m00_axi_awvalid <= 1;
-        m00_axi_awaddr <= axi_reg_read_addr;
-
-        // Wait for read transaction to complete
-        if (axi_read_done) begin
-            axi_reg_data <= axi_read_data;
-        end
-
-        // Format data into AXI Stream packet and output on AXI Stream interface
-        if (axi_stream_ready && axi_stream_valid) begin
-            axi_stream_data <= axi_reg_data;
-            axi_stream_tvalid <= 1;
-        end else begin
-            axi_stream_tvalid <= 0;
-        end
-    end
-
-    assign m00_axi_awprot = 2'b01;
 
 
 	// User logic ends
