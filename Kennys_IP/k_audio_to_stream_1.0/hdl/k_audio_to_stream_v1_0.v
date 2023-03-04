@@ -65,7 +65,7 @@
 		output wire  m00_axi_rready
 	);
 // Instantiation of Axi Bus Interface M00_AXIS
-	k_audio_to_stream_v1_0_M00_AXIS # ( 
+	k_audio_to_stream_v1_0_M00_AXIS # (
 		.C_M_AXIS_TDATA_WIDTH(C_M00_AXIS_TDATA_WIDTH),
 		.C_M_START_COUNT(C_M00_AXIS_START_COUNT)
 	) k_audio_to_stream_v1_0_M00_AXIS_inst (
@@ -79,7 +79,7 @@
 	);
 
 // Instantiation of Axi Bus Interface M00_AXI
-	k_audio_to_stream_v1_0_M00_AXI # ( 
+	k_audio_to_stream_v1_0_M00_AXI # (
 		.C_M_START_DATA_VALUE(C_M00_AXI_START_DATA_VALUE),
 		.C_M_TARGET_SLAVE_BASE_ADDR(C_M00_AXI_TARGET_SLAVE_BASE_ADDR),
 		.C_M_AXI_ADDR_WIDTH(C_M00_AXI_ADDR_WIDTH),
@@ -113,19 +113,19 @@
 	);
 
 	// Add user logic here
-    // function called clogb2 that returns an integer which has the                      
-	// value of the ceiling of the log base 2.                                           
-	function integer clogb2 (input integer bit_depth);                                   
-	  begin                                                                              
-	    for(clogb2=0; bit_depth>0; clogb2=clogb2+1)                                      
-	      bit_depth = bit_depth >> 1;                                                    
-	  end                                                                                
-	endfunction                                                                          
+    // function called clogb2 that returns an integer which has the
+	// value of the ceiling of the log base 2.
+	function integer clogb2 (input integer bit_depth);
+	  begin
+	    for(clogb2=0; bit_depth>0; clogb2=clogb2+1)
+	      bit_depth = bit_depth >> 1;
+	  end
+	endfunction
     //localparam integer CLK_DIVIDER_BITS= clogb2(K_CLOCK_DIVISOR-1);
-    
+
     reg [24 : 0] clk_divider_ctr;
     reg audio_clk;
-    
+
     // Clock divider:
     always @(posedge m00_axi_aclk)
     begin
@@ -140,7 +140,7 @@
     // AXI register poller
     reg [31:0] axi_reg_data;
     reg awvalid
-    
+
     always @(posedge m00_axi_aclk) begin
         // Initiate read transaction on AXI Master interface
         m00_axi_awvalid <= 1;
@@ -150,7 +150,7 @@
         if (axi_read_done) begin
             axi_reg_data <= axi_read_data;
         end
-    
+
         // Format data into AXI Stream packet and output on AXI Stream interface
         if (axi_stream_ready && axi_stream_valid) begin
             axi_stream_data <= axi_reg_data;
@@ -159,10 +159,10 @@
             axi_stream_tvalid <= 0;
         end
     end
-    
+
     assign m00_axi_awprot = 2'b01;
-        
-    
+
+
 	// User logic ends
 
 	endmodule
