@@ -1,7 +1,7 @@
 
 `timescale 1 ns / 1 ps
 
-	module k_audio_to_stream_v1_0 #
+	module k_aud2strm_v1_0 #
 	(
 		// Users to add parameters here
 		  // This is the input clock rate / 48000.
@@ -70,10 +70,10 @@
 
 
 // Instantiation of Axi Bus Interface M00_AXIS
-	k_audio_to_stream_v1_0_M00_AXIS # (
+	k_aud2strm_v1_0_M00_AXIS # (
 		.C_M_AXIS_TDATA_WIDTH(TDATA_WIDTH),
 		.C_M_START_COUNT(C_M00_AXIS_START_COUNT)
-	) k_audio_to_stream_v1_0_M00_AXIS_inst (
+	) k_aud2strm_v1_0_M00_AXIS_inst (
 		.INIT_AXIS_TXN(init_txn),
 		.DATA_TO_SEND(k_read_data),
 		.M_AXIS_ACLK(m00_axis_aclk),
@@ -86,11 +86,11 @@
 	);
 
 // Instantiation of Axi Bus Interface M00_AXI
-	k_audio_to_stream_v1_0_M00_AXI # (
+	k_aud2strm_v1_0_M00_AXI # (
 		.C_M_TARGET_SLAVE_BASE_ADDR(C_M00_AXI_TARGET_SLAVE_BASE_ADDR),
 		.C_M_AXI_ADDR_WIDTH(C_M00_AXI_ADDR_WIDTH),
 		.C_M_AXI_DATA_WIDTH(TDATA_WIDTH)
-	) k_audio_to_stream_v1_0_M00_AXI_inst (
+	) k_aud2strm_v1_0_M00_AXI_inst (
 		.INIT_AXI_TXN(init_txn),
 		.READ_DATA(k_read_data),
 		.ERROR(k_m00_axi_error),

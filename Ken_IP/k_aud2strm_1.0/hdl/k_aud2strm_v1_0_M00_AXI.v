@@ -1,7 +1,7 @@
 
 `timescale 1 ns / 1 ps
 
-	module k_audio_to_stream_v1_0_M00_AXI #
+	module k_aud2strm_v1_0_M00_AXI #
 	(
 		// Users to add parameters here
         parameter K_AUDIO_REGISTER_TO_READ = 0,
