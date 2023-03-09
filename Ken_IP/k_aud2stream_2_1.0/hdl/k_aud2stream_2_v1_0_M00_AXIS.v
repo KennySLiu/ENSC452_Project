@@ -38,7 +38,7 @@
         input wire  M_AXIS_TREADY
     );
     // Total number of output data
-    localparam NUMBER_OF_OUTPUT_WORDS = 8;
+    localparam NUMBER_OF_OUTPUT_WORDS = 1;
 
     // function called clogb2 that returns an integer which has the
     // value of the ceiling of the log base 2.

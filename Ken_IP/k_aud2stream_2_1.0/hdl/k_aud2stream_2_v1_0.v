@@ -8,6 +8,9 @@
           // Default input clock = 100 MHz
         parameter integer K_CLOCK_DIVISOR       =  2083,
 
+        parameter integer AUDIOCTRL_OUTPUT_WIDTH =  24,
+
+
         // User parameters ends
         // Do not modify the parameters beyond this line
 
@@ -65,6 +68,8 @@
         output wire  m00_axis_tlast,
         input wire  m00_axis_tready
     );
+    localparam integer FFT_RE_IM_WIDTH       =  C_M00_AXI_DATA_WIDTH/2;
+
 // Instantiation of Axi Bus Interface M00_AXI
     k_aud2stream_2_v1_0_M00_AXI # (
         .K_AUDIO_REGISTER_TO_READ(0),
@@ -76,6 +81,7 @@
     ) k_aud2stream_2_v1_0_M00_AXI_inst (
         //.INIT_AXI_TXN(m00_axi_init_axi_txn),
         .INIT_AXI_TXN(init_txn),
+        .READ_DATA(k_read_data),
         .ERROR(m00_axi_error),
         .TXN_DONE(m00_axi_txn_done),
         .M_AXI_ACLK(m00_axi_aclk),
@@ -106,7 +112,7 @@
         .C_M_AXIS_TDATA_WIDTH(C_M00_AXIS_TDATA_WIDTH),
         .C_M_START_COUNT(C_M00_AXIS_START_COUNT)
     ) k_aud2stream_2_v1_0_M00_AXIS_inst (
-        .DATA_TO_SEND(k_read_data),
+        .DATA_TO_SEND(k_send_data),
         .INIT_AXIS_TXN(init_txn),
         .M_AXIS_ACLK(m00_axis_aclk),
         .M_AXIS_ARESETN(m00_axis_aresetn),
@@ -119,8 +125,14 @@
 
     // Add user logic here
     wire  init_txn;
-    wire  k_m00_axi_txn_done;
     wire [C_M00_AXIS_TDATA_WIDTH-1 : 0] k_read_data;
+    wire [C_M00_AXIS_TDATA_WIDTH-1 : 0] k_send_data;
+
+    // Copy the upper bits of the data into the REAL fields.
+    // See this for more info: https://docs.xilinx.com/r/en-US/pg109-xfft/TDATA-Example?tocId=0Bg0hBCYZAqnRwPR7IMVBg
+    // NOTE: KNOWN ISSUE - we don't pad properly if the FFT_RE_IM_WIDTH is not a multiple of 8.
+    assign k_send_data[FFT_RE_IM_WIDTH-1 : 0]                                                  = k_read_data[AUDIOCTRL_OUTPUT_WIDTH - 1 : AUDIOCTRL_OUTPUT_WIDTH - FFT_RE_IM_WIDTH];
+    assign k_send_data[C_M00_AXIS_TDATA_WIDTH - 1 : C_M00_AXIS_TDATA_WIDTH - FFT_RE_IM_WIDTH]  = {FFT_RE_IM_WIDTH{1'b0}};
 
     // 24 bits is big enough.
     reg [24 : 0] clk_divider_ctr;
