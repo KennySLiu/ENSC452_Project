@@ -15,6 +15,9 @@
 	)
 	(
 		// Users to add ports here
+		// Initiate AXI transactions
+        input wire [C_M_AXIS_TDATA_WIDTH - 1 : 0] DATA_TO_SEND,
+		input wire  INIT_AXIS_TXN,
 
 		// User ports ends
 		// Do not modify the ports beyond this line
@@ -55,13 +58,20 @@
 	// Define the states of state machine                                                
 	// The control state machine oversees the writing of input streaming data to the FIFO,
 	// and outputs the streaming data from the FIFO                                      
-	parameter [1:0] IDLE = 2'b00,        // This is the initial/idle state               
-	                                                                                     
-	                INIT_COUNTER  = 2'b01, // This state initializes the counter, once   
-	                                // the counter reaches C_M_START_COUNT count,        
-	                                // the state machine changes state to SEND_STREAM     
-	                SEND_STREAM   = 2'b10; // In this state the                          
-	                                     // stream data is output through M_AXIS_TDATA   
+	parameter   [3 : 0] INIT_COUNTER = 3'b000,  // This is the initial/idle state, which counts up to C_M_START_COUNT.
+	                    READY_STATE  = 3'b001,  // In this state the
+	                                                // stream data is output through M_AXIS_TDATA
+	                    SEND_STATE  = 3'b010;  // In this state the
+	                                                // stream data is output through M_AXIS_TDATA
+	//parameter [1:0] IDLE = 2'b00,        // This is the initial/idle state               
+	//                                                                                     
+	//                INIT_COUNTER  = 2'b01, // This state initializes the counter, once   
+	//                                // the counter reaches C_M_START_COUNT count,        
+	//                                // the state machine changes state to SEND_STREAM     
+	//                SEND_STREAM   = 2'b10; // In this state the                          
+	//                                     // stream data is output through M_AXIS_TDATA   
+
+
 	// State variable                                                                    
 	reg [1:0] mst_exec_state;                                                            
 	// Example design FIFO read pointer                                                  
@@ -85,6 +95,23 @@
 	reg  	tx_done;
 
 
+    /////////////////
+    // KENNY STUFF
+	wire  	init_txn_pulse;
+	reg  	init_txn_ff;
+	reg  	init_txn_ff2;
+	assign init_txn_pulse	= (!init_txn_ff2) && init_txn_ff;
+
+    always @(posedge M_AXIS_ACLK)
+    begin
+	  init_txn_ff <= INIT_AXIS_TXN;
+	  init_txn_ff2 <= init_txn_ff;
+    end
+    /////////////////
+
+
+
+
 	// I/O Connections assignments
 
 	assign M_AXIS_TVALID	= axis_tvalid_delay;
@@ -93,64 +120,117 @@
 	assign M_AXIS_TSTRB	= {(C_M_AXIS_TDATA_WIDTH/8){1'b1}};
 
 
-	// Control state machine implementation                             
-	always @(posedge M_AXIS_ACLK)                                             
-	begin                                                                     
-	  if (!M_AXIS_ARESETN)                                                    
-	  // Synchronous reset (active low)                                       
-	    begin                                                                 
-	      mst_exec_state <= IDLE;                                             
-	      count    <= 0;                                                      
-	    end                                                                   
-	  else                                                                    
-	    case (mst_exec_state)                                                 
-	      IDLE:                                                               
-	        // The slave starts accepting tdata when                          
-	        // there tvalid is asserted to mark the                           
-	        // presence of valid streaming data                               
-	        //if ( count == 0 )                                                 
-	        //  begin                                                           
-	            mst_exec_state  <= INIT_COUNTER;                              
-	        //  end                                                             
-	        //else                                                              
-	        //  begin                                                           
-	        //    mst_exec_state  <= IDLE;                                      
-	        //  end                                                             
-	                                                                          
-	      INIT_COUNTER:                                                       
-	        // The slave starts accepting tdata when                          
-	        // there tvalid is asserted to mark the                           
-	        // presence of valid streaming data                               
-	        if ( count == C_M_START_COUNT - 1 )                               
-	          begin                                                           
-	            mst_exec_state  <= SEND_STREAM;                               
-	          end                                                             
-	        else                                                              
-	          begin                                                           
-	            count <= count + 1;                                           
-	            mst_exec_state  <= INIT_COUNTER;                              
-	          end                                                             
-	                                                                          
-	      SEND_STREAM:                                                        
-	        // The example design streaming master functionality starts       
-	        // when the master drives output tdata from the FIFO and the slave
-	        // has finished storing the S_AXIS_TDATA                          
-	        if (tx_done)                                                      
-	          begin                                                           
-	            mst_exec_state <= IDLE;                                       
-	          end                                                             
-	        else                                                              
-	          begin                                                           
-	            mst_exec_state <= SEND_STREAM;                                
-	          end                                                             
-	    endcase                                                               
-	end                                                                       
+
+    /////////////////
+    // KENNY STUFF
+	// Control state machine implementation
+	always @(posedge M_AXIS_ACLK)
+	begin
+	  if (!M_AXIS_ARESETN)
+	  // Synchronous reset (active low)
+	    begin
+	      mst_exec_state <= INIT_COUNTER;
+	      count    <= 0;
+	    end
+	  else
+	    case (mst_exec_state)
+	      INIT_COUNTER:
+	        // The slave starts accepting tdata when
+	        // there tvalid is asserted to mark the
+	        // presence of valid streaming data
+	        if ( count == C_M_START_COUNT - 1 )
+	          begin
+	            mst_exec_state  <= READY_STATE;
+	          end
+	        else
+	          begin
+	            count <= count + 1;
+	            mst_exec_state  <= INIT_COUNTER;
+	          end
+
+	      READY_STATE:
+              if (init_txn_pulse == 1'b1)
+              begin
+                mst_exec_state <= SEND_STATE;
+              end
+              else
+              begin
+                mst_exec_state <= READY_STATE;
+              end
+
+          SEND_STATE:
+            if (tx_done == 1'b1)
+            begin
+                mst_exec_state <= READY_STATE;
+            end
+            else
+            begin
+                mst_exec_state <= SEND_STATE;
+            end
+
+	    endcase
+	end
+    /////////////////
+
+
+	//// Control state machine implementation                             
+	//always @(posedge M_AXIS_ACLK)                                             
+	//begin                                                                     
+	//  if (!M_AXIS_ARESETN)                                                    
+	//  // Synchronous reset (active low)                                       
+	//    begin                                                                 
+	//      mst_exec_state <= IDLE;                                             
+	//      count    <= 0;                                                      
+	//    end                                                                   
+	//  else                                                                    
+	//    case (mst_exec_state)                                                 
+	//      IDLE:                                                               
+	//        // The slave starts accepting tdata when                          
+	//        // there tvalid is asserted to mark the                           
+	//        // presence of valid streaming data                               
+	//        //if ( count == 0 )                                                 
+	//        //  begin                                                           
+	//            mst_exec_state  <= INIT_COUNTER;                              
+	//        //  end                                                             
+	//        //else                                                              
+	//        //  begin                                                           
+	//        //    mst_exec_state  <= IDLE;                                      
+	//        //  end                                                             
+	//                                                                          
+	//      INIT_COUNTER:                                                       
+	//        // The slave starts accepting tdata when                          
+	//        // there tvalid is asserted to mark the                           
+	//        // presence of valid streaming data                               
+	//        if ( count == C_M_START_COUNT - 1 )                               
+	//          begin                                                           
+	//            mst_exec_state  <= SEND_STREAM;                               
+	//          end                                                             
+	//        else                                                              
+	//          begin                                                           
+	//            count <= count + 1;                                           
+	//            mst_exec_state  <= INIT_COUNTER;                              
+	//          end                                                             
+	//                                                                          
+	//      SEND_STREAM:                                                        
+	//        // The example design streaming master functionality starts       
+	//        // when the master drives output tdata from the FIFO and the slave
+	//        // has finished storing the S_AXIS_TDATA                          
+	//        if (tx_done)                                                      
+	//          begin                                                           
+	//            mst_exec_state <= IDLE;                                       
+	//          end                                                             
+	//        else                                                              
+	//          begin                                                           
+	//            mst_exec_state <= SEND_STREAM;                                
+	//          end                                                             
+	//    endcase                                                               
+	//end                                                                       
 
 
 	//tvalid generation
-	//axis_tvalid is asserted when the control state machine's state is SEND_STREAM and
+	//axis_tvalid is asserted when the control state machine's state is SEND_STATE and
 	//number of output streaming data is less than the NUMBER_OF_OUTPUT_WORDS.
-	assign axis_tvalid = ((mst_exec_state == SEND_STREAM) && (read_pointer < NUMBER_OF_OUTPUT_WORDS));
+	assign axis_tvalid = ((mst_exec_state == SEND_STATE) && (read_pointer < NUMBER_OF_OUTPUT_WORDS));
 	                                                                                               
 	// AXI tlast generation                                                                        
 	// axis_tlast is asserted number of output streaming data is NUMBER_OF_OUTPUT_WORDS-1          

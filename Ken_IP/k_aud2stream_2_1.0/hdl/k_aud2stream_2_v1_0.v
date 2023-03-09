@@ -4,6 +4,9 @@
 	module k_aud2stream_2_v1_0 #
 	(
 		// Users to add parameters here
+		  // This is the input clock rate / 48000.
+		  // Default input clock = 100 MHz
+        parameter integer K_CLOCK_DIVISOR       =  2083,
 
 		// User parameters ends
 		// Do not modify the parameters beyond this line
@@ -64,13 +67,15 @@
 	);
 // Instantiation of Axi Bus Interface M00_AXI
 	k_aud2stream_2_v1_0_M00_AXI # ( 
+        .K_AUDIO_REGISTER_TO_READ(0),
 		.C_M_START_DATA_VALUE(C_M00_AXI_START_DATA_VALUE),
 		.C_M_TARGET_SLAVE_BASE_ADDR(C_M00_AXI_TARGET_SLAVE_BASE_ADDR),
 		.C_M_AXI_ADDR_WIDTH(C_M00_AXI_ADDR_WIDTH),
 		.C_M_AXI_DATA_WIDTH(C_M00_AXI_DATA_WIDTH),
 		.C_M_TRANSACTIONS_NUM(C_M00_AXI_TRANSACTIONS_NUM)
 	) k_aud2stream_2_v1_0_M00_AXI_inst (
-		.INIT_AXI_TXN(m00_axi_init_axi_txn),
+		//.INIT_AXI_TXN(m00_axi_init_axi_txn),
+		.INIT_AXI_TXN(init_txn),
 		.ERROR(m00_axi_error),
 		.TXN_DONE(m00_axi_txn_done),
 		.M_AXI_ACLK(m00_axi_aclk),
@@ -101,6 +106,8 @@
 		.C_M_AXIS_TDATA_WIDTH(C_M00_AXIS_TDATA_WIDTH),
 		.C_M_START_COUNT(C_M00_AXIS_START_COUNT)
 	) k_aud2stream_2_v1_0_M00_AXIS_inst (
+        .DATA_TO_SEND(k_read_data),
+		.INIT_AXIS_TXN(init_txn),
 		.M_AXIS_ACLK(m00_axis_aclk),
 		.M_AXIS_ARESETN(m00_axis_aresetn),
 		.M_AXIS_TVALID(m00_axis_tvalid),
@@ -111,6 +118,26 @@
 	);
 
 	// Add user logic here
+    wire  init_txn;
+    wire  k_m00_axi_txn_done;
+    wire [C_M00_AXIS_TDATA_WIDTH-1 : 0] k_read_data;
+
+    // 24 bits is big enough.
+    reg [24 : 0] clk_divider_ctr;
+    reg audio_clk;
+
+    // Clock divider:
+    always @(posedge m00_axi_aclk)
+    begin
+        clk_divider_ctr <= clk_divider_ctr + 24'd1;
+        if (clk_divider_ctr >= (K_CLOCK_DIVISOR-1))
+           clk_divider_ctr <= 24'd0;
+        audio_clk <= (clk_divider_ctr < K_CLOCK_DIVISOR/2) ? 1'b1 : 1'b0;
+    end
+
+    // Tell the AXI master to read every time the audio clock ticks
+    assign init_txn = audio_clk;
+
 
 	// User logic ends
 

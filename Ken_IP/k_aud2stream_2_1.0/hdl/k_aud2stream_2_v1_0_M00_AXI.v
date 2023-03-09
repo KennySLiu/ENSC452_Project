@@ -4,6 +4,8 @@
 	module k_aud2stream_2_v1_0_M00_AXI #
 	(
 		// Users to add parameters here
+        parameter K_AUDIO_REGISTER_TO_READ = 0,
+
 
 		// User parameters ends
 		// Do not modify the parameters beyond this line
