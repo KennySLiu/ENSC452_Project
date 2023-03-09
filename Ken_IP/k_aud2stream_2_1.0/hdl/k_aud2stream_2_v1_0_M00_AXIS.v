@@ -259,7 +259,7 @@
 
     always@(posedge M_AXIS_ACLK)
     begin
-      if(!M_AXIS_ARESETN)
+      if(!M_AXIS_ARESETN || init_txn_pulse == 1'b1)
         begin
           read_pointer <= 0;
           tx_done <= 1'b0;

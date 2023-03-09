@@ -28,6 +28,8 @@
     )
     (
         // Users to add ports here
+        output wire [C_M00_AXIS_TDATA_WIDTH-1 : 0] KDEBUG_read_data,
+        output wire [C_M00_AXIS_TDATA_WIDTH-1 : 0] KDEBUG_send_data,
 
         // User ports ends
         // Do not modify the ports beyond this line
@@ -123,10 +125,18 @@
         .M_AXIS_TREADY(m00_axis_tready)
     );
 
+    ////////////////////////////////////////////////
+    ////////////////////////////////////////////////
+    ////////////////////////////////////////////////
+
     // Add user logic here
     wire  init_txn;
     wire [C_M00_AXIS_TDATA_WIDTH-1 : 0] k_read_data;
     wire [C_M00_AXIS_TDATA_WIDTH-1 : 0] k_send_data;
+
+    // DEBUGGING
+    assign KDEBUG_send_data = k_send_data;
+    assign KDEBUG_read_data = k_read_data;
 
     // Copy the upper bits of the data into the REAL fields.
     // See this for more info: https://docs.xilinx.com/r/en-US/pg109-xfft/TDATA-Example?tocId=0Bg0hBCYZAqnRwPR7IMVBg
