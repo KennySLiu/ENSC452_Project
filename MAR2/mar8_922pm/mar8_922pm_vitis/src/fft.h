@@ -63,6 +63,8 @@ typedef struct fft fft_t;
 
 // Public functions
 
+void fft_commit_params(fft_t* p_fft_inst);
+
 //
 // dma_accel_create - Create a FFT object.
 //

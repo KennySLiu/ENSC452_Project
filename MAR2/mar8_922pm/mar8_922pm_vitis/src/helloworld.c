@@ -323,6 +323,7 @@ int main()
     	else if (c == '1')
     	{
     		which_fft_param(p_fft_inst);
+    		fft_commit_params(p_fft_inst);
     	}
     	else if (c == '2') // Run FFT
 		{

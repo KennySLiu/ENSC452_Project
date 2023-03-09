@@ -66,7 +66,7 @@ static int init_gpio(XGpio* p_gpio_inst, int gpio_device_id)
 
 }
 
-static void fft_commit_params(fft_t* p_fft_inst)
+void fft_commit_params(fft_t* p_fft_inst)
 {
 
 	// Local variables
@@ -196,7 +196,7 @@ int fft(fft_t* p_fft_inst, cplx_data_t* din, cplx_data_t* dout)
 	fft_commit_params(p_fft_inst);
 
 	// Set buffers for DMA
-	dma_accel_set_stim_buf(p_fft_inst->periphs.p_dma_accel_inst, (void*)din);
+	//dma_accel_set_stim_buf(p_fft_inst->periphs.p_dma_accel_inst, (void*)din);
 	dma_accel_set_result_buf(p_fft_inst->periphs.p_dma_accel_inst, (void*)dout);
 
 	// Perform DMA transfer

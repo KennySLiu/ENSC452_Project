@@ -349,7 +349,7 @@ int dma_accel_xfer(dma_accel_t* p_dma_accel_inst)
 
 	// Flush cache
 	#if (!DMA_ACCEL_IS_CACHE_COHERENT)
-		Xil_DCacheFlushRange((int)p_dma_accel_inst->p_stim_buf, num_bytes);
+		//Xil_DCacheFlushRange((int)p_dma_accel_inst->p_stim_buf, num_bytes);
 		Xil_DCacheFlushRange((int)p_dma_accel_inst->p_result_buf, num_bytes);
 	#endif
 
@@ -358,19 +358,21 @@ int dma_accel_xfer(dma_accel_t* p_dma_accel_inst)
 	g_mm2s_done = 0;
 	g_dma_err   = 0;
 
-	// Kick off MM2S transfer
-	status = XAxiDma_SimpleTransfer
-	(
-		&p_dma_accel_inst->periphs.dma_inst,
-		(int)p_dma_accel_inst->p_stim_buf,
-		num_bytes,
-		XAXIDMA_DMA_TO_DEVICE
-	);
-	if (status != DMA_ACCEL_SUCCESS)
-	{
-		xil_printf("ERROR! Failed to kick off MM2S transfer!\n\r");
-		return DMA_ACCEL_XFER_FAIL;
-	}
+//	// Kick off MM2S transfer
+//	status = XAxiDma_SimpleTransfer
+//	(
+//		&p_dma_accel_inst->periphs.dma_inst,
+//		(int)p_dma_accel_inst->p_stim_buf,
+//		num_bytes,
+//		XAXIDMA_DMA_TO_DEVICE
+//	);
+//	if (status != DMA_ACCEL_SUCCESS)
+//	{
+//		xil_printf("ERROR! Failed to kick off MM2S transfer!\n\r");
+//		return DMA_ACCEL_XFER_FAIL;
+//	}
+	// Pretend mm2s is done.
+	g_mm2s_done = 1;
 
 	// Kick off S2MM transfer
 	status = XAxiDma_SimpleTransfer
