@@ -297,7 +297,7 @@
             end
           else if (tx_en)// && M_AXIS_TSTRB[byte_index]
             begin
-              stream_data_out <= read_pointer + 32'b1;
+              stream_data_out <= DATA_TO_SEND;
             end
         end
 
