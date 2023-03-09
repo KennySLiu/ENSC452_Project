@@ -1,49 +1,51 @@
 {
    "ActiveEmotionalView":"Default View",
-   "Default View_ScaleFactor":"0.550645",
-   "Default View_TopLeft":"-123,-20",
+   "Default View_ScaleFactor":"0.894525",
+   "Default View_TopLeft":"15,-10",
    "ExpandedHierarchyInLayout":"",
    "guistr":"# # String gsaved with Nlview 7.0r6  2020-01-29 bk=1.5227 VDI=41 GEI=36 GUI=JA:10.0 non-TLS
 #  -string -flagsOSRD
-preplace port DDR -pg 1 -lvl 4 -x 1410 -y 330 -defaultsOSRD
-preplace port FIXED_IO -pg 1 -lvl 4 -x 1410 -y 350 -defaultsOSRD
-preplace port IIC_0_0 -pg 1 -lvl 4 -x 1410 -y 370 -defaultsOSRD
-preplace port SDATA_O_0 -pg 1 -lvl 4 -x 1410 -y 850 -defaultsOSRD
-preplace port LRCLK_0 -pg 1 -lvl 4 -x 1410 -y 830 -defaultsOSRD
-preplace port BCLK_0 -pg 1 -lvl 4 -x 1410 -y 810 -defaultsOSRD
-preplace port SDATA_I_0 -pg 1 -lvl 0 -x 0 -y 820 -defaultsOSRD
-preplace port FCLK_CLK1_0 -pg 1 -lvl 4 -x 1410 -y 510 -defaultsOSRD
+preplace port DDR -pg 1 -lvl 4 -x 1480 -y 330 -defaultsOSRD
+preplace port FIXED_IO -pg 1 -lvl 4 -x 1480 -y 350 -defaultsOSRD
+preplace port IIC_0_0 -pg 1 -lvl 4 -x 1480 -y 370 -defaultsOSRD
+preplace port SDATA_O_0 -pg 1 -lvl 4 -x 1480 -y 850 -defaultsOSRD
+preplace port LRCLK_0 -pg 1 -lvl 4 -x 1480 -y 830 -defaultsOSRD
+preplace port BCLK_0 -pg 1 -lvl 4 -x 1480 -y 810 -defaultsOSRD
+preplace port SDATA_I_0 -pg 1 -lvl 0 -x -10 -y 820 -defaultsOSRD
+preplace port FCLK_CLK1_0 -pg 1 -lvl 4 -x 1480 -y 510 -defaultsOSRD
 preplace inst accelerator -pg 1 -lvl 1 -x 240 -y 620 -defaultsOSRD
-preplace inst ctrl -pg 1 -lvl 2 -x 620 -y 630 -defaultsOSRD
-preplace inst zed_audio_ctrl_0 -pg 1 -lvl 3 -x 1130 -y 830 -defaultsOSRD
-preplace inst processing_system7_0 -pg 1 -lvl 3 -x 1130 -y 420 -defaultsOSRD
-preplace inst ila_0 -pg 1 -lvl 3 -x 1130 -y 670 -defaultsOSRD
+preplace inst ctrl -pg 1 -lvl 2 -x 660 -y 630 -defaultsOSRD
+preplace inst zed_audio_ctrl_0 -pg 1 -lvl 3 -x 1200 -y 830 -defaultsOSRD
+preplace inst processing_system7_0 -pg 1 -lvl 3 -x 1200 -y 420 -defaultsOSRD
+preplace inst ila_0 -pg 1 -lvl 3 -x 1200 -y 670 -defaultsOSRD
 preplace inst ila_1 -pg 1 -lvl 1 -x 240 -y 400 -defaultsOSRD
-preplace inst k_aud2stream_2_0 -pg 1 -lvl 2 -x 620 -y 150 -defaultsOSRD
-preplace netloc axi_gpio_0_gpio_io_o 1 0 3 50 740 NJ 740 800
-preplace netloc edge_detect_0_edge_detected 1 0 3 60 750 NJ 750 790
-preplace netloc processing_system7_0_FCLK_RESET0_N 1 1 3 430 500 860J 600 1370
-preplace netloc processing_system7_0_fclk_clk0 1 0 4 20 280 420 420 880 740 1390
-preplace netloc xlconcat_0_dout 1 2 1 890 460n
-preplace netloc ctrl_peripheral_aresetn 1 1 2 440 10 830
+preplace inst k_aud2stream_2_0 -pg 1 -lvl 2 -x 660 -y 150 -defaultsOSRD
+preplace netloc axi_gpio_0_gpio_io_o 1 0 3 50 740 NJ 740 850
+preplace netloc edge_detect_0_edge_detected 1 0 3 60 750 NJ 750 840
+preplace netloc processing_system7_0_FCLK_RESET0_N 1 1 3 470 500 930J 600 1440
+preplace netloc processing_system7_0_fclk_clk0 1 0 4 10 240 450 420 950 740 1460
+preplace netloc xlconcat_0_dout 1 2 1 960 460n
+preplace netloc ctrl_peripheral_aresetn 1 1 2 480 360 900
 preplace netloc zed_audio_ctrl_0_SDATA_O 1 3 1 NJ 850
 preplace netloc zed_audio_ctrl_0_LRCLK 1 3 1 NJ 830
 preplace netloc zed_audio_ctrl_0_BCLK 1 3 1 NJ 810
 preplace netloc SDATA_I_0_1 1 0 3 NJ 820 NJ 820 NJ
 preplace netloc processing_system7_0_FCLK_CLK1 1 3 1 NJ 510
-preplace netloc S_AXIS_DATA_tdata_1 1 0 3 50 290 NJ 290 810
-preplace netloc accelerator_S_AXIS_DATA_tready 1 0 3 30 300 NJ 300 790
-preplace netloc S_AXIS_DATA_tvalid_1 1 0 3 40 310 NJ 310 800
-preplace netloc k_aud2stream_2_0_m00_axis_tlast 1 0 3 60 490 NJ 490 820
-preplace netloc axi_interconnect_0_m00_axi 1 2 1 840 400n
+preplace netloc S_AXIS_DATA_tdata_1 1 0 3 30 260 460J 310 880
+preplace netloc accelerator_S_AXIS_DATA_tready 1 0 3 40 280 440J 330 850
+preplace netloc S_AXIS_DATA_tvalid_1 1 0 3 20 250 470J 320 860
+preplace netloc k_aud2stream_2_0_m00_axis_tlast 1 0 3 30 760 NJ 760 890
+preplace netloc k_aud2stream_2_0_KDEBUG_read_data 1 0 3 50 270 430J 350 870
+preplace netloc k_aud2stream_2_0_KDEBUG_send_data 1 0 3 60 290 420J 340 840
+preplace netloc axi_interconnect_0_m00_axi 1 2 1 910 400n
 preplace netloc processing_system7_0_fixed_io 1 3 1 NJ 350
 preplace netloc processing_system7_0_IIC_0 1 3 1 NJ 370
-preplace netloc k_aud2stream_2_0_M00_AXI 1 2 1 870 70n
+preplace netloc k_aud2stream_2_0_M00_AXI 1 2 1 940 50n
 preplace netloc xfft_0_m_axis_data 1 1 1 N 620
 preplace netloc processing_system7_0_ddr 1 3 1 NJ 330
-preplace netloc s00_axi_1 1 1 3 440 510 850J 590 1380
-levelinfo -pg 1 0 240 620 1130 1410
-pagesize -pg 1 -db -bbox -sgen -130 0 1560 920
+preplace netloc s00_axi_1 1 1 3 480 510 920J 590 1450
+levelinfo -pg 1 -10 240 660 1200 1480
+pagesize -pg 1 -db -bbox -sgen -140 -10 1630 920
 "
 }
 {

@@ -708,30 +708,6 @@
               }
             },
             "interface_nets": {
-              "m00_couplers_to_axi_interconnect_0": {
-                "interface_ports": [
-                  "M00_AXI",
-                  "m00_couplers/M_AXI"
-                ]
-              },
-              "s01_couplers_to_xbar": {
-                "interface_ports": [
-                  "s01_couplers/M_AXI",
-                  "xbar/S01_AXI"
-                ]
-              },
-              "axi_interconnect_0_to_s01_couplers": {
-                "interface_ports": [
-                  "S01_AXI",
-                  "s01_couplers/S_AXI"
-                ]
-              },
-              "s00_couplers_to_xbar": {
-                "interface_ports": [
-                  "s00_couplers/M_AXI",
-                  "xbar/S00_AXI"
-                ]
-              },
               "xbar_to_m00_couplers": {
                 "interface_ports": [
                   "xbar/M00_AXI",
@@ -742,6 +718,30 @@
                 "interface_ports": [
                   "S00_AXI",
                   "s00_couplers/S_AXI"
+                ]
+              },
+              "s00_couplers_to_xbar": {
+                "interface_ports": [
+                  "s00_couplers/M_AXI",
+                  "xbar/S00_AXI"
+                ]
+              },
+              "axi_interconnect_0_to_s01_couplers": {
+                "interface_ports": [
+                  "S01_AXI",
+                  "s01_couplers/S_AXI"
+                ]
+              },
+              "s01_couplers_to_xbar": {
+                "interface_ports": [
+                  "s01_couplers/M_AXI",
+                  "xbar/S01_AXI"
+                ]
+              },
+              "m00_couplers_to_axi_interconnect_0": {
+                "interface_ports": [
+                  "M00_AXI",
+                  "m00_couplers/M_AXI"
                 ]
               }
             },
@@ -1103,22 +1103,22 @@
                   "s00_couplers/S_AXI"
                 ]
               },
+              "s00_couplers_to_xbar": {
+                "interface_ports": [
+                  "s00_couplers/M_AXI",
+                  "xbar/S00_AXI"
+                ]
+              },
               "m00_couplers_to_axi_interconnect_1": {
                 "interface_ports": [
                   "M00_AXI",
                   "m00_couplers/M_AXI"
                 ]
               },
-              "xbar_to_m00_couplers": {
+              "m01_couplers_to_axi_interconnect_1": {
                 "interface_ports": [
-                  "xbar/M00_AXI",
-                  "m00_couplers/S_AXI"
-                ]
-              },
-              "s00_couplers_to_xbar": {
-                "interface_ports": [
-                  "s00_couplers/M_AXI",
-                  "xbar/S00_AXI"
+                  "M01_AXI",
+                  "m01_couplers/M_AXI"
                 ]
               },
               "xbar_to_m01_couplers": {
@@ -1127,10 +1127,10 @@
                   "m01_couplers/S_AXI"
                 ]
               },
-              "m01_couplers_to_axi_interconnect_1": {
+              "xbar_to_m00_couplers": {
                 "interface_ports": [
-                  "M01_AXI",
-                  "m01_couplers/M_AXI"
+                  "xbar/M00_AXI",
+                  "m00_couplers/S_AXI"
                 ]
               }
             },
@@ -3174,9 +3174,15 @@
             "value": "Native"
           },
           "C_NUM_OF_PROBES": {
-            "value": "3"
+            "value": "5"
           },
           "C_PROBE0_WIDTH": {
+            "value": "32"
+          },
+          "C_PROBE3_WIDTH": {
+            "value": "32"
+          },
+          "C_PROBE4_WIDTH": {
             "value": "32"
           },
           "C_TRIGIN_EN": {
@@ -3365,6 +3371,18 @@
         "ports": [
           "k_aud2stream_2_0/m00_axis_tlast",
           "accelerator/S_AXIS_DATA_tlast"
+        ]
+      },
+      "k_aud2stream_2_0_KDEBUG_read_data": {
+        "ports": [
+          "k_aud2stream_2_0/KDEBUG_read_data",
+          "ila_1/probe3"
+        ]
+      },
+      "k_aud2stream_2_0_KDEBUG_send_data": {
+        "ports": [
+          "k_aud2stream_2_0/KDEBUG_send_data",
+          "ila_1/probe4"
         ]
       }
     },
