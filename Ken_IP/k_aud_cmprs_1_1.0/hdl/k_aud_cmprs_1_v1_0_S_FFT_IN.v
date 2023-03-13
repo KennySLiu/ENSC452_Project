@@ -4,6 +4,9 @@
     module k_aud_cmprs_1_v1_0_S_FFT_IN #
     (
         // Users to add parameters here
+        // Total number of input data.
+        // NOTE(Kenny): This is the FFT Size. In the future this will need to change.
+        parameter integer NUMBER_OF_INPUT_WORDS  = 16,
 
         // User parameters ends
         // Do not modify the parameters beyond this line
@@ -41,8 +44,6 @@
       end
     endfunction
 
-    // Total number of input data.
-    localparam NUMBER_OF_INPUT_WORDS  = 8;
     // bit_num gives the minimum number of bits needed to address 'NUMBER_OF_INPUT_WORDS' size of FIFO.
     localparam bit_num  = clogb2(NUMBER_OF_INPUT_WORDS-1);
     // Define the states of state machine

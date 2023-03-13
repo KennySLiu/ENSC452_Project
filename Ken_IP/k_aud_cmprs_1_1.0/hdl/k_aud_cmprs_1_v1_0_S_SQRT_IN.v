@@ -4,7 +4,6 @@
     module k_aud_cmprs_1_v1_0_S_SQRT_IN #
     (
         // Users to add parameters here
-
         // User parameters ends
         // Do not modify the parameters beyond this line
 
@@ -32,6 +31,10 @@
         // Data is in valid
         input wire  S_AXIS_TVALID
     );
+
+    // Total number of input data.
+    parameter integer NUMBER_OF_INPUT_WORDS  = 1;
+
     // function called clogb2 that returns an integer which has the
     // value of the ceiling of the log base 2.
     function integer clogb2 (input integer bit_depth);
@@ -41,8 +44,6 @@
       end
     endfunction
 
-    // Total number of input data.
-    localparam NUMBER_OF_INPUT_WORDS  = 8;
     // bit_num gives the minimum number of bits needed to address 'NUMBER_OF_INPUT_WORDS' size of FIFO.
     localparam bit_num  = clogb2(NUMBER_OF_INPUT_WORDS-1);
     // Define the states of state machine

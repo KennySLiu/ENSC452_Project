@@ -4,7 +4,6 @@
     module k_aud_cmprs_1_v1_0_M_SQRT_OUT #
     (
         // Users to add parameters here
-
         // User parameters ends
         // Do not modify the parameters beyond this line
 
@@ -34,8 +33,10 @@
         // TREADY indicates that the slave can accept a transfer in the current cycle.
         input wire  M_AXIS_TREADY
     );
-    // Total number of output data
-    localparam NUMBER_OF_OUTPUT_WORDS = 8;
+
+    // Total number of output data.
+    parameter integer NUMBER_OF_OUTPUT_WORDS = 1;
+
 
     // function called clogb2 that returns an integer which has the
     // value of the ceiling of the log base 2.

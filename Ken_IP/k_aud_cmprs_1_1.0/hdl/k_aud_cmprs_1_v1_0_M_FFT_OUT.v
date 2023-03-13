@@ -5,6 +5,10 @@
     (
         // Users to add parameters here
 
+        // Total number of output data.
+        // NOTE(Kenny): This is the FFT Size. In the future this will need to change.
+        parameter integer NUMBER_OF_OUTPUT_WORDS = 16,
+
         // User parameters ends
         // Do not modify the parameters beyond this line
 
@@ -34,8 +38,6 @@
         // TREADY indicates that the slave can accept a transfer in the current cycle.
         input wire  M_AXIS_TREADY
     );
-    // Total number of output data
-    localparam NUMBER_OF_OUTPUT_WORDS = 8;
 
     // function called clogb2 that returns an integer which has the
     // value of the ceiling of the log base 2.
