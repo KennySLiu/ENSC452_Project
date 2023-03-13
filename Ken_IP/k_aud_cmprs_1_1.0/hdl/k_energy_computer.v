@@ -22,13 +22,13 @@
 
 module k_energy_computer #
     (
-    parameter integer IN_WIDTH = 32,
-    parameter integer OUT_WIDTH = 72
+    parameter integer IN_WIDTH = 16,
+    parameter integer OUT_WIDTH = 40
     )
     (
     input                       clk,
-    input [IN_WIDTH-1 : 0]      in_re,
-    input [IN_WIDTH-1 : 0]      in_im,
+    input signed [IN_WIDTH-1 : 0]      in_re,
+    input signed [IN_WIDTH-1 : 0]      in_im,
     output [OUT_WIDTH-1 : 0]    out_energy,
     output reg                  out_valid
     );
@@ -37,16 +37,35 @@ module k_energy_computer #
                     COMPUTE_SQUARES         = 4'b0001,
                     ADD_SQUARES             = 4'b0010,
                     DONE                    = 4'b0011;
-    reg [3:0] k_cur_state;
-    reg [3:0] k_next_state;
+    reg [3:0] k_cur_state   = IDLE;
+    reg [3:0] k_next_state  = IDLE;
     reg [2*IN_WIDTH-1   : 0]    re_sqrd;
     reg [2*IN_WIDTH-1   : 0]    im_sqrd;
     reg [OUT_WIDTH      : 0]    out_reg;
-    reg                         prev_in_re;
-    reg                         prev_in_im;
+    reg [IN_WIDTH-1 : 0]        prev_in_re;
+    reg [IN_WIDTH-1 : 0]        prev_in_im;
     wire                        new_inputs;
+    
+    integer i;
+    initial begin
+        for (i = 0; i < IN_WIDTH; i=i+1)
+        begin
+            prev_in_re[i] = 1'b0;
+            prev_in_im[i] = 1'b0;
+        end
+        for (i = 0; i < 2*IN_WIDTH; i=i+1)
+        begin
+            re_sqrd[i] = 1'b0;
+            im_sqrd[i] = 1'b0;
+        end
+        for (i = 0; i < OUT_WIDTH; i=i+1)
+        begin
+            out_reg[i] = 1'b0;
+        end
+    end
 
     assign new_inputs = (prev_in_re != in_re) || (prev_in_im != in_im);
+    assign out_energy = out_reg;
 
     always@(posedge clk )
     begin
@@ -79,18 +98,18 @@ module k_energy_computer #
     begin
         case (k_cur_state)
             IDLE:
-                k_next_state <= COMPUTE_SQUARES;
+                if (new_inputs) begin
+                    k_next_state <= COMPUTE_SQUARES;
+                end
+                else begin
+                    k_next_state <= IDLE;
+                end
             COMPUTE_SQUARES:
                 k_next_state <= ADD_SQUARES;
             ADD_SQUARES:
                 k_next_state <= DONE;
             DONE:
-                if (new_inputs) begin
-                    k_next_state <= COMPUTE_SQUARES;
-                end
-                else begin
-                    k_next_state <= DONE;
-                end
+                k_next_state <= IDLE;
         endcase
     end
 
