@@ -20,17 +20,22 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module k_tb();
+module k_energy_compute_tb();
     parameter DATA_WIDTH = 16;
     parameter OUT_WIDTH = 40;
     parameter FFT_NUM_PTS = 16;
 
     reg                           aclk;
 
-    reg   [DATA_WIDTH-1:0]        energy_re_in;
-    reg   [DATA_WIDTH-1:0]        energy_im_in;
-    wire   [OUT_WIDTH-1:0]         energy_out;
-    wire                           energy_out_valid;
+    reg  [DATA_WIDTH-1:0]         energy_re_in;
+    reg  [DATA_WIDTH-1:0]         energy_im_in;
+
+    reg   [2*DATA_WIDTH-1:0]      energy_data_in;
+    reg                           energy_valid;
+    wire                          energy_ready;
+
+    wire  [OUT_WIDTH-1:0]         energy_out;
+    wire                          energy_out_valid;
 
     reg   [DATA_WIDTH-1:0]        re_data[0:FFT_NUM_PTS-1]; //[c,n,s,e,w]
     reg   [DATA_WIDTH-1:0]        im_data[0:FFT_NUM_PTS-1];
@@ -88,6 +93,8 @@ module k_tb();
         else begin
             energy_re_in <= re_data[temp_counter];
             energy_im_in <= im_data[temp_counter];
+            energy_data_in [2*DATA_WIDTH - 1 : DATA_WIDTH]  <= energy_re_in[DATA_WIDTH - 1 : 0];
+            energy_data_in [DATA_WIDTH - 1 : 0]             <= energy_im_in[DATA_WIDTH - 1 : 0];
             if (temp_counter == FFT_NUM_PTS-1)
                 temp_counter = 0;
             else 
@@ -144,8 +151,9 @@ module k_tb();
         .OUT_WIDTH(OUT_WIDTH)
     ) energy_cmp_inst (
         .clk(aclk),
-        .in_re(energy_re_in),
-        .in_im(energy_im_in),
+        .s_axis_tvalid(energy_valid),
+        .s_axis_tready(energy_ready),
+        .s_axis_tdata (energy_data_in),
         .out_energy(energy_out),
         .out_valid(energy_out_valid)
     );

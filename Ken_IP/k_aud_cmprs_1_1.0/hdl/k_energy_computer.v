@@ -26,11 +26,12 @@ module k_energy_computer #
     parameter integer OUT_WIDTH = 40
     )
     (
-    input                       clk,
-    input signed [IN_WIDTH-1 : 0]      in_re,
-    input signed [IN_WIDTH-1 : 0]      in_im,
-    output [OUT_WIDTH-1 : 0]    out_energy,
-    output reg                  out_valid
+    input                           clk,
+    input                           s_axis_tvalid,
+    output reg                      s_axis_tready,
+    input signed [2*IN_WIDTH-1 : 0] s_axis_tdata,
+    output [OUT_WIDTH-1 : 0]        out_energy,
+    output reg                      out_valid
     );
 
     parameter [3:0] IDLE                    = 4'b0000,
@@ -42,17 +43,16 @@ module k_energy_computer #
     reg [2*IN_WIDTH-1   : 0]    re_sqrd;
     reg [2*IN_WIDTH-1   : 0]    im_sqrd;
     reg [OUT_WIDTH      : 0]    out_reg;
-    reg [IN_WIDTH-1 : 0]        prev_in_re;
-    reg [IN_WIDTH-1 : 0]        prev_in_im;
-    wire                        new_inputs;
+    wire [IN_WIDTH-1 : 0]      in_re;
+    wire [IN_WIDTH-1 : 0]      in_im;
+    reg signed [IN_WIDTH-1 : 0]      in_re_reg;
+    reg signed [IN_WIDTH-1 : 0]      in_im_reg;
+
+    assign in_re [ IN_WIDTH-1 : 0 ] = s_axis_tdata [ 2*IN_WIDTH-1   : IN_WIDTH ];
+    assign in_im [ IN_WIDTH-1 : 0 ] = s_axis_tdata [ IN_WIDTH-1     : 0];
     
     integer i;
     initial begin
-        for (i = 0; i < IN_WIDTH; i=i+1)
-        begin
-            prev_in_re[i] = 1'b0;
-            prev_in_im[i] = 1'b0;
-        end
         for (i = 0; i < 2*IN_WIDTH; i=i+1)
         begin
             re_sqrd[i] = 1'b0;
@@ -64,31 +64,44 @@ module k_energy_computer #
         end
     end
 
-    assign new_inputs = (prev_in_re != in_re) || (prev_in_im != in_im);
     assign out_energy = out_reg;
 
     always@(posedge clk )
     begin
         k_cur_state <= k_next_state;
-        prev_in_re <= in_re;
-        prev_in_im <= in_im;
     end
 
     // STATE MACHINE
     always @(posedge clk)
     begin
         case (k_cur_state)
+            IDLE:
+            begin
+                s_axis_tready <= 1;
+                if (s_axis_tvalid && s_axis_tready) begin
+                    in_re_reg <= in_re;
+                    in_im_reg <= in_im;
+                end
+            end
+
             COMPUTE_SQUARES:
             begin
-                re_sqrd <= in_re * in_re;
-                im_sqrd <= in_im * in_im;
+                s_axis_tready <= 0;
+                re_sqrd <= in_re_reg * in_re_reg;
+                im_sqrd <= in_im_reg * in_im_reg;
             end
 
             ADD_SQUARES:
+            begin
+                s_axis_tready <= 0;
                 out_reg <= re_sqrd + im_sqrd;
+            end
 
             default:
+            begin
+                s_axis_tready <= 0;
                 out_reg <= out_reg;
+            end
 
         endcase
     end
@@ -98,7 +111,7 @@ module k_energy_computer #
     begin
         case (k_cur_state)
             IDLE:
-                if (new_inputs) begin
+                if (s_axis_tvalid && s_axis_tready) begin
                     k_next_state <= COMPUTE_SQUARES;
                 end
                 else begin
