@@ -34,7 +34,9 @@ module k_energy_compute_tb();
     reg                           energy_valid;
     wire                          energy_ready;
 
-    wire  [OUT_WIDTH-1:0]         energy_out;
+    reg [OUT_WIDTH-1:0]         energy_output_value;
+
+    wire  [OUT_WIDTH-1:0]         energy_out_WIRE;
     wire                          energy_out_valid;
 
     reg   [DATA_WIDTH-1:0]        re_data[0:FFT_NUM_PTS-1]; //[c,n,s,e,w]
@@ -85,62 +87,56 @@ module k_energy_compute_tb();
     end
     
     //passing temp data
-    always @(negedge aclk) begin
-        if(~energy_out_valid) begin
-            energy_re_in <= energy_re_in;
-            energy_im_in <= energy_im_in;
-        end
-        else begin
+    //always @(negedge aclk) begin
+    always @(posedge aclk) begin
+        energy_data_in [2*DATA_WIDTH - 1 : DATA_WIDTH]  <= energy_re_in[DATA_WIDTH - 1 : 0];
+        energy_data_in [DATA_WIDTH - 1 : 0]             <= energy_im_in[DATA_WIDTH - 1 : 0];
+
+        if(energy_ready && energy_valid) begin
             energy_re_in <= re_data[temp_counter];
             energy_im_in <= im_data[temp_counter];
-            energy_data_in [2*DATA_WIDTH - 1 : DATA_WIDTH]  <= energy_re_in[DATA_WIDTH - 1 : 0];
-            energy_data_in [DATA_WIDTH - 1 : 0]             <= energy_im_in[DATA_WIDTH - 1 : 0];
-            if (temp_counter == FFT_NUM_PTS-1)
+            if(temp_counter == FFT_NUM_PTS- 1) 
                 temp_counter = 0;
-            else 
-                temp_counter = temp_counter+1;
-
-
-            //if(s_axis_temp_valid) begin
-            //    s_axis_temp_data <= temp_data[temp_counter];
-            //    if(temp_counter == 9) 
-            //        temp_counter = 0;
-            //    else
-            //        temp_counter=temp_counter+1;
-            //end
+            else
+                temp_counter=temp_counter+1;
         end
     end
     
     //control validity of temp data
     initial begin
-//        s_axis_temp_valid = 0;
-//        #24;
-//        s_axis_temp_valid = 1;
-//        s_axis_temp_data <= temp_data[0];
-//        #1;
-//        s_axis_temp_valid = 0;
-//        #16;
-//        s_axis_temp_valid = 0;
-//        #8;
-//        s_axis_temp_valid = 1;
-//        #20;
-//        s_axis_temp_valid = 0;
-//        #8;
-//        s_axis_temp_valid = 1;
-//        #20;
-//        s_axis_temp_valid = 0;
-//        #8;
-//        s_axis_temp_valid = 1;
-//        #68;
-//        s_axis_temp_valid = 0;
+        energy_valid = 0;
+        energy_re_in = re_data[0];
+        energy_im_in = im_data[0];
+        #24;
+        energy_valid = 1;
+        #1;
+        energy_valid = 0;
+        #16;
+        energy_valid = 0;
+        #8;
+        energy_valid = 1;
+        #20;
+        energy_valid = 0;
+        #8;
+        energy_valid = 1;
+        #20;
+        energy_valid = 0;
+        #8;
+        energy_valid = 1;
     end
 
+    // Reading output data
+    always @(posedge aclk) begin
+        if (energy_valid) begin
+            energy_output_value <= energy_out_WIRE;
+        end
+    end
     
     //simulation time handle
-    initial begin
-        #400;
-        $finish;
-    end
+//    initial begin
+//        #600;
+//        $finish;
+//    end
 
 
 
@@ -154,7 +150,7 @@ module k_energy_compute_tb();
         .s_axis_tvalid(energy_valid),
         .s_axis_tready(energy_ready),
         .s_axis_tdata (energy_data_in),
-        .out_energy(energy_out),
+        .out_energy(energy_out_WIRE),
         .out_valid(energy_out_valid)
     );
     

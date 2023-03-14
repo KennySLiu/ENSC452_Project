@@ -28,7 +28,7 @@ module k_energy_computer #
     (
     input                           clk,
     input                           s_axis_tvalid,
-    output reg                      s_axis_tready,
+    output wire                     s_axis_tready,
     input signed [2*IN_WIDTH-1 : 0] s_axis_tdata,
     output [OUT_WIDTH-1 : 0]        out_energy,
     output reg                      out_valid
@@ -39,7 +39,6 @@ module k_energy_computer #
                     ADD_SQUARES             = 4'b0010,
                     DONE                    = 4'b0011;
     reg [3:0] k_cur_state   = IDLE;
-    reg [3:0] k_next_state  = IDLE;
     reg [2*IN_WIDTH-1   : 0]    re_sqrd;
     reg [2*IN_WIDTH-1   : 0]    im_sqrd;
     reg [OUT_WIDTH      : 0]    out_reg;
@@ -51,25 +50,20 @@ module k_energy_computer #
     assign in_re [ IN_WIDTH-1 : 0 ] = s_axis_tdata [ 2*IN_WIDTH-1   : IN_WIDTH ];
     assign in_im [ IN_WIDTH-1 : 0 ] = s_axis_tdata [ IN_WIDTH-1     : 0];
     
-    integer i;
-    initial begin
-        for (i = 0; i < 2*IN_WIDTH; i=i+1)
-        begin
-            re_sqrd[i] = 1'b0;
-            im_sqrd[i] = 1'b0;
-        end
-        for (i = 0; i < OUT_WIDTH; i=i+1)
-        begin
-            out_reg[i] = 1'b0;
-        end
-    end
+    //integer i;
+    //initial begin
+    //    for (i = 0; i < 2*IN_WIDTH; i=i+1)
+    //    begin
+    //        re_sqrd[i] = 1'b0;
+    //        im_sqrd[i] = 1'b0;
+    //    end
+    //    for (i = 0; i < OUT_WIDTH; i=i+1)
+    //    begin
+    //        out_reg[i] = 1'b0;
+    //    end
+    //end
 
     assign out_energy = out_reg;
-
-    always@(posedge clk )
-    begin
-        k_cur_state <= k_next_state;
-    end
 
     // STATE MACHINE
     always @(posedge clk)
@@ -77,54 +71,60 @@ module k_energy_computer #
         case (k_cur_state)
             IDLE:
             begin
-                s_axis_tready <= 1;
                 if (s_axis_tvalid && s_axis_tready) begin
                     in_re_reg <= in_re;
                     in_im_reg <= in_im;
-                end
-            end
-
-            COMPUTE_SQUARES:
-            begin
-                s_axis_tready <= 0;
-                re_sqrd <= in_re_reg * in_re_reg;
-                im_sqrd <= in_im_reg * in_im_reg;
-            end
-
-            ADD_SQUARES:
-            begin
-                s_axis_tready <= 0;
-                out_reg <= re_sqrd + im_sqrd;
-            end
-
-            default:
-            begin
-                s_axis_tready <= 0;
-                out_reg <= out_reg;
-            end
-
-        endcase
-    end
-
-    // Next State Logic
-    always @(*)
-    begin
-        case (k_cur_state)
-            IDLE:
-                if (s_axis_tvalid && s_axis_tready) begin
-                    k_next_state <= COMPUTE_SQUARES;
+                    k_cur_state <= COMPUTE_SQUARES;
                 end
                 else begin
-                    k_next_state <= IDLE;
+                    k_cur_state <= IDLE; 
                 end
+            end
+
             COMPUTE_SQUARES:
-                k_next_state <= ADD_SQUARES;
+            begin
+                re_sqrd <= in_re_reg * in_re_reg;
+                im_sqrd <= in_im_reg * in_im_reg;
+                k_cur_state <= ADD_SQUARES;
+            end
+
             ADD_SQUARES:
-                k_next_state <= DONE;
+            begin
+                out_reg <= re_sqrd + im_sqrd;
+                k_cur_state <= DONE;
+            end
+
             DONE:
-                k_next_state <= IDLE;
+            begin
+                k_cur_state <= IDLE;
+            end
+
         endcase
     end
+
+    // READY SIGNAL:
+    assign s_axis_tready = (k_cur_state == IDLE);
+
+    //// Next State Logic
+    //always @(*)
+    //begin
+    //    k_next_state = k_cur_state;
+    //    case (k_cur_state)
+    //        IDLE:
+    //            if (s_axis_tvalid && s_axis_tready) begin
+    //                k_next_state = COMPUTE_SQUARES;
+    //            end
+    //            else begin
+    //                k_next_state = IDLE;
+    //            end
+    //        COMPUTE_SQUARES:
+    //            k_next_state = ADD_SQUARES;
+    //        ADD_SQUARES:
+    //            k_next_state = DONE;
+    //        DONE:
+    //            k_next_state = IDLE;
+    //    endcase
+    //end
 
 
     always@(posedge clk )
