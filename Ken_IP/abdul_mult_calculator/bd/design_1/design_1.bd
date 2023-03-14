@@ -1,0 +1,121 @@
+{
+  "design": {
+    "design_info": {
+      "boundary_crc": "0x0",
+      "device": "xc7z020clg484-1",
+      "gen_directory": "../../../../multiplier_module.gen/sources_1/bd/design_1",
+      "name": "design_1",
+      "rev_ctrl_bd_flag": "RevCtrlBdOff",
+      "synth_flow_mode": "Hierarchical",
+      "tool_version": "2020.2"
+    },
+    "design_tree": {
+      "floating_point_0": "",
+      "floating_point_1": "",
+      "floating_point_2": ""
+    },
+    "components": {
+      "floating_point_0": {
+        "vlnv": "xilinx.com:ip:floating_point:7.1",
+        "xci_name": "design_1_floating_point_0_0",
+        "xci_path": "ip\\design_1_floating_point_0_0\\design_1_floating_point_0_0.xci",
+        "inst_hier_path": "floating_point_0",
+        "parameters": {
+          "C_Latency": {
+            "value": "29"
+          },
+          "C_Mult_Usage": {
+            "value": "No_Usage"
+          },
+          "C_Rate": {
+            "value": "1"
+          },
+          "C_Result_Exponent_Width": {
+            "value": "8"
+          },
+          "C_Result_Fraction_Width": {
+            "value": "24"
+          },
+          "Operation_Type": {
+            "value": "Divide"
+          },
+          "Result_Precision_Type": {
+            "value": "Single"
+          }
+        }
+      },
+      "floating_point_1": {
+        "vlnv": "xilinx.com:ip:floating_point:7.1",
+        "xci_name": "design_1_floating_point_0_1",
+        "xci_path": "ip\\design_1_floating_point_0_1\\design_1_floating_point_0_1.xci",
+        "inst_hier_path": "floating_point_1",
+        "parameters": {
+          "C_Latency": {
+            "value": "7"
+          },
+          "C_Mult_Usage": {
+            "value": "No_Usage"
+          },
+          "C_Rate": {
+            "value": "1"
+          },
+          "C_Result_Exponent_Width": {
+            "value": "32"
+          },
+          "C_Result_Fraction_Width": {
+            "value": "0"
+          },
+          "Operation_Type": {
+            "value": "Float_to_fixed"
+          },
+          "Result_Precision_Type": {
+            "value": "Int32"
+          }
+        }
+      },
+      "floating_point_2": {
+        "vlnv": "xilinx.com:ip:floating_point:7.1",
+        "xci_name": "design_1_floating_point_0_2",
+        "xci_path": "ip\\design_1_floating_point_0_2\\design_1_floating_point_0_2.xci",
+        "inst_hier_path": "floating_point_2",
+        "parameters": {
+          "C_Latency": {
+            "value": "29"
+          },
+          "C_Mult_Usage": {
+            "value": "No_Usage"
+          },
+          "C_Rate": {
+            "value": "1"
+          },
+          "C_Result_Exponent_Width": {
+            "value": "8"
+          },
+          "C_Result_Fraction_Width": {
+            "value": "24"
+          },
+          "Operation_Type": {
+            "value": "Square_root"
+          },
+          "Result_Precision_Type": {
+            "value": "Single"
+          }
+        }
+      }
+    },
+    "interface_nets": {
+      "floating_point_0_M_AXIS_RESULT": {
+        "interface_ports": [
+          "floating_point_0/M_AXIS_RESULT",
+          "floating_point_2/S_AXIS_A"
+        ]
+      },
+      "floating_point_2_M_AXIS_RESULT": {
+        "interface_ports": [
+          "floating_point_2/M_AXIS_RESULT",
+          "floating_point_1/S_AXIS_A"
+        ]
+      }
+    }
+  }
+}

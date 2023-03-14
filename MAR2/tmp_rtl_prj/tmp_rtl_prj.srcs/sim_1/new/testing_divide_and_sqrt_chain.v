@@ -20,6 +20,36 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
+/* 
+// THE PYTHON CODE I used to check the behaviour:
+import math
+
+A_values = range(24,110,9)
+B_values = range(89, 370, 30)
+
+if (len(A_values) != len(B_values)):
+    print("WARNING: LENGTHS DO NOT MATCH")
+
+for a in A_values:
+    print(hex(a))
+
+print("......\n\n\n")
+for b in B_values:
+    print(hex(b))
+
+print("......\n\n\n")
+
+for i in range(0, len(A_values)):
+    a = A_values[i]
+    b = B_values[0]
+    res = a/b
+    res = math.sqrt(res)
+    print("{a} and {b} gives {res}".format(a=a, b=b, res=res))
+    
+    print("{a} and {b} gives {res}".format(a=hex(a), b=hex(b), res=res))
+*/
+
+
 module testing_divide_and_sqrt_chain(  );
     localparam IN_DWIDTH = 32;
     localparam OUT_DWIDTH = 16;
@@ -44,7 +74,7 @@ module testing_divide_and_sqrt_chain(  );
     wire                            inb_ready;
     reg                             inb_valid;
 
-    reg [OUT_DWIDTH-1 : 0]         ACTUAL_out_data;
+    reg [OUT_DWIDTH-1 : 0]          ACTUAL_out_data;
 
     wire [OUT_DWIDTH-1 : 0]         out_data_WIRE;
     reg                             out_ready;
