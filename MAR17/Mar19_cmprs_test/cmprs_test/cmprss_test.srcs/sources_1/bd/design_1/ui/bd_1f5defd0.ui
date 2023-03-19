@@ -1,0 +1,72 @@
+{
+   "ActiveEmotionalView":"Default View",
+   "Default View_ScaleFactor":"0.615572",
+   "Default View_TopLeft":"744,-57",
+   "ExpandedHierarchyInLayout":"",
+   "guistr":"# # String gsaved with Nlview 7.0r6  2020-01-29 bk=1.5227 VDI=41 GEI=36 GUI=JA:10.0 non-TLS
+#  -string -flagsOSRD
+preplace port DDR -pg 1 -lvl 9 -x 3180 -y 60 -defaultsOSRD
+preplace port FIXED_IO -pg 1 -lvl 9 -x 3180 -y 80 -defaultsOSRD
+preplace port IIC_0_0 -pg 1 -lvl 9 -x 3180 -y 100 -defaultsOSRD
+preplace port FCLK_CLK1_0 -pg 1 -lvl 9 -x 3180 -y 240 -defaultsOSRD
+preplace port LRCLK_0 -pg 1 -lvl 9 -x 3180 -y 530 -defaultsOSRD
+preplace port BCLK_0 -pg 1 -lvl 9 -x 3180 -y 510 -defaultsOSRD
+preplace port SDATA_O_0 -pg 1 -lvl 9 -x 3180 -y 550 -defaultsOSRD
+preplace port SDATA_I_0 -pg 1 -lvl 0 -x 0 -y 570 -defaultsOSRD
+preplace inst processing_system7_0 -pg 1 -lvl 7 -x 2530 -y 160 -defaultsOSRD
+preplace inst zed_audio_ctrl_0 -pg 1 -lvl 7 -x 2530 -y 530 -defaultsOSRD
+preplace inst ps7_0_axi_periph -pg 1 -lvl 4 -x 1270 -y 200 -defaultsOSRD
+preplace inst rst_ps7_0_100M -pg 1 -lvl 2 -x 470 -y 130 -defaultsOSRD
+preplace inst xfft_FWD -pg 1 -lvl 2 -x 470 -y 350 -defaultsOSRD
+preplace inst xfft_INV -pg 1 -lvl 4 -x 1270 -y 620 -defaultsOSRD
+preplace inst axi_dma_0 -pg 1 -lvl 5 -x 1730 -y 150 -defaultsOSRD
+preplace inst axi_mem_intercon -pg 1 -lvl 6 -x 2100 -y 180 -defaultsOSRD
+preplace inst edge_detect_0 -pg 1 -lvl 1 -x 130 -y 370 -defaultsOSRD
+preplace inst axi_gpio_0 -pg 1 -lvl 5 -x 1730 -y 420 -defaultsOSRD
+preplace inst edge_detect_1 -pg 1 -lvl 3 -x 850 -y 640 -defaultsOSRD
+preplace inst axi_gpio_1 -pg 1 -lvl 5 -x 1730 -y 590 -defaultsOSRD
+preplace inst xlconcat_0 -pg 1 -lvl 6 -x 2100 -y 410 -defaultsOSRD
+preplace inst full_compressor_wrap_0 -pg 1 -lvl 3 -x 850 -y 340 -defaultsOSRD
+preplace inst rst_ps7_0_100M_1 -pg 1 -lvl 8 -x 2970 -y 410 -defaultsOSRD
+preplace netloc processing_system7_0_FCLK_CLK0 1 0 8 20 300 240 230 680 230 1020 490 1530 30 1940 30 2270 340 2760
+preplace netloc processing_system7_0_FCLK_RESET0_N 1 1 7 260 760 NJ 760 NJ 760 NJ 760 1920J 480 2300J 440 2790
+preplace netloc rst_ps7_0_100M_peripheral_aresetn 1 2 5 700 170 1010 410 1560 270 1950 340 2260J
+preplace netloc processing_system7_0_FCLK_CLK1 1 7 2 NJ 240 N
+preplace netloc axi_gpio_0_gpio_io_o 1 0 6 20 440 250 470 NJ 470 NJ 470 1490J 680 1910
+preplace netloc edge_detect_0_edge_detected 1 1 1 N 370
+preplace netloc axi_gpio_1_gpio_io_o 1 2 4 690 710 1030 750 NJ 750 1900
+preplace netloc edge_detect_1_edge_detected 1 3 1 N 640
+preplace netloc axi_dma_0_mm2s_introut 1 5 1 1930 190n
+preplace netloc axi_dma_0_s2mm_introut 1 5 1 1920 210n
+preplace netloc xlconcat_0_dout 1 6 1 2250 210n
+preplace netloc zed_audio_ctrl_0_LRCLK 1 7 2 NJ 530 N
+preplace netloc zed_audio_ctrl_0_BCLK 1 7 2 NJ 510 N
+preplace netloc zed_audio_ctrl_0_SDATA_O 1 7 2 NJ 550 N
+preplace netloc SDATA_I_0_1 1 0 7 20J 480 NJ 480 NJ 480 NJ 480 1480J 670 1940J 520 NJ
+preplace netloc processing_system7_0_FCLK_CLK2 1 3 5 1060 460 1500J 690 NJ 690 2280 350 2800
+preplace netloc rst_ps7_0_100M_1_peripheral_aresetn 1 3 6 1050 770 NJ 770 NJ 770 NJ 770 NJ 770 3150
+preplace netloc processing_system7_0_IIC_0 1 7 2 NJ 80 3140
+preplace netloc processing_system7_0_M_AXI_GP0 1 3 5 1030 500 NJ 500 NJ 500 2290J 430 2780
+preplace netloc processing_system7_0_DDR 1 7 2 NJ 40 3160
+preplace netloc axi_mem_intercon_M00_AXI 1 6 1 2250 130n
+preplace netloc processing_system7_0_FIXED_IO 1 7 2 NJ 60 3150
+preplace netloc axi_dma_0_M_AXIS_MM2S 1 1 5 250 -10 NJ -10 NJ -10 NJ -10 1930
+preplace netloc ps7_0_axi_periph_M01_AXI 1 4 1 1480 100n
+preplace netloc ps7_0_axi_periph_M03_AXI 1 4 1 1520 230n
+preplace netloc axi_dma_0_M_AXI_MM2S 1 5 1 N 90
+preplace netloc axi_dma_0_M_AXI_S2MM 1 5 1 N 110
+preplace netloc ps7_0_axi_periph_M02_AXI 1 4 1 1540 210n
+preplace netloc xfft_INV_M_AXIS_DATA 1 4 1 1510 120n
+preplace netloc full_compressor_wrap_0_M_AXIS_RESULT_0 1 3 1 1000 340n
+preplace netloc xfft_FWD_M_AXIS_DATA 1 2 1 690 290n
+preplace netloc processing_system7_0_M_AXI_GP1 1 3 5 1040 740 NJ 740 NJ 740 NJ 740 2770
+preplace netloc ps7_0_axi_periph_M00_AXI 1 4 3 1550J 510 NJ 510 2300
+levelinfo -pg 1 0 130 470 850 1270 1730 2100 2530 2970 3180
+pagesize -pg 1 -db -bbox -sgen -130 -20 3330 780
+"
+}
+{
+   "da_axi4_cnt":"6",
+   "da_clkrst_cnt":"3",
+   "da_ps7_cnt":"1"
+}
