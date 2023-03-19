@@ -1,14 +1,14 @@
 {
    "ActiveEmotionalView":"Default View",
-   "Default View_ScaleFactor":"0.803196",
-   "Default View_TopLeft":"893,-76",
+   "Default View_ScaleFactor":"0.872868",
+   "Default View_TopLeft":"-188,49",
    "ExpandedHierarchyInLayout":"",
    "guistr":"# # String gsaved with Nlview 7.0r6  2020-01-29 bk=1.5227 VDI=41 GEI=36 GUI=JA:10.0 non-TLS
 #  -string -flagsOSRD
 preplace port M_AXIS_RESULT_0 -pg 1 -lvl 7 -x 1810 -y 410 -defaultsOSRD
 preplace port s_axis_0 -pg 1 -lvl 0 -x -10 -y 490 -defaultsOSRD
-preplace port aresetn_0 -pg 1 -lvl 0 -x -10 -y 180 -defaultsOSRD
-preplace port clk_0 -pg 1 -lvl 0 -x -10 -y 90 -defaultsOSRD
+preplace port CLK -pg 1 -lvl 0 -x -10 -y 90 -defaultsOSRD
+preplace port aresetn -pg 1 -lvl 0 -x -10 -y 180 -defaultsOSRD
 preplace inst floating_point_0 -pg 1 -lvl 2 -x 430 -y 70 -defaultsOSRD
 preplace inst floating_point_1 -pg 1 -lvl 2 -x 430 -y 210 -defaultsOSRD
 preplace inst floating_point_2 -pg 1 -lvl 3 -x 740 -y 120 -defaultsOSRD
@@ -23,20 +23,20 @@ preplace netloc aresetn_0_1 1 0 6 10 290 NJ 290 NJ 290 880 430 1200 440 NJ
 preplace netloc clk_0_1 1 0 6 10 90 290 280 590 40 890 200 1210 430 1530J
 preplace netloc k_energy_computer_0_out_energy 1 0 6 30 420 NJ 420 NJ 420 NJ 420 NJ 420 1490
 preplace netloc k_energy_computer_0_out_valid 1 0 6 20 100 280J 140 570J 30 NJ 30 NJ 30 1500
+preplace netloc floating_point_3_M_AXIS_RESULT 1 4 1 N 130
+preplace netloc floating_point_2_M_AXIS_RESULT 1 3 1 N 120
 preplace netloc floating_point_0_M_AXIS_RESULT 1 2 1 580 70n
 preplace netloc floating_point_1_M_AXIS_RESULT 1 2 1 600 120n
-preplace netloc floating_point_2_M_AXIS_RESULT 1 3 1 N 120
-preplace netloc floating_point_3_M_AXIS_RESULT 1 4 1 N 130
-preplace netloc mul_calc_0_m_axis_a 1 1 1 270 60n
-preplace netloc mul_calc_0_m_axis_b 1 1 1 N 200
 preplace netloc s_axis_0_1 1 0 4 NJ 490 NJ 490 NJ 490 NJ
-preplace netloc floating_point_4_M_AXIS_RESULT 1 5 1 1510 140n
 preplace netloc k_do_mult_0_fft_out_axis 1 6 1 N 410
 preplace netloc axis_broadcaster_0_M00_AXIS 1 4 1 N 500
+preplace netloc floating_point_4_M_AXIS_RESULT 1 5 1 1510 140n
 preplace netloc axis_broadcaster_0_M01_AXIS 1 4 1 1190 340n
 preplace netloc axis_data_fifo_0_M_AXIS 1 5 1 1520 380n
+preplace netloc mul_calc_0_m_axis_a 1 1 1 270 60n
+preplace netloc mul_calc_0_m_axis_b 1 1 1 N 200
 levelinfo -pg 1 -10 150 430 740 1040 1350 1660 1810
-pagesize -pg 1 -db -bbox -sgen -130 0 2000 600
+pagesize -pg 1 -db -bbox -sgen -120 0 2000 600
 "
 }
-
+0
