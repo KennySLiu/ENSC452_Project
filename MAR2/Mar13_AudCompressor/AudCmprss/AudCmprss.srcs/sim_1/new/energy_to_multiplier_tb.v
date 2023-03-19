@@ -22,7 +22,7 @@
 
 module energy_to_multiplier_tb();
     parameter DATA_WIDTH = 16;
-    parameter OUT_WIDTH = 16;
+    parameter OUT_WIDTH = 32;
     parameter FFT_NUM_PTS = 32;
 
     reg                           aclk;
@@ -41,8 +41,11 @@ module energy_to_multiplier_tb();
     wire                          output_valid;
     wire                          output_ready;
 
-    reg   [DATA_WIDTH-1:0]        re_data[0:FFT_NUM_PTS-1]; //[c,n,s,e,w]
+    reg   [DATA_WIDTH-1:0]        re_data[0:FFT_NUM_PTS-1];
     reg   [DATA_WIDTH-1:0]        im_data[0:FFT_NUM_PTS-1];
+
+    reg   [DATA_WIDTH-1:0]        output_re_value;
+    reg   [DATA_WIDTH-1:0]        output_im_value;
 
     ///
     assign output_ready = 1;
@@ -238,13 +241,15 @@ module energy_to_multiplier_tb();
     // Reading output data
     always @(posedge aclk) begin
         if (output_valid) begin
-            output_value <= output_WIRE;
+            //output_value <= output_WIRE;
+            output_re_value [DATA_WIDTH-1 : 0] <= output_WIRE [OUT_WIDTH-1 : DATA_WIDTH];
+            output_im_value [DATA_WIDTH-1 : 0] <= output_WIRE [DATA_WIDTH-1 : 0];
         end
     end
     
     //simulation time handle
     initial begin
-        #900;
+        #1600;
         $finish;
     end
 
