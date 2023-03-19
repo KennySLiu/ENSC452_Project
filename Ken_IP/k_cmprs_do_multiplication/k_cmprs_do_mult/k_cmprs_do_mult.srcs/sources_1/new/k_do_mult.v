@@ -22,8 +22,9 @@
 
 module k_do_mult # (
     parameter integer MULT_WIDTH            = 16,
+    parameter integer MULT_FRACT_BITS       = 8,
     parameter integer FFTDATA_RE_WIDTH      = 16,
-    parameter integer NUM_FFT_PTS           = 32
+    parameter integer NUM_FFT_PTS           = 16
     )
     (
     input                                       clk,
@@ -41,33 +42,67 @@ module k_do_mult # (
     input                                       fft_out_axis_tready,
     output wire                                 fft_out_axis_tvalid
     );
-    // Just make sure it's big enough...
-    localparam  FFTDATA_CNT_MAX_BITS            = 24;
 
-    localparam  [3:0] IDLE                      = 4'b0000;
-    localparam  [3:0] READ_MULTIPLIER           = 4'b0001;
-    localparam  [3:0] DO_MULT                   = 4'b0010;
-    localparam  [3:0] READ_FFTDATA              = 4'b0011;
-    localparam  [3:0] STREAM_OUT                = 4'b0100;
+    ////////////////////////////////////////////////////////////////
+    //// Signals
+    ////////////////////////////////////////////////////////////////
+
+    // Just make sure it's big enough...
+    localparam  FFTDATA_CNT_MAX_BITS                = 24;
+    localparam  [3:0] IDLE                          = 4'b0000;
+    localparam  [3:0] READ_MULTIPLIER               = 4'b0001;
+    localparam  [3:0] DO_MULT                       = 4'b0010;
+    localparam  [3:0] READ_FFTDATA                  = 4'b0011;
+    localparam  [3:0] STREAM_OUT                    = 4'b0100;
+
+
+    localparam  MULT_INT_BITS                       = MULT_WIDTH - MULT_FRACT_BITS;
+    localparam  MULTIPLIED_RES_BITS                 = MULT_FRACT_BITS + FFTDATA_RE_WIDTH;
+    localparam  [FFTDATA_RE_WIDTH - MULT_INT_BITS -1 : 0] MULTIPLIER_PADDING_BITS = 'h0;
+    localparam  [MULT_FRACT_BITS-1 : 0]  FFTDATA_PADDING_BITS = 'h0;
+
+
     reg [3:0]                                       k_cur_state = IDLE;
     wire [FFTDATA_RE_WIDTH-1 : 0]                   in_re;
     wire [FFTDATA_RE_WIDTH-1 : 0]                   in_im;
     reg signed [FFTDATA_RE_WIDTH-1 : 0]             re_reg;
     reg signed [FFTDATA_RE_WIDTH-1 : 0]             im_reg;
     reg signed [MULT_WIDTH-1 : 0]                   multval_reg;
-    reg signed [FFTDATA_RE_WIDTH-1 : 0]             mult_re_reg;
-    reg signed [FFTDATA_RE_WIDTH-1 : 0]             mult_im_reg;
+
+    wire signed [MULTIPLIED_RES_BITS-1 : 0]         multiplier_shifted;
+    wire signed [MULTIPLIED_RES_BITS-1 : 0]         re_value_shifted;
+    wire signed [MULTIPLIED_RES_BITS-1 : 0]         im_value_shifted;
+    reg signed [2*MULTIPLIED_RES_BITS-1 : 0]        re_result_shifted_reg;
+    reg signed [2*MULTIPLIED_RES_BITS-1 : 0]        im_result_shifted_reg;
+
+    wire signed [FFTDATA_RE_WIDTH-1 : 0]            re_result;
+    wire signed [FFTDATA_RE_WIDTH-1 : 0]            im_result;
     reg signed [FFTDATA_CNT_MAX_BITS-1 : 0]         FFTdata_cnt;
+
+
+    ////////////////////////////////////////////////////////////////
+    //// Logic
+    ////////////////////////////////////////////////////////////////
+
 
     assign in_re [ FFTDATA_RE_WIDTH-1 : 0 ] = fft_in_axis_tdata [ 2*FFTDATA_RE_WIDTH-1   : FFTDATA_RE_WIDTH ];
     assign in_im [ FFTDATA_RE_WIDTH-1 : 0 ] = fft_in_axis_tdata [ FFTDATA_RE_WIDTH-1     : 0];
     
 
-    assign mult_in_axis_tready = (k_cur_state == READ_MULTIPLIER);
-    assign fft_in_axis_tready  = (k_cur_state == READ_FFTDATA);
-    assign fft_out_axis_tvalid = (k_cur_state == STREAM_OUT);
-    assign fft_out_axis_tdata [2*FFTDATA_RE_WIDTH-1 : FFTDATA_RE_WIDTH]     = mult_re_reg[FFTDATA_RE_WIDTH-1 : 0];
-    assign fft_out_axis_tdata [FFTDATA_RE_WIDTH-1 : 0]                      = mult_im_reg[FFTDATA_RE_WIDTH-1 : 0];
+    assign mult_in_axis_tready  = (k_cur_state == READ_MULTIPLIER);
+    assign fft_in_axis_tready   = (k_cur_state == READ_FFTDATA);
+    assign fft_out_axis_tvalid  = (k_cur_state == STREAM_OUT);
+    assign fft_out_axis_tdata [2*FFTDATA_RE_WIDTH-1 : FFTDATA_RE_WIDTH]     = re_result[FFTDATA_RE_WIDTH-1 : 0];
+    assign fft_out_axis_tdata [FFTDATA_RE_WIDTH-1 : 0]                      = im_result[FFTDATA_RE_WIDTH-1 : 0];
+
+    // To do the fixed-pt multiplication, we need to shift the bits:
+    // We need both operands to have N bits of integer and M bits of fractional.
+    // And the result will have 2N bits of integer and 2M bits of fractional.
+    assign re_value_shifted     = {re_reg, FFTDATA_PADDING_BITS};
+    assign im_value_shifted     = {im_reg, FFTDATA_PADDING_BITS};
+    assign multiplier_shifted   = {MULTIPLIER_PADDING_BITS, multval_reg};
+    assign re_result [FFTDATA_RE_WIDTH-1 : 0] = re_result_shifted_reg [2*MULT_FRACT_BITS+FFTDATA_RE_WIDTH-1 : 2*MULT_FRACT_BITS];
+    assign im_result [FFTDATA_RE_WIDTH-1 : 0] = im_result_shifted_reg [2*MULT_FRACT_BITS+FFTDATA_RE_WIDTH-1 : 2*MULT_FRACT_BITS];
 
     // STATE MACHINE
     always @(posedge clk)
@@ -111,8 +146,8 @@ module k_do_mult # (
 
                 DO_MULT:
                 begin
-                    mult_re_reg <= re_reg * multval_reg;
-                    mult_im_reg <= im_reg * multval_reg;
+                    re_result_shifted_reg <= re_value_shifted * multiplier_shifted;
+                    im_result_shifted_reg <= im_value_shifted * multiplier_shifted;
                     k_cur_state <= STREAM_OUT;
                 end
 
