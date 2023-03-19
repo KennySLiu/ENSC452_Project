@@ -34,10 +34,10 @@ module k_energy_computer #
     output reg                      out_valid
     );
 
-    parameter [3:0] IDLE                    = 4'b0000,
-                    COMPUTE_SQUARES         = 4'b0001,
-                    ADD_SQUARES             = 4'b0010,
-                    DONE                    = 4'b0011;
+    localparam  [3:0] IDLE                    = 4'b0000;
+    localparam  [3:0] COMPUTE_SQUARES         = 4'b0001;
+    localparam  [3:0] ADD_SQUARES             = 4'b0010;
+    localparam  [3:0] DONE                    = 4'b0011;
     reg [3:0] k_cur_state   = IDLE;
     reg [2*IN_WIDTH-1   : 0]    re_sqrd;
     reg [2*IN_WIDTH-1   : 0]    im_sqrd;
