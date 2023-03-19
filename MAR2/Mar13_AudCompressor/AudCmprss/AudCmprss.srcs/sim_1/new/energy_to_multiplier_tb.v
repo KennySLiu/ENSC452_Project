@@ -31,7 +31,7 @@ module energy_to_multiplier_tb();
     reg  [DATA_WIDTH-1:0]         fftdata_re_in;
     reg  [DATA_WIDTH-1:0]         fftdata_im_in;
 
-    reg   [2*DATA_WIDTH-1:0]      fftdata_data_in;
+    wire [2*DATA_WIDTH-1:0]       fftdata_data_in;
     reg                           fftdata_valid;
     wire                          fftdata_ready;
 
@@ -50,6 +50,10 @@ module energy_to_multiplier_tb();
     ///
     assign output_ready = 1;
     assign aresetn = 1;
+
+    // Pack the data
+    assign fftdata_data_in [2*DATA_WIDTH - 1 : DATA_WIDTH]  = fftdata_re_in[DATA_WIDTH - 1 : 0];
+    assign fftdata_data_in [DATA_WIDTH - 1 : 0]             = fftdata_im_in[DATA_WIDTH - 1 : 0];
 
 
     integer temp_counter;
@@ -189,7 +193,7 @@ module energy_to_multiplier_tb();
         //im_data[30  ] = 16'h0029;
         //im_data[31  ] = 16'h0029;
 
-        temp_counter = 0;     
+        temp_counter = 1;
     end
 
     //clock handle
@@ -201,10 +205,6 @@ module energy_to_multiplier_tb();
     //passing temp data
     //always @(negedge aclk) begin
     always @(posedge aclk) begin
-        // Pack the data
-        fftdata_data_in [2*DATA_WIDTH - 1 : DATA_WIDTH]  <= fftdata_re_in[DATA_WIDTH - 1 : 0];
-        fftdata_data_in [DATA_WIDTH - 1 : 0]             <= fftdata_im_in[DATA_WIDTH - 1 : 0];
-
         if(fftdata_ready && fftdata_valid) begin
             fftdata_re_in <= re_data[temp_counter];
             fftdata_im_in <= im_data[temp_counter];

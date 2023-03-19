@@ -384,13 +384,23 @@
         "vlnv": "xilinx.com:ip:axis_data_fifo:2.0",
         "xci_name": "full_compressor_axis_data_fifo_0_0",
         "xci_path": "ip\\full_compressor_axis_data_fifo_0_0\\full_compressor_axis_data_fifo_0_0.xci",
-        "inst_hier_path": "axis_data_fifo_0"
+        "inst_hier_path": "axis_data_fifo_0",
+        "parameters": {
+          "FIFO_DEPTH": {
+            "value": "2048"
+          }
+        }
       },
       "k_do_mult_0": {
         "vlnv": "sfu.ca:user:k_do_mult:1.0",
         "xci_name": "full_compressor_k_do_mult_0_0",
         "xci_path": "ip\\full_compressor_k_do_mult_0_0\\full_compressor_k_do_mult_0_0.xci",
-        "inst_hier_path": "k_do_mult_0"
+        "inst_hier_path": "k_do_mult_0",
+        "parameters": {
+          "NUM_FFT_PTS": {
+            "value": "32"
+          }
+        }
       }
     },
     "interface_nets": {
@@ -473,8 +483,8 @@
           "aresetn_0",
           "mul_calc_0/aresetn",
           "axis_broadcaster_0/aresetn",
-          "k_do_mult_0/aresetn",
-          "axis_data_fifo_0/s_axis_aresetn"
+          "axis_data_fifo_0/s_axis_aresetn",
+          "k_do_mult_0/aresetn"
         ]
       },
       "clk_0_1": {
@@ -488,8 +498,8 @@
           "mul_calc_0/aclk",
           "k_energy_computer_0/clk",
           "axis_broadcaster_0/aclk",
-          "k_do_mult_0/clk",
-          "axis_data_fifo_0/s_axis_aclk"
+          "axis_data_fifo_0/s_axis_aclk",
+          "k_do_mult_0/clk"
         ]
       },
       "k_energy_computer_0_out_energy": {
