@@ -55,12 +55,12 @@ module k_do_mult # (
     localparam  [3:0] READ_FFTDATA                  = 4'b0011;
     localparam  [3:0] STREAM_OUT                    = 4'b0100;
 
-
     localparam  MULT_INT_BITS                       = MULT_WIDTH - MULT_FRACT_BITS;
     localparam  MULTIPLIED_RES_BITS                 = MULT_FRACT_BITS + FFTDATA_RE_WIDTH;
     localparam  [FFTDATA_RE_WIDTH - MULT_INT_BITS -1 : 0] MULTIPLIER_PADDING_BITS = 'h0;
     localparam  [MULT_FRACT_BITS-1 : 0]  FFTDATA_PADDING_BITS = 'h0;
 
+    wire [MULT_INT_BITS - 1 : 0]                    multval_int_bits;
 
     reg [3:0]                                       k_cur_state = IDLE;
     wire [FFTDATA_RE_WIDTH-1 : 0]                   in_re;
@@ -88,6 +88,7 @@ module k_do_mult # (
     assign in_re [ FFTDATA_RE_WIDTH-1 : 0 ] = fft_in_axis_tdata [ 2*FFTDATA_RE_WIDTH-1   : FFTDATA_RE_WIDTH ];
     assign in_im [ FFTDATA_RE_WIDTH-1 : 0 ] = fft_in_axis_tdata [ FFTDATA_RE_WIDTH-1     : 0];
     
+    assign multval_int_bits[MULT_INT_BITS - 1 : 0] =    multval_reg [MULT_WIDTH - 1 : MULT_FRACT_BITS];
 
     assign mult_in_axis_tready  = (k_cur_state == READ_MULTIPLIER);
     assign fft_in_axis_tready   = (k_cur_state == READ_FFTDATA);
@@ -146,8 +147,15 @@ module k_do_mult # (
 
                 DO_MULT:
                 begin
-                    re_result_shifted_reg <= re_value_shifted * multiplier_shifted;
-                    im_result_shifted_reg <= im_value_shifted * multiplier_shifted;
+                    if (multval_int_bits == 'b0) begin
+                        re_result_shifted_reg <= re_value_shifted * multiplier_shifted;
+                        im_result_shifted_reg <= im_value_shifted * multiplier_shifted;
+                    end
+                    else begin
+                        // Don't multiply - just copy the original values.
+                        re_result_shifted_reg [2*MULT_FRACT_BITS+FFTDATA_RE_WIDTH-1 : 2*MULT_FRACT_BITS] <= re_value_shifted [MULTIPLIED_RES_BITS - 1 : MULT_FRACT_BITS];
+                        im_result_shifted_reg [2*MULT_FRACT_BITS+FFTDATA_RE_WIDTH-1 : 2*MULT_FRACT_BITS] <= im_value_shifted [MULTIPLIED_RES_BITS - 1 : MULT_FRACT_BITS];
+                    end
                     k_cur_state <= STREAM_OUT;
                 end
 
