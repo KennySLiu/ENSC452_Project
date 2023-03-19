@@ -28,12 +28,12 @@ module energy_to_multiplier_tb();
     reg                           aclk;
     wire                          aresetn;
 
-    reg  [DATA_WIDTH-1:0]         energy_re_in;
-    reg  [DATA_WIDTH-1:0]         energy_im_in;
+    reg  [DATA_WIDTH-1:0]         fftdata_re_in;
+    reg  [DATA_WIDTH-1:0]         fftdata_im_in;
 
-    reg   [2*DATA_WIDTH-1:0]      energy_data_in;
-    reg                           energy_valid;
-    wire                          energy_ready;
+    reg   [2*DATA_WIDTH-1:0]      fftdata_data_in;
+    reg                           fftdata_valid;
+    wire                          fftdata_ready;
 
     reg [OUT_WIDTH-1:0]           output_value;
 
@@ -199,12 +199,12 @@ module energy_to_multiplier_tb();
     //always @(negedge aclk) begin
     always @(posedge aclk) begin
         // Pack the data
-        energy_data_in [2*DATA_WIDTH - 1 : DATA_WIDTH]  <= energy_re_in[DATA_WIDTH - 1 : 0];
-        energy_data_in [DATA_WIDTH - 1 : 0]             <= energy_im_in[DATA_WIDTH - 1 : 0];
+        fftdata_data_in [2*DATA_WIDTH - 1 : DATA_WIDTH]  <= fftdata_re_in[DATA_WIDTH - 1 : 0];
+        fftdata_data_in [DATA_WIDTH - 1 : 0]             <= fftdata_im_in[DATA_WIDTH - 1 : 0];
 
-        if(energy_ready && energy_valid) begin
-            energy_re_in <= re_data[temp_counter];
-            energy_im_in <= im_data[temp_counter];
+        if(fftdata_ready && fftdata_valid) begin
+            fftdata_re_in <= re_data[temp_counter];
+            fftdata_im_in <= im_data[temp_counter];
             if(temp_counter == FFT_NUM_PTS- 1) 
                 temp_counter = 0;
             else
@@ -214,25 +214,25 @@ module energy_to_multiplier_tb();
     
     //control validity of temp data
     initial begin
-        energy_valid = 0;
-        energy_re_in = re_data[0];
-        energy_im_in = im_data[0];
+        fftdata_valid = 0;
+        fftdata_re_in = re_data[0];
+        fftdata_im_in = im_data[0];
         #24;
-        energy_valid = 1;
+        fftdata_valid = 1;
         #1;
-        energy_valid = 0;
+        fftdata_valid = 0;
         #16;
-        energy_valid = 0;
+        fftdata_valid = 0;
         #8;
-        energy_valid = 1;
+        fftdata_valid = 1;
         #20;
-        energy_valid = 0;
+        fftdata_valid = 0;
         #8;
-        energy_valid = 1;
+        fftdata_valid = 1;
         #20;
-        energy_valid = 0;
+        fftdata_valid = 0;
         #8;
-        energy_valid = 1;
+        fftdata_valid = 1;
     end
 
     // Reading output data
@@ -249,51 +249,26 @@ module energy_to_multiplier_tb();
     end
 
 
-
-    design_1 design_1_i (
+    full_compressor full_compressor_i (
         .M_AXIS_RESULT_0_tdata(output_WIRE),
         .M_AXIS_RESULT_0_tready(output_ready),
         .M_AXIS_RESULT_0_tvalid(output_valid),
         .aresetn_0(aresetn),
         .clk_0(aclk),
-        .s_axis_0_tdata(energy_data_in),
-        .s_axis_0_tready(energy_ready),
-        .s_axis_0_tvalid(energy_valid)
+        .s_axis_0_tdata(fftdata_data_in),
+        .s_axis_0_tready(fftdata_ready),
+        .s_axis_0_tvalid(fftdata_valid)
     );
 
-    //module design_1_wrapper
-    //   (M_AXIS_RESULT_0_tdata,
-    //    M_AXIS_RESULT_0_tready,
-    //    M_AXIS_RESULT_0_tvalid,
-    //    aresetn_0,
-    //    clk_0,
-    //    in_im_0,
-    //    in_re_0);
-    //  output [15:0]M_AXIS_RESULT_0_tdata;
-    //  input M_AXIS_RESULT_0_tready;
-    //  output M_AXIS_RESULT_0_tvalid;
-    //  input aresetn_0;
-    //  input clk_0;
-    //  input [15:0]in_im_0;
-    //  input [15:0]in_re_0;
-    //
-    //  wire [15:0]M_AXIS_RESULT_0_tdata;
-    //  wire M_AXIS_RESULT_0_tready;
-    //  wire M_AXIS_RESULT_0_tvalid;
-    //  wire aresetn_0;
-    //  wire clk_0;
-    //  wire [15:0]in_im_0;
-    //  wire [15:0]in_re_0;
-    //
-    //  design_1 design_1_i
-    //       (.M_AXIS_RESULT_0_tdata(M_AXIS_RESULT_0_tdata),
-    //        .M_AXIS_RESULT_0_tready(M_AXIS_RESULT_0_tready),
-    //        .M_AXIS_RESULT_0_tvalid(M_AXIS_RESULT_0_tvalid),
-    //        .aresetn_0(aresetn_0),
-    //        .clk_0(clk_0),
-    //        .in_im_0(in_im_0),
-    //        .in_re_0(in_re_0));
-    //endmodule
-
+    //design_1 design_1_i (
+    //    .M_AXIS_RESULT_0_tdata(output_WIRE),
+    //    .M_AXIS_RESULT_0_tready(output_ready),
+    //    .M_AXIS_RESULT_0_tvalid(output_valid),
+    //    .aresetn_0(aresetn),
+    //    .clk_0(aclk),
+    //    .s_axis_0_tdata(fftdata_data_in),
+    //    .s_axis_0_tready(fftdata_ready),
+    //    .s_axis_0_tvalid(fftdata_valid)
+    //);
 
 endmodule

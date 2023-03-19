@@ -20,10 +20,10 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module k_do_mult(
+module k_do_mult # (
     parameter integer MULT_WIDTH            = 16,
     parameter integer FFTDATA_RE_WIDTH      = 16,
-    parameter integer FFT_NUM_PTS           = 32
+    parameter integer NUM_FFT_PTS           = 32
     )
     (
     input                                       clk,
@@ -37,10 +37,11 @@ module k_do_mult(
     output wire                                 mult_in_axis_tready,
     input signed [MULT_WIDTH-1 : 0]             mult_in_axis_tdata,
 
-    output reg [2*FFTDATA_RE_WIDTH-1 : 0]       fft_out_axis_a_tdata,
-    input                                       fft_out_axis_a_tready,
-    output reg                                  fft_out_axis_a_tvalid,
+    output wire [2*FFTDATA_RE_WIDTH-1 : 0]      fft_out_axis_tdata,
+    input                                       fft_out_axis_tready,
+    output wire                                 fft_out_axis_tvalid
     );
+    // Just make sure it's big enough...
     localparam  FFTDATA_CNT_MAX_BITS            = 24;
 
     localparam  [3:0] IDLE                      = 4'b0000;
@@ -49,23 +50,24 @@ module k_do_mult(
     localparam  [3:0] READ_FFTDATA              = 4'b0011;
     localparam  [3:0] STREAM_OUT                = 4'b0100;
     reg [3:0]                                       k_cur_state = IDLE;
-    wire [FFDATA_RE_WIDTH-1 : 0]                    in_re;
-    wire [FFDATA_RE_WIDTH-1 : 0]                    in_im;
-    reg signed [FFDATA_RE_WIDTH-1 : 0]              re_reg;
-    reg signed [FFDATA_RE_WIDTH-1 : 0]              im_reg;
-    reg signed [MULT_WIDTH-1 : 0]                   mult_reg;
-    reg signed [FFDATA_RE_WIDTH-1 : 0]              mult_re_reg;
-    reg signed [FFDATA_RE_WIDTH-1 : 0]              mult_im_reg;
-    reg [OUT_WIDTH      : 0]                        out_reg;
-    reg unsigned [FFTDATA_CNT_MAX_BITS-1 : 0]       FFTdata_cnt;
+    wire [FFTDATA_RE_WIDTH-1 : 0]                   in_re;
+    wire [FFTDATA_RE_WIDTH-1 : 0]                   in_im;
+    reg signed [FFTDATA_RE_WIDTH-1 : 0]             re_reg;
+    reg signed [FFTDATA_RE_WIDTH-1 : 0]             im_reg;
+    reg signed [MULT_WIDTH-1 : 0]                   multval_reg;
+    reg signed [FFTDATA_RE_WIDTH-1 : 0]             mult_re_reg;
+    reg signed [FFTDATA_RE_WIDTH-1 : 0]             mult_im_reg;
+    reg signed [FFTDATA_CNT_MAX_BITS-1 : 0]         FFTdata_cnt;
 
-    assign in_re [ FFDATA_RE_WIDTH-1 : 0 ] = fft_in_axis_tdata [ 2*FFDATA_RE_WIDTH-1   : FFDATA_RE_WIDTH ];
-    assign in_im [ FFDATA_RE_WIDTH-1 : 0 ] = fft_in_axis_tdata [ FFDATA_RE_WIDTH-1     : 0];
+    assign in_re [ FFTDATA_RE_WIDTH-1 : 0 ] = fft_in_axis_tdata [ 2*FFTDATA_RE_WIDTH-1   : FFTDATA_RE_WIDTH ];
+    assign in_im [ FFTDATA_RE_WIDTH-1 : 0 ] = fft_in_axis_tdata [ FFTDATA_RE_WIDTH-1     : 0];
     
 
     assign mult_in_axis_tready = (k_cur_state == READ_MULTIPLIER);
     assign fft_in_axis_tready  = (k_cur_state == READ_FFTDATA);
-    assign fft_out_axis_tready = (k_cur_state == STREAM_OUT);
+    assign fft_out_axis_tvalid = (k_cur_state == STREAM_OUT);
+    assign fft_out_axis_tdata [2*FFTDATA_RE_WIDTH-1 : FFTDATA_RE_WIDTH]     = mult_re_reg[FFTDATA_RE_WIDTH-1 : 0];
+    assign fft_out_axis_tdata [FFTDATA_RE_WIDTH-1 : 0]                      = mult_im_reg[FFTDATA_RE_WIDTH-1 : 0];
 
     // STATE MACHINE
     always @(posedge clk)
@@ -86,7 +88,7 @@ module k_do_mult(
                 READ_MULTIPLIER:
                 begin
                     if (mult_in_axis_tvalid && mult_in_axis_tready) begin
-                        mult_reg <= mult_in_axis_tdata;
+                        multval_reg <= mult_in_axis_tdata;
                         k_cur_state <= READ_FFTDATA;
                     end
                     else begin
@@ -109,18 +111,18 @@ module k_do_mult(
 
                 DO_MULT:
                 begin
-                    mult_re_reg <= re_reg * mult_reg;
-                    mult_im_reg <= im_reg * mult_reg;
+                    mult_re_reg <= re_reg * multval_reg;
+                    mult_im_reg <= im_reg * multval_reg;
                     k_cur_state <= STREAM_OUT;
                 end
 
                 STREAM_OUT:
                 begin
                     if (fft_out_axis_tvalid && fft_out_axis_tready) begin
-                        if (FFTdata_cnt < FFT_NUM_PTS) begin
+                        if (FFTdata_cnt < NUM_FFT_PTS) begin
                             k_cur_state <= READ_FFTDATA;
                         end
-                        else if (FFTdata_cnt == FFT_NUM_PTS) begin
+                        else if (FFTdata_cnt == NUM_FFT_PTS) begin
                             k_cur_state <= IDLE;
                         end
                         else begin
@@ -134,7 +136,7 @@ module k_do_mult(
 
                 default:
                 begin
-                    k_next_state <= k_cur_state;
+                    k_cur_state <= k_cur_state;
                 end
             endcase
         end
