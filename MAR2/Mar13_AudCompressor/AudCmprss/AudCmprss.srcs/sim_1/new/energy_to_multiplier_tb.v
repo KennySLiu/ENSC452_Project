@@ -23,29 +23,33 @@
 module energy_to_multiplier_tb();
     parameter DATA_WIDTH = 16;
     parameter OUT_WIDTH = 32;
-    parameter FFT_NUM_PTS = 32;
+    parameter MAX_FFT_PTS = 2048;
 
-    reg                           aclk;
-    wire                          aresetn;
+    reg                             aclk;
+    wire                            aresetn;
 
-    reg  [DATA_WIDTH-1:0]         fftdata_re_in;
-    reg  [DATA_WIDTH-1:0]         fftdata_im_in;
+    reg  [DATA_WIDTH-1:0]           fftdata_re_in;
+    reg  [DATA_WIDTH-1:0]           fftdata_im_in;
 
-    wire [2*DATA_WIDTH-1:0]       fftdata_data_in;
-    reg                           fftdata_valid;
-    wire                          fftdata_ready;
+    wire [2*DATA_WIDTH-1:0]         fftdata_data_in;
+    reg                             fftdata_valid;
+    wire                            fftdata_ready;
 
-    reg [OUT_WIDTH-1:0]           output_value;
+    reg [OUT_WIDTH-1:0]             output_value;
 
-    wire  [OUT_WIDTH-1:0]         output_WIRE;
-    wire                          output_valid;
-    wire                          output_ready;
+    wire  [OUT_WIDTH-1:0]           output_WIRE;
+    wire                            output_valid;
+    wire                            output_ready;
 
-    reg   [DATA_WIDTH-1:0]        re_data[0:FFT_NUM_PTS-1];
-    reg   [DATA_WIDTH-1:0]        im_data[0:FFT_NUM_PTS-1];
+    reg   [DATA_WIDTH-1:0]          re_data[0:MAX_FFT_PTS-1];
+    reg   [DATA_WIDTH-1:0]          im_data[0:MAX_FFT_PTS-1];
 
-    reg   [DATA_WIDTH-1:0]        output_re_value;
-    reg   [DATA_WIDTH-1:0]        output_im_value;
+    reg   [DATA_WIDTH-1:0]          output_re_value;
+    reg   [DATA_WIDTH-1:0]          output_im_value;
+
+    wire  [31:0]                    Thresh;
+    wire  [31:0]                    Ratio;
+    wire  [24:0]                    num_fft_pts;
 
     ///
     assign output_ready = 1;
@@ -55,143 +59,81 @@ module energy_to_multiplier_tb();
     assign fftdata_data_in [2*DATA_WIDTH - 1 : DATA_WIDTH]  = fftdata_re_in[DATA_WIDTH - 1 : 0];
     assign fftdata_data_in [DATA_WIDTH - 1 : 0]             = fftdata_im_in[DATA_WIDTH - 1 : 0];
 
+    assign Thresh       = 4000;
+    assign Ratio        = 15;
+    assign num_fft_pts  = 32;
+
+
 
     integer temp_counter;
     initial begin
 
-        // Matlab generated data with rng(2), (rand-0.5), multiplied by 30:
-        re_data[0   ] = 16'hFFFE;
-        re_data[1   ] = 16'h0001;
-        re_data[2   ] = 16'hFFFE;
-        re_data[3   ] = 16'hFFF7;
-        re_data[4   ] = 16'hFFFA;
-        re_data[5   ] = 16'h0004;
-        re_data[6   ] = 16'hFFF5;
-        re_data[7   ] = 16'hFFF7;
-        re_data[8   ] = 16'h000B;
-        re_data[9   ] = 16'h000A;
-        re_data[10  ] = 16'h0000;
-        re_data[11  ] = 16'hFFFE;
-        re_data[12  ] = 16'hFFF5;
-        re_data[13  ] = 16'hFFF8;
-        re_data[14  ] = 16'hFFF8;
-        re_data[15  ] = 16'hFFFF;
-        re_data[16  ] = 16'h0004;
-        re_data[17  ] = 16'h0000;
-        re_data[18  ] = 16'h0009;
-        re_data[19  ] = 16'hFFF6;
-        re_data[20  ] = 16'h000E;
-        re_data[21  ] = 16'h000C;
-        re_data[22  ] = 16'h0002;
-        re_data[23  ] = 16'hFFFE;
-        re_data[24  ] = 16'h0001;
-        re_data[25  ] = 16'h0001;
-        re_data[26  ] = 16'hFFFC;
-        re_data[27  ] = 16'hFFFD;
-        re_data[28  ] = 16'hFFF8;
-        re_data[29  ] = 16'h000F;
-        re_data[30  ] = 16'h0009;
-        re_data[31  ] = 16'h0008;
+        // Matlab generated data with rng(2), (rand-0.5), multiplied by 1000:
+        re_data[0   ] = 16'hFFC0;
+        re_data[1   ] = 16'h0032;
+        re_data[2   ] = 16'hFFB0;
+        re_data[3   ] = 16'hFED9;
+        re_data[4   ] = 16'hFF38;
+        re_data[5   ] = 16'h0079;
+        re_data[6   ] = 16'hFE93;
+        re_data[7   ] = 16'hFEC4;
+        re_data[8   ] = 16'h0162;
+        re_data[9   ] = 16'h015B;
+        re_data[10  ] = 16'h0005;
+        re_data[11  ] = 16'hFFB8;
+        re_data[12  ] = 16'hFE8B;
+        re_data[13  ] = 16'hFEEE;
+        re_data[14  ] = 16'hFEE8;
+        re_data[15  ] = 16'hFFE0;
+        re_data[16  ] = 16'h008C;
+        re_data[17  ] = 16'h0005;
+        re_data[18  ] = 16'h0126;
+        re_data[19  ] = 16'hFEAE;
+        re_data[20  ] = 16'h01D1;
+        re_data[21  ] = 16'h0186;
+        re_data[22  ] = 16'h0043;
+        re_data[23  ] = 16'hFFC1;
+        re_data[24  ] = 16'h0024;
+        re_data[25  ] = 16'h002C;
+        re_data[26  ] = 16'hFF7A;
+        re_data[27  ] = 16'hFFA2;
+        re_data[28  ] = 16'hFF03;
+        re_data[29  ] = 16'h01EE;
+        re_data[30  ] = 16'h012C;
+        re_data[31  ] = 16'h0109;
 
-        im_data[0   ] = 16'hFFF2;
-        im_data[1   ] = 16'hFFFE;
-        im_data[2   ] = 16'hFFFB;
-        im_data[3   ] = 16'h0004;
-        im_data[4   ] = 16'hFFF9;
-        im_data[5   ] = 16'h0001;
-        im_data[6   ] = 16'h0000;
-        im_data[7   ] = 16'h0009;
-        im_data[8   ] = 16'h0000;
-        im_data[9   ] = 16'hFFF3;
-        im_data[10  ] = 16'hFFF3;
-        im_data[11  ] = 16'hFFF4;
-        im_data[12  ] = 16'h0003;
-        im_data[13  ] = 16'hFFF4;
-        im_data[14  ] = 16'hFFFB;
-        im_data[15  ] = 16'hFFF7;
-        im_data[16  ] = 16'hFFFF;
-        im_data[17  ] = 16'hFFFD;
-        im_data[18  ] = 16'h0002;
-        im_data[19  ] = 16'h0006;
+        im_data[0   ] = 16'hFE26;
+        im_data[1   ] = 16'hFFBF;
+        im_data[2   ] = 16'hFF56;
+        im_data[3   ] = 16'h0077;
+        im_data[4   ] = 16'hFF17;
+        im_data[5   ] = 16'h001D;
+        im_data[6   ] = 16'h000E;
+        im_data[7   ] = 16'h011D;
+        im_data[8   ] = 16'hFFFA;
+        im_data[9   ] = 16'hFE5C;
+        im_data[10  ] = 16'hFE4D;
+        im_data[11  ] = 16'hFE6D;
+        im_data[12  ] = 16'h0061;
+        im_data[13  ] = 16'hFE77;
+        im_data[14  ] = 16'hFF6A;
+        im_data[15  ] = 16'hFED6;
+        im_data[16  ] = 16'hFFEF;
+        im_data[17  ] = 16'hFF8F;
+        im_data[18  ] = 16'h0050;
+        im_data[19  ] = 16'h00C9;
         im_data[20  ] = 16'h0000;
-        im_data[21  ] = 16'hFFFB;
-        im_data[22  ] = 16'hFFFE;
-        im_data[23  ] = 16'h0008;
-        im_data[24  ] = 16'h000E;
-        im_data[25  ] = 16'hFFF3;
-        im_data[26  ] = 16'h000B;
-        im_data[27  ] = 16'hFFF2;
-        im_data[28  ] = 16'hFFF3;
-        im_data[29  ] = 16'h000E;
-        im_data[30  ] = 16'h0003;
-        im_data[31  ] = 16'hFFF6;
-
-        // Matlab generated data with rng(1), multiplied by 100:
-        //re_data[0   ] = 16'h002A;
-        //re_data[1   ] = 16'h0000;
-        //re_data[2   ] = 16'h000F;
-        //re_data[3   ] = 16'h0013;
-        //re_data[4   ] = 16'h0028;
-        //re_data[5   ] = 16'h002A;
-        //re_data[6   ] = 16'h0014;
-        //re_data[7   ] = 16'h0003;
-        //re_data[8   ] = 16'h002A;
-        //re_data[9   ] = 16'h000E;
-        //re_data[10  ] = 16'h0050;
-        //re_data[11  ] = 16'h001F;
-        //re_data[12  ] = 16'h0058;
-        //re_data[13  ] = 16'h0009;
-        //re_data[14  ] = 16'h0011;
-        //re_data[15  ] = 16'h000A;
-        //re_data[16  ] = 16'h0060;
-        //re_data[17  ] = 16'h0045;
-        //re_data[18  ] = 16'h0045;
-        //re_data[19  ] = 16'h0002;
-        //re_data[20  ] = 16'h0063;
-        //re_data[21  ] = 16'h001C;
-        //re_data[22  ] = 16'h000A;
-        //re_data[23  ] = 16'h005B;
-        //re_data[24  ] = 16'h001D;
-        //re_data[25  ] = 16'h0002;
-        //re_data[26  ] = 16'h0015;
-        //re_data[27  ] = 16'h0031;
-        //re_data[28  ] = 16'h0039;
-        //re_data[29  ] = 16'h003B;
-        //re_data[30  ] = 16'h000A;
-        //re_data[31  ] = 16'h0045;
-
-        //im_data[0   ] = 16'h0048;
-        //im_data[1   ] = 16'h001E;
-        //im_data[2   ] = 16'h0009;
-        //im_data[3   ] = 16'h0023;
-        //im_data[4   ] = 16'h0036;
-        //im_data[5   ] = 16'h0045;
-        //im_data[6   ] = 16'h0058;
-        //im_data[7   ] = 16'h0043;
-        //im_data[8   ] = 16'h0038;
-        //im_data[9   ] = 16'h0014;
-        //im_data[10  ] = 16'h0061;
-        //im_data[11  ] = 16'h0045;
-        //im_data[12  ] = 16'h0059;
-        //im_data[13  ] = 16'h0004;
-        //im_data[14  ] = 16'h0058;
-        //im_data[15  ] = 16'h002A;
-        //im_data[16  ] = 16'h0035;
-        //im_data[17  ] = 16'h0020;
-        //im_data[18  ] = 16'h0053;
-        //im_data[19  ] = 16'h004B;
-        //im_data[20  ] = 16'h004B;
-        //im_data[21  ] = 16'h004F;
-        //im_data[22  ] = 16'h002D;
-        //im_data[23  ] = 16'h001D;
-        //im_data[24  ] = 16'h000D;
-        //im_data[25  ] = 16'h0044;
-        //im_data[26  ] = 16'h001B;
-        //im_data[27  ] = 16'h0005;
-        //im_data[28  ] = 16'h000F;
-        //im_data[29  ] = 16'h0046;
-        //im_data[30  ] = 16'h0029;
-        //im_data[31  ] = 16'h0029;
+        im_data[21  ] = 16'hFF62;
+        im_data[22  ] = 16'hFFB8;
+        im_data[23  ] = 16'h0115;
+        im_data[24  ] = 16'h01C6;
+        im_data[25  ] = 16'hFE5E;
+        im_data[26  ] = 16'h015F;
+        im_data[27  ] = 16'hFE27;
+        im_data[28  ] = 16'hFE4F;
+        im_data[29  ] = 16'h01D7;
+        im_data[30  ] = 16'h0066;
+        im_data[31  ] = 16'hFEB5;
 
         temp_counter = 1;
     end
@@ -208,7 +150,7 @@ module energy_to_multiplier_tb();
         if(fftdata_ready && fftdata_valid) begin
             fftdata_re_in <= re_data[temp_counter];
             fftdata_im_in <= im_data[temp_counter];
-            if(temp_counter == FFT_NUM_PTS- 1) 
+            if(temp_counter == num_fft_pts- 1) 
                 temp_counter = 0;
             else
                 temp_counter=temp_counter+1;
@@ -255,14 +197,17 @@ module energy_to_multiplier_tb();
 
 
     full_compressor full_compressor_i (
+        .aresetn(aresetn),
+        .CLK(aclk),
         .M_AXIS_RESULT_0_tdata(output_WIRE),
         .M_AXIS_RESULT_0_tready(output_ready),
         .M_AXIS_RESULT_0_tvalid(output_valid),
-        .aresetn_0(aresetn),
-        .clk_0(aclk),
         .s_axis_0_tdata(fftdata_data_in),
         .s_axis_0_tready(fftdata_ready),
-        .s_axis_0_tvalid(fftdata_valid)
+        .s_axis_0_tvalid(fftdata_valid),
+        .Thresh_0(Thresh),
+        .Ratio_0(Ratio),
+        .num_fft_pts_0(num_fft_pts)
     );
 
     //design_1 design_1_i (
