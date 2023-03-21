@@ -317,6 +317,8 @@ void kenny_compressor_run(
     //    return;
     //}
 
+    const int PRINT_EVERY_N_ITERATIONS = 1000;
+
     int num_fft_pts     = (p_compressor_settings->p_stft_settings)->num_fft_pts;
     int num_fft_windows = (p_compressor_settings->p_stft_settings)->num_fft_windows;
     unsigned int threshold = (p_compressor_settings->threshold_energy);
@@ -334,9 +336,9 @@ void kenny_compressor_run(
             avg_window_energy += kenny_cplx_get_magnitude_squared(cur_fft_pt);
         }
 
-        avg_window_energy = avg_window_energy/num_fft_pts;
+        //avg_window_energy = avg_window_energy/num_fft_pts;
 
-        if (debug_mode){
+        if (debug_mode && (win_idx%PRINT_EVERY_N_ITERATIONS == 0)){
             printf("BEFORE COMPRESSION: The %d'th window average energy = %lld\r\n", win_idx, avg_window_energy);
         }
 
@@ -350,7 +352,7 @@ void kenny_compressor_run(
         } else {
             multiplier = 1.0;
         }
-        if (debug_mode){
+        if (debug_mode && (win_idx%PRINT_EVERY_N_ITERATIONS == 0)){
             printf("Compressor multiplier = %lf\r\n", multiplier);
         }
 
@@ -359,13 +361,13 @@ void kenny_compressor_run(
             KENNY_FFTDATA_MEM_PTR[win_idx * num_fft_pts + pt_idx].data_im *= multiplier;
         }
 
-        if (debug_mode){
+        if (debug_mode && (win_idx%PRINT_EVERY_N_ITERATIONS == 0)){
         	avg_window_energy = 0;
             for (int pt_idx = 0; pt_idx < num_fft_pts; ++pt_idx) {
                 cur_fft_pt = KENNY_FFTDATA_MEM_PTR[win_idx * num_fft_pts + pt_idx];
                 avg_window_energy += kenny_cplx_get_magnitude_squared(cur_fft_pt);
             }
-            avg_window_energy = avg_window_energy/num_fft_pts;
+            //avg_window_energy = avg_window_energy/num_fft_pts;
 
             printf("AFTER COMPRESSION: The %d'th window average energy = %lld\r\n", win_idx, avg_window_energy);
         }

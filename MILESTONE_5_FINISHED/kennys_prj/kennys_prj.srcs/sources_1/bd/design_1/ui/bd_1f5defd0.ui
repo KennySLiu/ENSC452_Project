@@ -1,7 +1,7 @@
 {
    "ActiveEmotionalView":"Default View",
    "Default View_ScaleFactor":"0.60489",
-   "Default View_TopLeft":"-124,64",
+   "Default View_TopLeft":"855,64",
    "ExpandedHierarchyInLayout":"",
    "guistr":"# # String gsaved with Nlview 7.0r6  2020-01-29 bk=1.5227 VDI=41 GEI=36 GUI=JA:10.0 non-TLS
 #  -string -flagsOSRD
@@ -45,25 +45,25 @@ preplace netloc Net1 1 0 4 30 490 400 400 880J 420 1270
 preplace netloc edge_detect_1_edge_detected 1 1 1 400 550n
 preplace netloc axi_dma_1_mm2s_introut 1 3 1 1280 750n
 preplace netloc axi_dma_1_s2mm_introut 1 3 1 1270 770n
-preplace netloc axi_dma_0_M_AXIS_MM2S 1 1 3 420 20 NJ 20 1320
-preplace netloc axi_mem_intercon_M00_AXI 1 4 1 1680 170n
-preplace netloc axi_dma_0_M_AXI_MM2S 1 3 1 N 80
-preplace netloc xfft_1_M_AXIS_DATA 1 2 1 860 470n
-preplace netloc processing_system7_0_M_AXI_GP0 1 1 5 410 10 NJ 10 NJ 10 NJ 10 2150
-preplace netloc ps7_0_axi_periph_M00_AXI 1 2 1 850 90n
-preplace netloc axi_dma_0_M_AXI_S2MM 1 3 1 N 100
-preplace netloc processing_system7_0_FIXED_IO 1 5 1 NJ 590
 preplace netloc xfft_0_M_AXIS_DATA 1 2 1 N 110
-preplace netloc ps7_0_axi_periph_M01_AXI 1 2 1 870 300n
+preplace netloc axi_dma_0_M_AXI_MM2S 1 3 1 N 80
 preplace netloc ps7_0_axi_periph_M02_AXI 1 2 3 N 1060 NJ 1060 NJ
 preplace netloc axi_mem_intercon1_M00_AXI 1 4 1 1670 660n
-preplace netloc ps7_0_axi_periph_M03_AXI 1 2 1 910 480n
-preplace netloc axi_dma_1_M_AXIS_MM2S 1 1 3 420 410 NJ 410 1280
-preplace netloc axi_dma_1_M_AXI_MM2S 1 3 1 1310 600n
+preplace netloc ps7_0_axi_periph_M00_AXI 1 2 1 850 90n
+preplace netloc processing_system7_0_FIXED_IO 1 5 1 NJ 590
 preplace netloc axi_dma_1_M_AXI_S2MM 1 3 1 1330 620n
-preplace netloc processing_system7_0_IIC_0 1 5 1 NJ 610
-preplace netloc processing_system7_0_DDR 1 5 1 NJ 570
+preplace netloc axi_dma_0_M_AXI_S2MM 1 3 1 N 100
+preplace netloc processing_system7_0_M_AXI_GP0 1 1 5 410 10 NJ 10 NJ 10 NJ 10 2150
 preplace netloc ps7_0_axi_periph_M04_AXI 1 2 1 920 660n
+preplace netloc ps7_0_axi_periph_M03_AXI 1 2 1 910 480n
+preplace netloc ps7_0_axi_periph_M01_AXI 1 2 1 870 300n
+preplace netloc axi_dma_0_M_AXIS_MM2S 1 1 3 420 20 NJ 20 1320
+preplace netloc axi_mem_intercon_M00_AXI 1 4 1 1680 170n
+preplace netloc axi_dma_1_M_AXI_MM2S 1 3 1 1310 600n
+preplace netloc processing_system7_0_DDR 1 5 1 NJ 570
+preplace netloc xfft_1_M_AXIS_DATA 1 2 1 860 470n
+preplace netloc axi_dma_1_M_AXIS_MM2S 1 1 3 420 410 NJ 410 1280
+preplace netloc processing_system7_0_IIC_0 1 5 1 NJ 610
 levelinfo -pg 1 0 200 640 1100 1500 1910 2170
 pagesize -pg 1 -db -bbox -sgen -130 0 2320 1260
 "

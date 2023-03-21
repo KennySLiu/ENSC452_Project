@@ -276,6 +276,7 @@ int main()
     	else if (c == '4')
     	{
     	    XTime startcycles, endcycles, totalcycles;
+    	    int tmp_debug_int = 0;
     	    float total_time_usec;
     	    XTime_GetTime(&startcycles);
 
@@ -291,6 +292,13 @@ int main()
             kenny_eq_run(&eq_settings, KENNY_FFTDATA_MEM_PTR, 0);
 		    kenny_compressor_run(&compressor_settings, KENNY_FFTDATA_MEM_PTR, 0);
 
+		    for (int i = 0; i < 99999; ++i){
+		    	if (i == 99998)
+		    	{
+		    		printf("testing.\n");
+		    	}
+		    }
+
             kenny_stft_run_inv(
                 &stft_settings,
                 p_fft_inst_INV,
@@ -305,6 +313,7 @@ int main()
     	    totalcycles = 2 * (endcycles-startcycles);
     	    total_time_usec = ((float) totalcycles) * 1000000 / 2 / COUNTS_PER_SECOND;
 
+    	    printf("\n\n");
     		printf("The start val was %lld\r\nthe end val was %lld\r\nThe total time was %f usec\r\n.", startcycles, endcycles, total_time_usec);
     	}
 
