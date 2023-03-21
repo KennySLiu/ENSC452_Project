@@ -23,8 +23,8 @@
 module k_do_mult # (
     parameter integer MULT_WIDTH            = 16,
     parameter integer MULT_FRACT_BITS       = 8,
-    parameter integer FFTDATA_RE_WIDTH      = 16,
-    parameter integer NUM_FFT_PTS           = 16
+    parameter integer FFTDATA_RE_WIDTH      = 16
+    //parameter integer NUM_FFT_PTS           = 16
     )
     (
     input                                       clk,
@@ -40,7 +40,9 @@ module k_do_mult # (
 
     output wire [2*FFTDATA_RE_WIDTH-1 : 0]      fft_out_axis_tdata,
     input                                       fft_out_axis_tready,
-    output wire                                 fft_out_axis_tvalid
+    output wire                                 fft_out_axis_tvalid,
+
+    input wire [24:0]                           num_fft_pts
     );
 
     ////////////////////////////////////////////////////////////////
@@ -162,10 +164,10 @@ module k_do_mult # (
                 STREAM_OUT:
                 begin
                     if (fft_out_axis_tvalid && fft_out_axis_tready) begin
-                        if (FFTdata_cnt < NUM_FFT_PTS) begin
+                        if (FFTdata_cnt < num_fft_pts) begin
                             k_cur_state <= READ_FFTDATA;
                         end
-                        else if (FFTdata_cnt == NUM_FFT_PTS) begin
+                        else if (FFTdata_cnt == num_fft_pts) begin
                             k_cur_state <= IDLE;
                         end
                         else begin

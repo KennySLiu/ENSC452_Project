@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x5667FECE3F664961",
+      "boundary_crc": "0x6CE810AAD6426134",
       "device": "xc7z020clg484-1",
       "gen_directory": "../../../../AudCmprss.gen/sources_1/bd/full_compressor",
       "name": "full_compressor",
@@ -17,10 +17,10 @@
       "floating_point_3": "",
       "floating_point_4": "",
       "k_energy_computer_0": "",
-      "mul_calc_0": "",
       "axis_broadcaster_0": "",
       "axis_data_fifo_0": "",
-      "k_do_mult_0": ""
+      "k_do_mult_0": "",
+      "mul_calc_0": ""
     },
     "interface_ports": {
       "M_AXIS_RESULT_0": {
@@ -178,6 +178,21 @@
             "value_src": "default"
           }
         }
+      },
+      "num_fft_pts_0": {
+        "direction": "I",
+        "left": "24",
+        "right": "0"
+      },
+      "Ratio_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "Thresh_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
       }
     },
     "components": {
@@ -371,23 +386,6 @@
         "xci_path": "ip\\full_compressor_k_energy_computer_0_0\\full_compressor_k_energy_computer_0_0.xci",
         "inst_hier_path": "k_energy_computer_0"
       },
-      "mul_calc_0": {
-        "vlnv": "sfu.ca:user:mul_calc:1.0",
-        "xci_name": "full_compressor_mul_calc_0_0",
-        "xci_path": "ip\\full_compressor_mul_calc_0_0\\full_compressor_mul_calc_0_0.xci",
-        "inst_hier_path": "mul_calc_0",
-        "parameters": {
-          "NUM_FFT_PTS": {
-            "value": "32"
-          },
-          "Ratio": {
-            "value": "10"
-          },
-          "Thresh": {
-            "value": "2000"
-          }
-        }
-      },
       "axis_broadcaster_0": {
         "vlnv": "xilinx.com:ip:axis_broadcaster:1.1",
         "xci_name": "full_compressor_axis_broadcaster_0_0",
@@ -409,15 +407,28 @@
         "vlnv": "sfu.ca:user:k_do_mult:1.0",
         "xci_name": "full_compressor_k_do_mult_0_0",
         "xci_path": "ip\\full_compressor_k_do_mult_0_0\\full_compressor_k_do_mult_0_0.xci",
-        "inst_hier_path": "k_do_mult_0",
-        "parameters": {
-          "NUM_FFT_PTS": {
-            "value": "32"
-          }
-        }
+        "inst_hier_path": "k_do_mult_0"
+      },
+      "mul_calc_0": {
+        "vlnv": "sfu.ca:user:mul_calc:1.0",
+        "xci_name": "full_compressor_mul_calc_0_1",
+        "xci_path": "ip\\full_compressor_mul_calc_0_1\\full_compressor_mul_calc_0_1.xci",
+        "inst_hier_path": "mul_calc_0"
       }
     },
     "interface_nets": {
+      "mul_calc_0_m_axis_b": {
+        "interface_ports": [
+          "mul_calc_0/m_axis_b",
+          "floating_point_1/S_AXIS_A"
+        ]
+      },
+      "mul_calc_0_m_axis_a": {
+        "interface_ports": [
+          "mul_calc_0/m_axis_a",
+          "floating_point_0/S_AXIS_A"
+        ]
+      },
       "floating_point_4_M_AXIS_RESULT": {
         "interface_ports": [
           "floating_point_4/M_AXIS_RESULT",
@@ -428,12 +439,6 @@
         "interface_ports": [
           "M_AXIS_RESULT_0",
           "k_do_mult_0/fft_out_axis"
-        ]
-      },
-      "mul_calc_0_m_axis_a": {
-        "interface_ports": [
-          "mul_calc_0/m_axis_a",
-          "floating_point_0/S_AXIS_A"
         ]
       },
       "floating_point_1_M_AXIS_RESULT": {
@@ -452,12 +457,6 @@
         "interface_ports": [
           "axis_data_fifo_0/M_AXIS",
           "k_do_mult_0/fft_in_axis"
-        ]
-      },
-      "mul_calc_0_m_axis_b": {
-        "interface_ports": [
-          "mul_calc_0/m_axis_b",
-          "floating_point_1/S_AXIS_A"
         ]
       },
       "floating_point_2_M_AXIS_RESULT": {
@@ -495,10 +494,10 @@
       "aresetn_0_1": {
         "ports": [
           "aresetn",
-          "mul_calc_0/aresetn",
           "axis_broadcaster_0/aresetn",
           "axis_data_fifo_0/s_axis_aresetn",
-          "k_do_mult_0/aresetn"
+          "k_do_mult_0/aresetn",
+          "mul_calc_0/aresetn"
         ]
       },
       "clk_0_1": {
@@ -509,11 +508,11 @@
           "floating_point_2/aclk",
           "floating_point_3/aclk",
           "floating_point_4/aclk",
-          "mul_calc_0/aclk",
           "k_energy_computer_0/clk",
           "axis_broadcaster_0/aclk",
           "axis_data_fifo_0/s_axis_aclk",
-          "k_do_mult_0/clk"
+          "k_do_mult_0/clk",
+          "mul_calc_0/aclk"
         ]
       },
       "k_energy_computer_0_out_energy": {
@@ -526,6 +525,25 @@
         "ports": [
           "k_energy_computer_0/out_valid",
           "mul_calc_0/e_ready"
+        ]
+      },
+      "num_fft_pts_0_1": {
+        "ports": [
+          "num_fft_pts_0",
+          "mul_calc_0/num_fft_pts",
+          "k_do_mult_0/num_fft_pts"
+        ]
+      },
+      "Ratio_0_1": {
+        "ports": [
+          "Ratio_0",
+          "mul_calc_0/Ratio"
+        ]
+      },
+      "Thresh_0_1": {
+        "ports": [
+          "Thresh_0",
+          "mul_calc_0/Thresh"
         ]
       }
     }

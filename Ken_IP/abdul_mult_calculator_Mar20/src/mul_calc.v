@@ -23,28 +23,29 @@
 module mul_calc #
 (
     parameter ENRGY_DATA_WIDTH = 40,
-    parameter AXI_DATA_WIDTH = 32,
-    parameter NUM_FFT_PTS  = 16,
-    parameter Thresh = 1000,
-    parameter Ratio = 10
+    parameter AXI_DATA_WIDTH = 32
+    //parameter NUM_FFT_PTS  = 16,
+    //parameter Thresh = 1000,
+    //parameter Ratio = 10
 )
 
 (
-    input aclk,
-    input aresetn,
-    //input [31:0] Thresh,
-    //input [31:0] Ratio,
+    input                       aclk,
+    input                       aresetn,
+    input wire signed [31:0]    Thresh,
+    input wire signed [31:0]    Ratio,
+    input wire [24:0]           num_fft_pts,
     
-    input [ENRGY_DATA_WIDTH-1 : 0] energy,
-    input e_ready,
+    input [ENRGY_DATA_WIDTH-1 : 0]  energy,
+    input                           e_ready,
     
     output reg [AXI_DATA_WIDTH-1:0] m_axis_a_tdata,
-    input m_axis_a_tready,
-    output reg m_axis_a_tvalid,
+    input                           m_axis_a_tready,
+    output reg                      m_axis_a_tvalid,
     
     output reg [AXI_DATA_WIDTH-1:0] m_axis_b_tdata,
-    input m_axis_b_tready,
-    output reg m_axis_b_tvalid
+    input                           m_axis_b_tready,
+    output reg                      m_axis_b_tvalid
 );
 
 reg [7:0] state = 8'd0;
@@ -107,7 +108,7 @@ begin
         SUM:
             begin
                 state <= IDLE;
-                if(counter >= (NUM_FFT_PTS-1))
+                if(counter >= (num_fft_pts-1))
                 begin
                     counter <= 0;
                     m_axis_a_tdata <= (((data_sum+data_reg)-Thresh)/Ratio)+Thresh;
