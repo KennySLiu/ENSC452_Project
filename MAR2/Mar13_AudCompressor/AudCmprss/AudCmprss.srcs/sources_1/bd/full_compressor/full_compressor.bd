@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x6CE810AAD6426134",
+      "boundary_crc": "0x1D1CF88B9A2E7CED",
       "device": "xc7z020clg484-1",
       "gen_directory": "../../../../AudCmprss.gen/sources_1/bd/full_compressor",
       "name": "full_compressor",
@@ -19,8 +19,8 @@
       "k_energy_computer_0": "",
       "axis_broadcaster_0": "",
       "axis_data_fifo_0": "",
-      "k_do_mult_0": "",
-      "mul_calc_0": ""
+      "mul_calc_0": "",
+      "k_do_mult_0": ""
     },
     "interface_ports": {
       "M_AXIS_RESULT_0": {
@@ -193,6 +193,9 @@
         "direction": "I",
         "left": "31",
         "right": "0"
+      },
+      "bypass_0": {
+        "direction": "I"
       }
     },
     "components": {
@@ -403,17 +406,17 @@
           }
         }
       },
-      "k_do_mult_0": {
-        "vlnv": "sfu.ca:user:k_do_mult:1.0",
-        "xci_name": "full_compressor_k_do_mult_0_0",
-        "xci_path": "ip\\full_compressor_k_do_mult_0_0\\full_compressor_k_do_mult_0_0.xci",
-        "inst_hier_path": "k_do_mult_0"
-      },
       "mul_calc_0": {
         "vlnv": "sfu.ca:user:mul_calc:1.0",
         "xci_name": "full_compressor_mul_calc_0_1",
         "xci_path": "ip\\full_compressor_mul_calc_0_1\\full_compressor_mul_calc_0_1.xci",
         "inst_hier_path": "mul_calc_0"
+      },
+      "k_do_mult_0": {
+        "vlnv": "sfu.ca:user:k_do_mult:1.0",
+        "xci_name": "full_compressor_k_do_mult_0_0",
+        "xci_path": "ip\\full_compressor_k_do_mult_0_0\\full_compressor_k_do_mult_0_0.xci",
+        "inst_hier_path": "k_do_mult_0"
       }
     },
     "interface_nets": {
@@ -496,8 +499,8 @@
           "aresetn",
           "axis_broadcaster_0/aresetn",
           "axis_data_fifo_0/s_axis_aresetn",
-          "k_do_mult_0/aresetn",
-          "mul_calc_0/aresetn"
+          "mul_calc_0/aresetn",
+          "k_do_mult_0/aresetn"
         ]
       },
       "clk_0_1": {
@@ -511,8 +514,8 @@
           "k_energy_computer_0/clk",
           "axis_broadcaster_0/aclk",
           "axis_data_fifo_0/s_axis_aclk",
-          "k_do_mult_0/clk",
-          "mul_calc_0/aclk"
+          "mul_calc_0/aclk",
+          "k_do_mult_0/clk"
         ]
       },
       "k_energy_computer_0_out_energy": {
@@ -544,6 +547,12 @@
         "ports": [
           "Thresh_0",
           "mul_calc_0/Thresh"
+        ]
+      },
+      "bypass_0_1": {
+        "ports": [
+          "bypass_0",
+          "k_do_mult_0/bypass"
         ]
       }
     }

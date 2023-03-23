@@ -42,7 +42,8 @@ module k_do_mult # (
     input                                       fft_out_axis_tready,
     output wire                                 fft_out_axis_tvalid,
 
-    input wire [24:0]                           num_fft_pts
+    input wire [24:0]                           num_fft_pts,
+    input wire                                  bypass
     );
 
     ////////////////////////////////////////////////////////////////
@@ -130,6 +131,7 @@ module k_do_mult # (
                         k_cur_state <= READ_FFTDATA;
                     end
                     else begin
+                        multval_reg <= multval_reg;
                         k_cur_state <= k_cur_state;
                     end
                 end
@@ -143,13 +145,17 @@ module k_do_mult # (
                         k_cur_state <= DO_MULT;
                     end
                     else begin
+                        re_reg <= re_reg;
+                        im_reg <= im_reg;
+                        FFTdata_cnt <= FFTdata_cnt;
                         k_cur_state <= k_cur_state;
                     end
                 end
 
                 DO_MULT:
                 begin
-                    if (multval_int_bits == 'b0) begin
+                    if (!bypass && multval_int_bits == 'b0) begin
+                        // Only multiply if the multiplier is < 1.
                         re_result_shifted_reg <= re_value_shifted * multiplier_shifted;
                         im_result_shifted_reg <= im_value_shifted * multiplier_shifted;
                     end

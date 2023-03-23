@@ -50,6 +50,7 @@ module energy_to_multiplier_tb();
     wire  [31:0]                    Thresh;
     wire  [31:0]                    Ratio;
     wire  [24:0]                    num_fft_pts;
+    reg                             bypass;
 
     ///
     assign output_ready = 1;
@@ -62,6 +63,14 @@ module energy_to_multiplier_tb();
     assign Thresh       = 4000;
     assign Ratio        = 15;
     assign num_fft_pts  = 32;
+
+
+    initial begin
+        bypass = 1;
+        #1200
+        bypass = 0;
+    end
+
 
 
 
@@ -207,7 +216,8 @@ module energy_to_multiplier_tb();
         .s_axis_0_tvalid(fftdata_valid),
         .Thresh_0(Thresh),
         .Ratio_0(Ratio),
-        .num_fft_pts_0(num_fft_pts)
+        .num_fft_pts_0(num_fft_pts),
+        .bypass_0(bypass)
     );
 
     //design_1 design_1_i (
