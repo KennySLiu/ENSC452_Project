@@ -16,12 +16,12 @@
 	(
 		// Users to add ports here
 
-	    output reg [C_S00_AXI_DATA_WIDTH-1:0]       reg_cmprs_threshold,
-	    output reg [C_S00_AXI_DATA_WIDTH-1:0]       reg_cmprs_ratio,
-	    output reg [C_S00_AXI_DATA_WIDTH-1:0]       reg_cmprs_num_fft_pts,
-	    output reg [C_S00_AXI_DATA_WIDTH-1:0]       slv_reg3_UNUSED,
-	    output reg [C_S00_AXI_DATA_WIDTH-1:0]       slv_reg4_UNUSED,
-	    output reg [C_S00_AXI_DATA_WIDTH-1:0]       slv_reg5_UNUSED,
+	    output wire [C_S00_AXI_DATA_WIDTH-1:0]       reg_cmprs_threshold,
+	    output wire [C_S00_AXI_DATA_WIDTH-1:0]       reg_cmprs_ratio,
+	    output wire [C_S00_AXI_DATA_WIDTH-1:0]       reg_cmprs_num_fft_pts,
+	    output wire [C_S00_AXI_DATA_WIDTH-1:0]       reg_cmprs_bypass,
+	    output wire [C_S00_AXI_DATA_WIDTH-1:0]       slv_reg4_UNUSED,
+	    output wire [C_S00_AXI_DATA_WIDTH-1:0]       slv_reg5_UNUSED,
 
 		// User ports ends
 		// Do not modify the ports beyond this line
@@ -79,7 +79,7 @@
         .reg_cmprs_threshold        (reg_cmprs_threshold),
         .reg_cmprs_ratio            (reg_cmprs_ratio),
         .reg_cmprs_num_fft_pts      (reg_cmprs_num_fft_pts),
-        .slv_reg3                   (slv_reg3_UNUSED),
+        .reg_cmprs_bypass           (reg_cmprs_bypass),
         .slv_reg4                   (slv_reg4_UNUSED),
         .slv_reg5                   (slv_reg5_UNUSED)
 	);

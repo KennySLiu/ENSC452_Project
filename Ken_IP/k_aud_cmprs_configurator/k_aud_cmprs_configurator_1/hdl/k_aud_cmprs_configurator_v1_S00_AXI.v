@@ -20,7 +20,7 @@
 	    output reg [C_S_AXI_DATA_WIDTH-1:0]     reg_cmprs_threshold,
 	    output reg [C_S_AXI_DATA_WIDTH-1:0]     reg_cmprs_ratio,
 	    output reg [C_S_AXI_DATA_WIDTH-1:0]     reg_cmprs_num_fft_pts,
-	    output reg [C_S_AXI_DATA_WIDTH-1:0]     slv_reg3,
+	    output reg [C_S_AXI_DATA_WIDTH-1:0]     reg_cmprs_bypass,
 	    output reg [C_S_AXI_DATA_WIDTH-1:0]     slv_reg4,
 	    output reg [C_S_AXI_DATA_WIDTH-1:0]     slv_reg5,
 
@@ -227,7 +227,7 @@
 	      reg_cmprs_threshold <= 0;
 	      reg_cmprs_ratio <= 0;
 	      reg_cmprs_num_fft_pts <= 0;
-	      slv_reg3 <= 0;
+	      reg_cmprs_bypass <= 0;
 	      slv_reg4 <= 0;
 	      slv_reg5 <= 0;
 	    end 
@@ -261,7 +261,7 @@
 	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
 	                // Respective byte enables are asserted as per write strobes 
 	                // Slave register 3
-	                slv_reg3[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+	                reg_cmprs_bypass[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
 	              end  
 	          3'h4:
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
@@ -281,7 +281,7 @@
 	                      reg_cmprs_threshold <= reg_cmprs_threshold;
 	                      reg_cmprs_ratio <= reg_cmprs_ratio;
 	                      reg_cmprs_num_fft_pts <= reg_cmprs_num_fft_pts;
-	                      slv_reg3 <= slv_reg3;
+	                      reg_cmprs_bypass <= reg_cmprs_bypass;
 	                      slv_reg4 <= slv_reg4;
 	                      slv_reg5 <= slv_reg5;
 	                    end
@@ -395,7 +395,7 @@
 	        3'h0   : reg_data_out <= reg_cmprs_threshold;
 	        3'h1   : reg_data_out <= reg_cmprs_ratio;
 	        3'h2   : reg_data_out <= reg_cmprs_num_fft_pts;
-	        3'h3   : reg_data_out <= slv_reg3;
+	        3'h3   : reg_data_out <= reg_cmprs_bypass;
 	        3'h4   : reg_data_out <= slv_reg4;
 	        3'h5   : reg_data_out <= slv_reg5;
 	        default : reg_data_out <= 0;
