@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2020.2 (64-bit)
+# SW Build 3064766 on Wed Nov 18 09:12:45 MST 2020
+# IP Build 3064653 on Wed Nov 18 14:17:31 MST 2020
+# Start of session at: Mon Mar 27 17:58:47 2023
+# Process ID: 38828
+# Current directory: C:/Users/awa159/Downloads/IP_to_import/gain_controller_ip/gain_controller_ip.runs/synth_1
+# Command line: vivado.exe -log gain_controller_stream.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source gain_controller_stream.tcl
+# Log file: C:/Users/awa159/Downloads/IP_to_import/gain_controller_ip/gain_controller_ip.runs/synth_1/gain_controller_stream.vds
+# Journal file: C:/Users/awa159/Downloads/IP_to_import/gain_controller_ip/gain_controller_ip.runs/synth_1\vivado.jou
+#-----------------------------------------------------------
+source gain_controller_stream.tcl -notrace

@@ -1,0 +1,7 @@
+Running: xsim.dir/gain_controller_stream_behav/xsimk.exe -simmode gui -wdb gain_controller_stream_behav.wdb -simrunnum 0 -socket 5742
+Design successfully loaded
+Design Loading Memory Usage: 8236 KB (Peak: 8236 KB)
+Design Loading CPU Usage: 15 ms
+Simulation completed
+Simulation Memory Usage: 16788 KB (Peak: 16788 KB)
+Simulation CPU Usage: 1311 ms

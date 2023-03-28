@@ -1,0 +1,13 @@
+#-----------------------------------------------------------
+# Webtalk v2020.2 (64-bit)
+# SW Build 3064766 on Wed Nov 18 09:12:45 MST 2020
+# IP Build 3064653 on Wed Nov 18 14:17:31 MST 2020
+# Start of session at: Sun Mar 26 12:29:11 2023
+# Process ID: 47100
+# Current directory: C:/Users/awa159/Downloads/peqstr/peqstr.sim/sim_1/behav/xsim
+# Command line: wbtcv.exe -mode batch -source C:/Users/awa159/Downloads/peqstr/peqstr.sim/sim_1/behav/xsim/xsim.dir/eq_streaming_behav/webtalk/xsim_webtalk.tcl -notrace
+# Log file: C:/Users/awa159/Downloads/peqstr/peqstr.sim/sim_1/behav/xsim/webtalk.log
+# Journal file: C:/Users/awa159/Downloads/peqstr/peqstr.sim/sim_1/behav/xsim\webtalk.jou
+#-----------------------------------------------------------
+source C:/Users/awa159/Downloads/peqstr/peqstr.sim/sim_1/behav/xsim/xsim.dir/eq_streaming_behav/webtalk/xsim_webtalk.tcl -notrace
+INFO: [Common 17-206] Exiting Webtalk at Sun Mar 26 12:29:11 2023...

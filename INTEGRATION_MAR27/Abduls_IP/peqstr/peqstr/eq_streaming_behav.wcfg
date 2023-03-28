@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="eq_streaming_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="eq_streaming" />
+            <top_module name="glbl" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="10000991700fs"></ZoomStartTime>
+      <ZoomEndTime time="10001081101fs"></ZoomEndTime>
+      <Cursor1Time time="10001025000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="238"></NameColumnWidth>
+      <ValueColumnWidth column_width="157"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="44" />
+   <wvobject fp_name="/eq_streaming/aresetn" type="logic">
+      <obj_property name="ElementShortName">aresetn</obj_property>
+      <obj_property name="ObjectShortName">aresetn</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/D_READY" type="array">
+      <obj_property name="ElementShortName">D_READY[31:0]</obj_property>
+      <obj_property name="ObjectShortName">D_READY[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/FFT_PTNS" type="array">
+      <obj_property name="ElementShortName">FFT_PTNS[31:0]</obj_property>
+      <obj_property name="ObjectShortName">FFT_PTNS[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/FFT_BKTS" type="array">
+      <obj_property name="ElementShortName">FFT_BKTS[31:0]</obj_property>
+      <obj_property name="ObjectShortName">FFT_BKTS[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/my_reg0" type="array">
+      <obj_property name="ElementShortName">my_reg0[31:0]</obj_property>
+      <obj_property name="ObjectShortName">my_reg0[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/my_reg1" type="array">
+      <obj_property name="ElementShortName">my_reg1[31:0]</obj_property>
+      <obj_property name="ObjectShortName">my_reg1[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/my_reg2" type="array">
+      <obj_property name="ElementShortName">my_reg2[31:0]</obj_property>
+      <obj_property name="ObjectShortName">my_reg2[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/my_reg3" type="array">
+      <obj_property name="ElementShortName">my_reg3[31:0]</obj_property>
+      <obj_property name="ObjectShortName">my_reg3[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/my_reg4" type="array">
+      <obj_property name="ElementShortName">my_reg4[31:0]</obj_property>
+      <obj_property name="ObjectShortName">my_reg4[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/my_reg5" type="array">
+      <obj_property name="ElementShortName">my_reg5[31:0]</obj_property>
+      <obj_property name="ObjectShortName">my_reg5[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/my_reg6" type="array">
+      <obj_property name="ElementShortName">my_reg6[31:0]</obj_property>
+      <obj_property name="ObjectShortName">my_reg6[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/my_reg7" type="array">
+      <obj_property name="ElementShortName">my_reg7[31:0]</obj_property>
+      <obj_property name="ObjectShortName">my_reg7[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/my_reg8" type="array">
+      <obj_property name="ElementShortName">my_reg8[31:0]</obj_property>
+      <obj_property name="ObjectShortName">my_reg8[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/my_reg9" type="array">
+      <obj_property name="ElementShortName">my_reg9[31:0]</obj_property>
+      <obj_property name="ObjectShortName">my_reg9[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/my_reg10" type="array">
+      <obj_property name="ElementShortName">my_reg10[31:0]</obj_property>
+      <obj_property name="ObjectShortName">my_reg10[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/my_reg11" type="array">
+      <obj_property name="ElementShortName">my_reg11[31:0]</obj_property>
+      <obj_property name="ObjectShortName">my_reg11[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/my_reg12" type="array">
+      <obj_property name="ElementShortName">my_reg12[31:0]</obj_property>
+      <obj_property name="ObjectShortName">my_reg12[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/aclk" type="logic">
+      <obj_property name="ElementShortName">aclk</obj_property>
+      <obj_property name="ObjectShortName">aclk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/s_axis_data" type="array">
+      <obj_property name="ElementShortName">s_axis_data[31:0]</obj_property>
+      <obj_property name="ObjectShortName">s_axis_data[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/s_axis_last" type="logic">
+      <obj_property name="ElementShortName">s_axis_last</obj_property>
+      <obj_property name="ObjectShortName">s_axis_last</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/s_axis_ready" type="logic">
+      <obj_property name="ElementShortName">s_axis_ready</obj_property>
+      <obj_property name="ObjectShortName">s_axis_ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/s_axis_valid" type="logic">
+      <obj_property name="ElementShortName">s_axis_valid</obj_property>
+      <obj_property name="ObjectShortName">s_axis_valid</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/m_axis_data" type="array">
+      <obj_property name="ElementShortName">m_axis_data[31:0]</obj_property>
+      <obj_property name="ObjectShortName">m_axis_data[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/m_axis_ready" type="logic">
+      <obj_property name="ElementShortName">m_axis_ready</obj_property>
+      <obj_property name="ObjectShortName">m_axis_ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/m_axis_last" type="logic">
+      <obj_property name="ElementShortName">m_axis_last</obj_property>
+      <obj_property name="ObjectShortName">m_axis_last</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/m_axis_valid" type="logic">
+      <obj_property name="ElementShortName">m_axis_valid</obj_property>
+      <obj_property name="ObjectShortName">m_axis_valid</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/j" type="array">
+      <obj_property name="ElementShortName">j[7:0]</obj_property>
+      <obj_property name="ObjectShortName">j[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/my_bkts" type="array">
+      <obj_property name="ElementShortName">my_bkts[31:0]</obj_property>
+      <obj_property name="ObjectShortName">my_bkts[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/bkt_c" type="array">
+      <obj_property name="ElementShortName">bkt_c[31:0]</obj_property>
+      <obj_property name="ObjectShortName">bkt_c[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/eq_data" type="array">
+      <obj_property name="ElementShortName">eq_data[31:0]</obj_property>
+      <obj_property name="ObjectShortName">eq_data[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/count" type="array">
+      <obj_property name="ElementShortName">count[31:0]</obj_property>
+      <obj_property name="ObjectShortName">count[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/d_count" type="array">
+      <obj_property name="ElementShortName">d_count[31:0]</obj_property>
+      <obj_property name="ObjectShortName">d_count[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/my_regA" type="array">
+      <obj_property name="ElementShortName">my_regA[12:0][23:0]</obj_property>
+      <obj_property name="ObjectShortName">my_regA[12:0][23:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/l0" type="logic">
+      <obj_property name="ElementShortName">l0</obj_property>
+      <obj_property name="ObjectShortName">l0</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/r0" type="logic">
+      <obj_property name="ElementShortName">r0</obj_property>
+      <obj_property name="ObjectShortName">r0</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/v0" type="logic">
+      <obj_property name="ElementShortName">v0</obj_property>
+      <obj_property name="ObjectShortName">v0</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/real_P" type="array">
+      <obj_property name="ElementShortName">real_P[23:0]</obj_property>
+      <obj_property name="ObjectShortName">real_P[23:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/img_P" type="array">
+      <obj_property name="ElementShortName">img_P[23:0]</obj_property>
+      <obj_property name="ObjectShortName">img_P[23:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/C_S_AXI_DATA_WIDTH" type="array">
+      <obj_property name="ElementShortName">C_S_AXI_DATA_WIDTH[31:0]</obj_property>
+      <obj_property name="ObjectShortName">C_S_AXI_DATA_WIDTH[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/l1" type="logic">
+      <obj_property name="ElementShortName">l1</obj_property>
+      <obj_property name="ObjectShortName">l1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/r1" type="logic">
+      <obj_property name="ElementShortName">r1</obj_property>
+      <obj_property name="ObjectShortName">r1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/v1" type="logic">
+      <obj_property name="ElementShortName">v1</obj_property>
+      <obj_property name="ObjectShortName">v1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/re_result" type="array">
+      <obj_property name="ElementShortName">re_result[47:0]</obj_property>
+      <obj_property name="ObjectShortName">re_result[47:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/eq_streaming/img_result" type="array">
+      <obj_property name="ElementShortName">img_result[47:0]</obj_property>
+      <obj_property name="ObjectShortName">img_result[47:0]</obj_property>
+   </wvobject>
+</wave_config>
