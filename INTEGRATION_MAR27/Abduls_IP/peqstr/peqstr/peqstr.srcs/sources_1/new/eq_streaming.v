@@ -45,13 +45,13 @@ module eq_streaming #(
     input [C_S_AXI_DATA_WIDTH-1:0] my_reg12,
     
     input [C_S_AXI_DATA_WIDTH-1:0] s_axis_data,
-    input s_axis_last,
+    //input s_axis_last,
     output reg s_axis_ready = 1'b0,
     input s_axis_valid,
     
     output reg [C_S_AXI_DATA_WIDTH-1:0] m_axis_data,
     input m_axis_ready,
-    output reg m_axis_last = 1'b0,
+    //output reg m_axis_last = 1'b0,
     output reg m_axis_valid = 1'b0
 );
     
@@ -65,10 +65,10 @@ reg [31:0] eq_data = 32'd0;
 reg [31:0] count = 32'd0;
 reg [31:0] d_count = 32'd0;
 reg signed [23:0] my_regA [12:0];
-reg l0 = 1'b0;
+//reg l0 = 1'b0;
 reg r0 = 1'b0;
 reg v0 = 1'b0;
-reg l1 = 1'b0;
+//reg l1 = 1'b0;
 reg r1 = 1'b0;
 reg v1 = 1'b0;
 reg signed [47:0] re_result;
@@ -116,18 +116,18 @@ begin
 end
 
 
-always @(posedge aclk )
-begin
-    if ( aresetn == 1'b0 )
-    begin
-        m_axis_last <= 1'b0;
-    end
-    else begin
-        l0 <= s_axis_last;
-        l1  <= l0;
-        m_axis_last <= l1;
-    end
-end
+//always @(posedge aclk )
+//begin
+//    if ( aresetn == 1'b0 )
+//    begin
+//        //m_axis_last <= 1'b0;
+//    end
+//    else begin
+//        //l0 <= s_axis_last;
+//        //l1  <= l0;
+//        //m_axis_last <= l1;
+//    end
+//end
 
 always @(posedge aclk )
 begin

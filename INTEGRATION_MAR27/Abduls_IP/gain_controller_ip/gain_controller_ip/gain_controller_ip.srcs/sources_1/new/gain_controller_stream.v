@@ -30,13 +30,13 @@ module gain_controller_stream #
     input s_axi_aresetn,
     
     input [DATA_WIDTH-1:0] s_axis_tdata,
-    input s_axis_tlast,
+    //input s_axis_tlast,
     output reg s_axis_tready,
     input s_axis_tvalid,
     output reg [DATA_WIDTH-1:0] m_axis_tdata,
     input m_axis_tready,
     output reg m_axis_tvalid,
-    output reg m_axis_tlast,
+    //output reg m_axis_tlast,
     input [DATA_WIDTH-1:0] gain_config
 );
 integer i;
@@ -47,16 +47,13 @@ initial  begin
     m_axis_tdata[i] = 1'b0;
    end 
    m_axis_tvalid = 1'b0;
-   m_axis_tlast = 1'b0;
+   //m_axis_tlast = 1'b0;
    
 end
 
 reg l0 = 1'b0;
 reg r0 = 1'b0;
 reg v0 = 1'b0;
-//reg l1 = 1'b0;
-//reg r1 = 1'b0;
-//reg v1 = 1'b0;
 
 reg signed [47:0] re_result;
 reg signed [47:0] img_result;
@@ -70,12 +67,11 @@ always @(posedge s_axi_aclk )
 begin
     if ( s_axi_aresetn == 1'b0 )
     begin
-        m_axis_tlast <= 1'b0;
+        //m_axis_tlast <= 1'b0;
     end
     else begin
-        l0 <= s_axis_tlast;
-        //l1  <= l0;
-        m_axis_tlast <= l0;
+        //l0 <= s_axis_tlast;
+        //m_axis_tlast <= l0;
     end
 end
 
