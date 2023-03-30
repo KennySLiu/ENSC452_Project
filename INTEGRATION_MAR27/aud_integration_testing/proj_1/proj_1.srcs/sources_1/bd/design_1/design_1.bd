@@ -1,0 +1,471 @@
+{
+  "design": {
+    "design_info": {
+      "boundary_crc": "0x8C3D5FEF82EAB60A",
+      "device": "xc7z020clg484-1",
+      "gen_directory": "../../../../proj_1.gen/sources_1/bd/design_1",
+      "name": "design_1",
+      "rev_ctrl_bd_flag": "RevCtrlBdOff",
+      "synth_flow_mode": "Hierarchical",
+      "tool_version": "2020.2",
+      "validated": "true"
+    },
+    "design_tree": {
+      "full_compressor_wrap_0": "",
+      "eq_streaming_0": "",
+      "gain_controller_stre_0": ""
+    },
+    "interface_ports": {
+      "s_axis_0_0": {
+        "mode": "Slave",
+        "vlnv": "xilinx.com:interface:axis_rtl:1.0",
+        "parameters": {
+          "CLK_DOMAIN": {
+            "value": "design_1_aclk_0",
+            "value_src": "default"
+          },
+          "FREQ_HZ": {
+            "value": "100000000",
+            "value_src": "default"
+          },
+          "HAS_TKEEP": {
+            "value": "0"
+          },
+          "HAS_TLAST": {
+            "value": "0"
+          },
+          "HAS_TREADY": {
+            "value": "1"
+          },
+          "HAS_TSTRB": {
+            "value": "0"
+          },
+          "INSERT_VIP": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "LAYERED_METADATA": {
+            "value": "undef"
+          },
+          "PHASE": {
+            "value": "0.000",
+            "value_src": "default"
+          },
+          "TDATA_NUM_BYTES": {
+            "value": "4"
+          },
+          "TDEST_WIDTH": {
+            "value": "0"
+          },
+          "TID_WIDTH": {
+            "value": "0"
+          },
+          "TUSER_WIDTH": {
+            "value": "0"
+          }
+        }
+      },
+      "m_axis_0": {
+        "mode": "Master",
+        "vlnv": "xilinx.com:interface:axis_rtl:1.0",
+        "parameters": {
+          "CLK_DOMAIN": {
+            "value": "design_1_aclk_0",
+            "value_src": "default"
+          },
+          "FREQ_HZ": {
+            "value": "100000000",
+            "value_src": "default"
+          },
+          "HAS_TKEEP": {
+            "value": "0",
+            "value_src": "const_prop"
+          },
+          "HAS_TLAST": {
+            "value": "0",
+            "value_src": "const_prop"
+          },
+          "HAS_TREADY": {
+            "value": "1",
+            "value_src": "const_prop"
+          },
+          "HAS_TSTRB": {
+            "value": "0",
+            "value_src": "const_prop"
+          },
+          "INSERT_VIP": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "LAYERED_METADATA": {
+            "value": "undef",
+            "value_src": "default"
+          },
+          "PHASE": {
+            "value": "0.000",
+            "value_src": "default"
+          },
+          "TDATA_NUM_BYTES": {
+            "value": "4",
+            "value_src": "auto_prop"
+          },
+          "TDEST_WIDTH": {
+            "value": "0",
+            "value_src": "const_prop"
+          },
+          "TID_WIDTH": {
+            "value": "0",
+            "value_src": "const_prop"
+          },
+          "TUSER_WIDTH": {
+            "value": "0",
+            "value_src": "const_prop"
+          }
+        }
+      }
+    },
+    "ports": {
+      "aresetn_0": {
+        "type": "rst",
+        "direction": "I",
+        "parameters": {
+          "INSERT_VIP": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "POLARITY": {
+            "value": "ACTIVE_LOW",
+            "value_src": "default"
+          }
+        }
+      },
+      "aclk_0": {
+        "type": "clk",
+        "direction": "I",
+        "parameters": {
+          "ASSOCIATED_BUSIF": {
+            "value": "s_axis_0_0:m_axis_0",
+            "value_src": "default"
+          },
+          "ASSOCIATED_RESET": {
+            "value": "aresetn_0",
+            "value_src": "default"
+          },
+          "CLK_DOMAIN": {
+            "value": "design_1_aclk_0",
+            "value_src": "default"
+          },
+          "FREQ_HZ": {
+            "value": "100000000",
+            "value_src": "default"
+          },
+          "FREQ_TOLERANCE_HZ": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "INSERT_VIP": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "PHASE": {
+            "value": "0.000",
+            "value_src": "default"
+          }
+        }
+      },
+      "Ratio_0_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "Thresh_0_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "bypass_0_0": {
+        "direction": "I"
+      },
+      "num_fft_pts_0_0": {
+        "direction": "I",
+        "left": "24",
+        "right": "0"
+      },
+      "D_READY_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "FFT_BKTS_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "FFT_PTNS_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "my_reg0_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "my_reg1_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "my_reg10_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "my_reg11_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "my_reg12_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "my_reg2_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "my_reg3_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "my_reg4_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "my_reg5_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "my_reg6_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "my_reg7_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "my_reg8_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "my_reg9_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      },
+      "gain_config_0": {
+        "direction": "I",
+        "left": "31",
+        "right": "0"
+      }
+    },
+    "components": {
+      "full_compressor_wrap_0": {
+        "vlnv": "sfu.ca:user:full_compressor_wrapper:2.0",
+        "xci_name": "design_1_full_compressor_wrap_0_0",
+        "xci_path": "ip\\design_1_full_compressor_wrap_0_0\\design_1_full_compressor_wrap_0_0.xci",
+        "inst_hier_path": "full_compressor_wrap_0"
+      },
+      "eq_streaming_0": {
+        "vlnv": "sfu.ca:user:eq_streaming:1.0",
+        "xci_name": "design_1_eq_streaming_0_0",
+        "xci_path": "ip\\design_1_eq_streaming_0_0\\design_1_eq_streaming_0_0.xci",
+        "inst_hier_path": "eq_streaming_0"
+      },
+      "gain_controller_stre_0": {
+        "vlnv": "sfu.ca:user:gain_controller_stream:1.0",
+        "xci_name": "design_1_gain_controller_stre_0_0",
+        "xci_path": "ip\\design_1_gain_controller_stre_0_0\\design_1_gain_controller_stre_0_0.xci",
+        "inst_hier_path": "gain_controller_stre_0"
+      }
+    },
+    "interface_nets": {
+      "full_compressor_wrap_0_M_AXIS_RESULT_0": {
+        "interface_ports": [
+          "full_compressor_wrap_0/M_AXIS_RESULT_0",
+          "eq_streaming_0/s_axis"
+        ]
+      },
+      "eq_streaming_0_m_axis": {
+        "interface_ports": [
+          "eq_streaming_0/m_axis",
+          "gain_controller_stre_0/s_axis"
+        ]
+      },
+      "s_axis_0_0_1": {
+        "interface_ports": [
+          "s_axis_0_0",
+          "full_compressor_wrap_0/s_axis_0"
+        ]
+      },
+      "gain_controller_stre_0_m_axis": {
+        "interface_ports": [
+          "m_axis_0",
+          "gain_controller_stre_0/m_axis"
+        ]
+      }
+    },
+    "nets": {
+      "aresetn_0_1": {
+        "ports": [
+          "aresetn_0",
+          "full_compressor_wrap_0/aresetn",
+          "gain_controller_stre_0/s_axi_aresetn",
+          "eq_streaming_0/aresetn"
+        ]
+      },
+      "aclk_0_1": {
+        "ports": [
+          "aclk_0",
+          "eq_streaming_0/aclk",
+          "gain_controller_stre_0/s_axi_aclk",
+          "full_compressor_wrap_0/CLK"
+        ]
+      },
+      "Ratio_0_0_1": {
+        "ports": [
+          "Ratio_0_0",
+          "full_compressor_wrap_0/Ratio_0"
+        ]
+      },
+      "Thresh_0_0_1": {
+        "ports": [
+          "Thresh_0_0",
+          "full_compressor_wrap_0/Thresh_0"
+        ]
+      },
+      "bypass_0_0_1": {
+        "ports": [
+          "bypass_0_0",
+          "full_compressor_wrap_0/bypass_0"
+        ]
+      },
+      "num_fft_pts_0_0_1": {
+        "ports": [
+          "num_fft_pts_0_0",
+          "full_compressor_wrap_0/num_fft_pts_0"
+        ]
+      },
+      "D_READY_0_1": {
+        "ports": [
+          "D_READY_0",
+          "eq_streaming_0/D_READY"
+        ]
+      },
+      "FFT_BKTS_0_1": {
+        "ports": [
+          "FFT_BKTS_0",
+          "eq_streaming_0/FFT_BKTS"
+        ]
+      },
+      "FFT_PTNS_0_1": {
+        "ports": [
+          "FFT_PTNS_0",
+          "eq_streaming_0/FFT_PTNS"
+        ]
+      },
+      "my_reg0_0_1": {
+        "ports": [
+          "my_reg0_0",
+          "eq_streaming_0/my_reg0"
+        ]
+      },
+      "my_reg1_0_1": {
+        "ports": [
+          "my_reg1_0",
+          "eq_streaming_0/my_reg1"
+        ]
+      },
+      "my_reg10_0_1": {
+        "ports": [
+          "my_reg10_0",
+          "eq_streaming_0/my_reg10"
+        ]
+      },
+      "my_reg11_0_1": {
+        "ports": [
+          "my_reg11_0",
+          "eq_streaming_0/my_reg11"
+        ]
+      },
+      "my_reg12_0_1": {
+        "ports": [
+          "my_reg12_0",
+          "eq_streaming_0/my_reg12"
+        ]
+      },
+      "my_reg2_0_1": {
+        "ports": [
+          "my_reg2_0",
+          "eq_streaming_0/my_reg2"
+        ]
+      },
+      "my_reg3_0_1": {
+        "ports": [
+          "my_reg3_0",
+          "eq_streaming_0/my_reg3"
+        ]
+      },
+      "my_reg4_0_1": {
+        "ports": [
+          "my_reg4_0",
+          "eq_streaming_0/my_reg4"
+        ]
+      },
+      "my_reg5_0_1": {
+        "ports": [
+          "my_reg5_0",
+          "eq_streaming_0/my_reg5"
+        ]
+      },
+      "my_reg6_0_1": {
+        "ports": [
+          "my_reg6_0",
+          "eq_streaming_0/my_reg6"
+        ]
+      },
+      "my_reg7_0_1": {
+        "ports": [
+          "my_reg7_0",
+          "eq_streaming_0/my_reg7"
+        ]
+      },
+      "my_reg8_0_1": {
+        "ports": [
+          "my_reg8_0",
+          "eq_streaming_0/my_reg8"
+        ]
+      },
+      "my_reg9_0_1": {
+        "ports": [
+          "my_reg9_0",
+          "eq_streaming_0/my_reg9"
+        ]
+      },
+      "gain_config_0_1": {
+        "ports": [
+          "gain_config_0",
+          "gain_controller_stre_0/gain_config"
+        ]
+      }
+    }
+  }
+}
