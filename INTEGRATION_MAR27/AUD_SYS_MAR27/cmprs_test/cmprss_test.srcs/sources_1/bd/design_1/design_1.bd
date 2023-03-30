@@ -49,8 +49,13 @@
       "full_compressor_wrap_0": "",
       "eq_config_0": "",
       "gain_config_0": "",
-      "eq_streaming_0": "",
-      "gain_controller_stre_0": ""
+      "gain_controller_stre_0": "",
+      "ila_0": "",
+      "ila_1": "",
+      "ila_2": "",
+      "ila_3": "",
+      "ila_4": "",
+      "eq_streaming_0": ""
     },
     "interface_ports": {
       "DDR": {
@@ -1461,16 +1466,16 @@
               }
             },
             "interface_nets": {
-              "s00_couplers_to_auto_pc": {
-                "interface_ports": [
-                  "S_AXI",
-                  "auto_pc/S_AXI"
-                ]
-              },
               "auto_pc_to_s00_couplers": {
                 "interface_ports": [
                   "M_AXI",
                   "auto_pc/M_AXI"
+                ]
+              },
+              "s00_couplers_to_auto_pc": {
+                "interface_ports": [
+                  "S_AXI",
+                  "auto_pc/S_AXI"
                 ]
               }
             },
@@ -1923,10 +1928,16 @@
           }
         },
         "interface_nets": {
-          "m03_couplers_to_ps7_0_axi_periph": {
+          "xbar_to_m04_couplers": {
             "interface_ports": [
-              "M03_AXI",
-              "m03_couplers/M_AXI"
+              "xbar/M04_AXI",
+              "m04_couplers/S_AXI"
+            ]
+          },
+          "m05_couplers_to_ps7_0_axi_periph": {
+            "interface_ports": [
+              "M05_AXI",
+              "m05_couplers/M_AXI"
             ]
           },
           "ps7_0_axi_periph_to_s00_couplers": {
@@ -1941,10 +1952,10 @@
               "xbar/S00_AXI"
             ]
           },
-          "ps7_0_axi_periph_to_s01_couplers": {
+          "s01_couplers_to_xbar": {
             "interface_ports": [
-              "S01_AXI",
-              "s01_couplers/S_AXI"
+              "s01_couplers/M_AXI",
+              "xbar/S01_AXI"
             ]
           },
           "m00_couplers_to_ps7_0_axi_periph": {
@@ -1953,22 +1964,22 @@
               "m00_couplers/M_AXI"
             ]
           },
-          "s01_couplers_to_xbar": {
+          "ps7_0_axi_periph_to_s01_couplers": {
             "interface_ports": [
-              "s01_couplers/M_AXI",
-              "xbar/S01_AXI"
-            ]
-          },
-          "xbar_to_m00_couplers": {
-            "interface_ports": [
-              "xbar/M00_AXI",
-              "m00_couplers/S_AXI"
+              "S01_AXI",
+              "s01_couplers/S_AXI"
             ]
           },
           "m01_couplers_to_ps7_0_axi_periph": {
             "interface_ports": [
               "M01_AXI",
               "m01_couplers/M_AXI"
+            ]
+          },
+          "xbar_to_m00_couplers": {
+            "interface_ports": [
+              "xbar/M00_AXI",
+              "m00_couplers/S_AXI"
             ]
           },
           "xbar_to_m01_couplers": {
@@ -1989,16 +2000,22 @@
               "m02_couplers/S_AXI"
             ]
           },
-          "m05_couplers_to_ps7_0_axi_periph": {
+          "m03_couplers_to_ps7_0_axi_periph": {
             "interface_ports": [
-              "M05_AXI",
-              "m05_couplers/M_AXI"
+              "M03_AXI",
+              "m03_couplers/M_AXI"
             ]
           },
-          "xbar_to_m04_couplers": {
+          "xbar_to_m03_couplers": {
             "interface_ports": [
-              "xbar/M04_AXI",
-              "m04_couplers/S_AXI"
+              "xbar/M03_AXI",
+              "m03_couplers/S_AXI"
+            ]
+          },
+          "m04_couplers_to_ps7_0_axi_periph": {
+            "interface_ports": [
+              "M04_AXI",
+              "m04_couplers/M_AXI"
             ]
           },
           "m06_couplers_to_ps7_0_axi_periph": {
@@ -2017,18 +2034,6 @@
             "interface_ports": [
               "xbar/M06_AXI",
               "m06_couplers/S_AXI"
-            ]
-          },
-          "xbar_to_m03_couplers": {
-            "interface_ports": [
-              "xbar/M03_AXI",
-              "m03_couplers/S_AXI"
-            ]
-          },
-          "m04_couplers_to_ps7_0_axi_periph": {
-            "interface_ports": [
-              "M04_AXI",
-              "m04_couplers/M_AXI"
             ]
           }
         },
@@ -2637,28 +2642,10 @@
           }
         },
         "interface_nets": {
-          "m00_couplers_to_axi_mem_intercon": {
-            "interface_ports": [
-              "M00_AXI",
-              "m00_couplers/M_AXI"
-            ]
-          },
-          "s01_couplers_to_xbar": {
-            "interface_ports": [
-              "s01_couplers/M_AXI",
-              "xbar/S01_AXI"
-            ]
-          },
           "xbar_to_m00_couplers": {
             "interface_ports": [
               "xbar/M00_AXI",
               "m00_couplers/S_AXI"
-            ]
-          },
-          "axi_mem_intercon_to_s00_couplers": {
-            "interface_ports": [
-              "S00_AXI",
-              "s00_couplers/S_AXI"
             ]
           },
           "axi_mem_intercon_to_s01_couplers": {
@@ -2671,6 +2658,24 @@
             "interface_ports": [
               "s00_couplers/M_AXI",
               "xbar/S00_AXI"
+            ]
+          },
+          "m00_couplers_to_axi_mem_intercon": {
+            "interface_ports": [
+              "M00_AXI",
+              "m00_couplers/M_AXI"
+            ]
+          },
+          "s01_couplers_to_xbar": {
+            "interface_ports": [
+              "s01_couplers/M_AXI",
+              "xbar/S01_AXI"
+            ]
+          },
+          "axi_mem_intercon_to_s00_couplers": {
+            "interface_ports": [
+              "S00_AXI",
+              "s00_couplers/S_AXI"
             ]
           }
         },
@@ -2781,17 +2786,153 @@
         "xci_path": "ip\\design_1_gain_config_0_0\\design_1_gain_config_0_0.xci",
         "inst_hier_path": "gain_config_0"
       },
-      "eq_streaming_0": {
-        "vlnv": "sfu.ca:user:eq_streaming:1.0",
-        "xci_name": "design_1_eq_streaming_0_0",
-        "xci_path": "ip\\design_1_eq_streaming_0_0\\design_1_eq_streaming_0_0.xci",
-        "inst_hier_path": "eq_streaming_0"
-      },
       "gain_controller_stre_0": {
         "vlnv": "sfu.ca:user:gain_controller_stream:1.0",
         "xci_name": "design_1_gain_controller_stre_0_0",
         "xci_path": "ip\\design_1_gain_controller_stre_0_0\\design_1_gain_controller_stre_0_0.xci",
         "inst_hier_path": "gain_controller_stre_0"
+      },
+      "ila_0": {
+        "vlnv": "xilinx.com:ip:ila:6.2",
+        "xci_name": "design_1_ila_0_1",
+        "xci_path": "ip\\design_1_ila_0_1\\design_1_ila_0_1.xci",
+        "inst_hier_path": "ila_0",
+        "parameters": {
+          "C_DATA_DEPTH": {
+            "value": "8192"
+          },
+          "C_ENABLE_ILA_AXI_MON": {
+            "value": "false"
+          },
+          "C_MONITOR_TYPE": {
+            "value": "Native"
+          },
+          "C_NUM_OF_PROBES": {
+            "value": "3"
+          },
+          "C_PROBE0_WIDTH": {
+            "value": "32"
+          }
+        }
+      },
+      "ila_1": {
+        "vlnv": "xilinx.com:ip:ila:6.2",
+        "xci_name": "design_1_ila_0_2",
+        "xci_path": "ip\\design_1_ila_0_2\\design_1_ila_0_2.xci",
+        "inst_hier_path": "ila_1",
+        "parameters": {
+          "C_DATA_DEPTH": {
+            "value": "8192"
+          },
+          "C_ENABLE_ILA_AXI_MON": {
+            "value": "false"
+          },
+          "C_MONITOR_TYPE": {
+            "value": "Native"
+          },
+          "C_NUM_OF_PROBES": {
+            "value": "3"
+          },
+          "C_PROBE0_WIDTH": {
+            "value": "32"
+          }
+        }
+      },
+      "ila_2": {
+        "vlnv": "xilinx.com:ip:ila:6.2",
+        "xci_name": "design_1_ila_1_0",
+        "xci_path": "ip\\design_1_ila_1_0\\design_1_ila_1_0.xci",
+        "inst_hier_path": "ila_2",
+        "parameters": {
+          "C_DATA_DEPTH": {
+            "value": "8192"
+          },
+          "C_ENABLE_ILA_AXI_MON": {
+            "value": "false"
+          },
+          "C_MONITOR_TYPE": {
+            "value": "Native"
+          },
+          "C_NUM_OF_PROBES": {
+            "value": "3"
+          },
+          "C_PROBE0_WIDTH": {
+            "value": "32"
+          }
+        }
+      },
+      "ila_3": {
+        "vlnv": "xilinx.com:ip:ila:6.2",
+        "xci_name": "design_1_ila_2_0",
+        "xci_path": "ip\\design_1_ila_2_0\\design_1_ila_2_0.xci",
+        "inst_hier_path": "ila_3",
+        "parameters": {
+          "C_DATA_DEPTH": {
+            "value": "8192"
+          },
+          "C_ENABLE_ILA_AXI_MON": {
+            "value": "false"
+          },
+          "C_MONITOR_TYPE": {
+            "value": "Native"
+          },
+          "C_NUM_OF_PROBES": {
+            "value": "3"
+          },
+          "C_PROBE0_WIDTH": {
+            "value": "32"
+          }
+        }
+      },
+      "ila_4": {
+        "vlnv": "xilinx.com:ip:ila:6.2",
+        "xci_name": "design_1_ila_2_1",
+        "xci_path": "ip\\design_1_ila_2_1\\design_1_ila_2_1.xci",
+        "inst_hier_path": "ila_4",
+        "parameters": {
+          "C_DATA_DEPTH": {
+            "value": "8192"
+          },
+          "C_ENABLE_ILA_AXI_MON": {
+            "value": "false"
+          },
+          "C_MONITOR_TYPE": {
+            "value": "Native"
+          },
+          "C_NUM_OF_PROBES": {
+            "value": "8"
+          },
+          "C_PROBE0_WIDTH": {
+            "value": "32"
+          },
+          "C_PROBE1_WIDTH": {
+            "value": "32"
+          },
+          "C_PROBE2_WIDTH": {
+            "value": "32"
+          },
+          "C_PROBE3_WIDTH": {
+            "value": "32"
+          },
+          "C_PROBE4_WIDTH": {
+            "value": "32"
+          },
+          "C_PROBE5_WIDTH": {
+            "value": "32"
+          },
+          "C_PROBE6_WIDTH": {
+            "value": "32"
+          },
+          "C_PROBE7_WIDTH": {
+            "value": "32"
+          }
+        }
+      },
+      "eq_streaming_0": {
+        "vlnv": "sfu.ca:user:eq_streaming:1.0",
+        "xci_name": "design_1_eq_streaming_0_0",
+        "xci_path": "ip\\design_1_eq_streaming_0_0\\design_1_eq_streaming_0_0.xci",
+        "inst_hier_path": "eq_streaming_0"
       }
     },
     "interface_nets": {
@@ -2805,18 +2946,6 @@
         "interface_ports": [
           "ps7_0_axi_periph/M06_AXI",
           "gain_config_0/S00_AXI"
-        ]
-      },
-      "eq_streaming_0_m_axis": {
-        "interface_ports": [
-          "eq_streaming_0/m_axis",
-          "gain_controller_stre_0/s_axis"
-        ]
-      },
-      "gain_controller_stre_0_m_axis": {
-        "interface_ports": [
-          "gain_controller_stre_0/m_axis",
-          "xfft_INV/S_AXIS_DATA"
         ]
       },
       "ps7_0_axi_periph_M04_AXI": {
@@ -2897,22 +3026,10 @@
           "processing_system7_0/FIXED_IO"
         ]
       },
-      "xfft_FWD_M_AXIS_DATA": {
-        "interface_ports": [
-          "xfft_FWD/M_AXIS_DATA",
-          "full_compressor_wrap_0/s_axis_0"
-        ]
-      },
       "xfft_INV_M_AXIS_DATA": {
         "interface_ports": [
           "xfft_INV/M_AXIS_DATA",
           "axi_dma_0/S_AXIS_S2MM"
-        ]
-      },
-      "full_compressor_wrap_0_M_AXIS_RESULT_0": {
-        "interface_ports": [
-          "full_compressor_wrap_0/M_AXIS_RESULT_0",
-          "eq_streaming_0/s_axis"
         ]
       }
     },
@@ -2952,8 +3069,13 @@
           "ps7_0_axi_periph/M05_ACLK",
           "gain_config_0/s00_axi_aclk",
           "ps7_0_axi_periph/M06_ACLK",
-          "eq_streaming_0/aclk",
-          "gain_controller_stre_0/s_axi_aclk"
+          "gain_controller_stre_0/s_axi_aclk",
+          "ila_0/clk",
+          "ila_1/clk",
+          "ila_2/clk",
+          "ila_3/clk",
+          "ila_4/clk",
+          "eq_streaming_0/aclk"
         ]
       },
       "processing_system7_0_FCLK_RESET0_N": {
@@ -2987,8 +3109,8 @@
           "ps7_0_axi_periph/M05_ARESETN",
           "gain_config_0/s00_axi_aresetn",
           "ps7_0_axi_periph/M06_ARESETN",
-          "eq_streaming_0/aresetn",
-          "gain_controller_stre_0/s_axi_aresetn"
+          "gain_controller_stre_0/s_axi_aresetn",
+          "eq_streaming_0/aresetn"
         ]
       },
       "processing_system7_0_FCLK_CLK1": {
@@ -3100,48 +3222,56 @@
       "eq_config_0_D_READY": {
         "ports": [
           "eq_config_0/D_READY",
+          "ila_4/probe0",
           "eq_streaming_0/D_READY"
         ]
       },
       "eq_config_0_FFT_PTNS": {
         "ports": [
           "eq_config_0/FFT_PTNS",
+          "ila_4/probe1",
           "eq_streaming_0/FFT_PTNS"
         ]
       },
       "eq_config_0_FFT_BKTS": {
         "ports": [
           "eq_config_0/FFT_BKTS",
+          "ila_4/probe2",
           "eq_streaming_0/FFT_BKTS"
         ]
       },
       "eq_config_0_my_reg": {
         "ports": [
           "eq_config_0/my_reg",
+          "ila_4/probe3",
           "eq_streaming_0/my_reg0"
         ]
       },
       "eq_config_0_my_reg1": {
         "ports": [
           "eq_config_0/my_reg1",
+          "ila_4/probe4",
           "eq_streaming_0/my_reg1"
         ]
       },
       "eq_config_0_my_reg2": {
         "ports": [
           "eq_config_0/my_reg2",
+          "ila_4/probe5",
           "eq_streaming_0/my_reg2"
         ]
       },
       "eq_config_0_my_reg3": {
         "ports": [
           "eq_config_0/my_reg3",
+          "ila_4/probe6",
           "eq_streaming_0/my_reg3"
         ]
       },
       "eq_config_0_my_reg4": {
         "ports": [
           "eq_config_0/my_reg4",
+          "ila_4/probe7",
           "eq_streaming_0/my_reg4"
         ]
       },
@@ -3197,6 +3327,90 @@
         "ports": [
           "gain_config_0/gain_config",
           "gain_controller_stre_0/gain_config"
+        ]
+      },
+      "Net": {
+        "ports": [
+          "xfft_FWD/m_axis_data_tdata",
+          "full_compressor_wrap_0/s_axis_0_tdata",
+          "ila_0/probe0"
+        ]
+      },
+      "Net1": {
+        "ports": [
+          "xfft_FWD/m_axis_data_tvalid",
+          "full_compressor_wrap_0/s_axis_0_tvalid",
+          "ila_0/probe1"
+        ]
+      },
+      "full_compressor_wrap_0_s_axis_0_tready": {
+        "ports": [
+          "full_compressor_wrap_0/s_axis_0_tready",
+          "xfft_FWD/m_axis_data_tready",
+          "ila_0/probe2"
+        ]
+      },
+      "full_compressor_wrap_0_M_AXIS_RESULT_0_tdata": {
+        "ports": [
+          "full_compressor_wrap_0/M_AXIS_RESULT_0_tdata",
+          "ila_1/probe0",
+          "eq_streaming_0/s_axis_data"
+        ]
+      },
+      "full_compressor_wrap_0_M_AXIS_RESULT_0_tvalid": {
+        "ports": [
+          "full_compressor_wrap_0/M_AXIS_RESULT_0_tvalid",
+          "ila_1/probe1",
+          "eq_streaming_0/s_axis_valid"
+        ]
+      },
+      "Net2": {
+        "ports": [
+          "eq_streaming_0/s_axis_ready",
+          "ila_1/probe2",
+          "full_compressor_wrap_0/M_AXIS_RESULT_0_tready"
+        ]
+      },
+      "eq_streaming_0_m_axis_data": {
+        "ports": [
+          "eq_streaming_0/m_axis_data",
+          "ila_2/probe0",
+          "gain_controller_stre_0/s_axis_tdata"
+        ]
+      },
+      "eq_streaming_0_m_axis_valid": {
+        "ports": [
+          "eq_streaming_0/m_axis_valid",
+          "ila_2/probe1",
+          "gain_controller_stre_0/s_axis_tvalid"
+        ]
+      },
+      "Net3": {
+        "ports": [
+          "gain_controller_stre_0/s_axis_tready",
+          "ila_2/probe2",
+          "eq_streaming_0/m_axis_ready"
+        ]
+      },
+      "gain_controller_stre_0_m_axis_tdata": {
+        "ports": [
+          "gain_controller_stre_0/m_axis_tdata",
+          "ila_3/probe0",
+          "xfft_INV/s_axis_data_tdata"
+        ]
+      },
+      "gain_controller_stre_0_m_axis_tvalid": {
+        "ports": [
+          "gain_controller_stre_0/m_axis_tvalid",
+          "ila_3/probe1",
+          "xfft_INV/s_axis_data_tvalid"
+        ]
+      },
+      "Net4": {
+        "ports": [
+          "xfft_INV/s_axis_data_tready",
+          "ila_3/probe2",
+          "gain_controller_stre_0/m_axis_tready"
         ]
       }
     },
