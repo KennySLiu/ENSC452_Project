@@ -250,15 +250,14 @@ begin
                     bkt_c <= bkt_c + 1'b1;
                 end
 		     end
-			
-		  if(v1 & r1)
-		  begin 
-		      m_axis_data[15:0] <= re_result[31:16];
-              m_axis_data[31:16] <= img_result[31:16];
-		  end	
-	
 		end
 		
+		if(v1 & r1)
+		begin 
+		    m_axis_data[15:0] <= re_result[31:16];
+            m_axis_data[31:16] <= img_result[31:16];
+		end	
+	
     end
 end    
     

@@ -12,8 +12,8 @@
     },
     "design_tree": {
       "full_compressor_wrap_0": "",
-      "eq_streaming_0": "",
-      "gain_controller_stre_0": ""
+      "gain_controller_stre_0": "",
+      "eq_streaming_0": ""
     },
     "interface_ports": {
       "s_axis_0_0": {
@@ -284,17 +284,17 @@
         "xci_path": "ip\\design_1_full_compressor_wrap_0_0\\design_1_full_compressor_wrap_0_0.xci",
         "inst_hier_path": "full_compressor_wrap_0"
       },
-      "eq_streaming_0": {
-        "vlnv": "sfu.ca:user:eq_streaming:1.0",
-        "xci_name": "design_1_eq_streaming_0_0",
-        "xci_path": "ip\\design_1_eq_streaming_0_0\\design_1_eq_streaming_0_0.xci",
-        "inst_hier_path": "eq_streaming_0"
-      },
       "gain_controller_stre_0": {
         "vlnv": "sfu.ca:user:gain_controller_stream:1.0",
         "xci_name": "design_1_gain_controller_stre_0_0",
         "xci_path": "ip\\design_1_gain_controller_stre_0_0\\design_1_gain_controller_stre_0_0.xci",
         "inst_hier_path": "gain_controller_stre_0"
+      },
+      "eq_streaming_0": {
+        "vlnv": "sfu.ca:user:eq_streaming:1.0",
+        "xci_name": "design_1_eq_streaming_0_0",
+        "xci_path": "ip\\design_1_eq_streaming_0_0\\design_1_eq_streaming_0_0.xci",
+        "inst_hier_path": "eq_streaming_0"
       }
     },
     "interface_nets": {
@@ -335,9 +335,9 @@
       "aclk_0_1": {
         "ports": [
           "aclk_0",
-          "eq_streaming_0/aclk",
           "gain_controller_stre_0/s_axi_aclk",
-          "full_compressor_wrap_0/CLK"
+          "full_compressor_wrap_0/CLK",
+          "eq_streaming_0/aclk"
         ]
       },
       "Ratio_0_0_1": {

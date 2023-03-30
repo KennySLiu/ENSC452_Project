@@ -35,8 +35,6 @@ module cmp_eq_gain_tb();
     reg                             fftdata_valid;
     wire                            fftdata_ready;
 
-    reg [OUT_WIDTH-1:0]             output_value;
-
     wire  [OUT_WIDTH-1:0]           output_WIRE;
     wire                            output_valid;
     wire                            output_ready;
@@ -84,10 +82,10 @@ module cmp_eq_gain_tb();
     assign EQ_num_fft_points    = CMP_num_fft_pts;
     assign my_reg[0]            = 256;
     assign my_reg[1]            = 256;
-    assign my_reg[2]            = 256;
+    assign my_reg[2]            = 0;
     assign my_reg[3]            = 256;
     assign my_reg[4]            = 256;
-    assign my_reg[5]            = 256;
+    assign my_reg[5]            = 1024;
     assign my_reg[6]            = 256;
     assign my_reg[7]            = 256;
     assign my_reg[8]            = 256;
@@ -224,7 +222,6 @@ module cmp_eq_gain_tb();
     // Reading output data
     always @(posedge aclk) begin
         if (output_valid) begin
-            //output_value <= output_WIRE;
             output_re_value [DATA_WIDTH-1 : 0] <= output_WIRE [OUT_WIDTH-1 : DATA_WIDTH];
             output_im_value [DATA_WIDTH-1 : 0] <= output_WIRE [DATA_WIDTH-1 : 0];
         end
