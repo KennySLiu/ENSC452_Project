@@ -484,10 +484,10 @@ void kenny_compressor_init(
                 compressor_settings_t *p_compressor_settings,
                 stft_settings_t *p_stft_settings
 ) {
-    p_compressor_settings->ratio = 20;
-    p_compressor_settings->threshold_energy = 500;
+    p_compressor_settings->ratio = 10;
+    p_compressor_settings->threshold_energy = 50000000;
     p_compressor_settings->bypass = 0;
-    p_compressor_settings->num_pts  = 32;
+    p_compressor_settings->num_pts  = INIT_NUM_FFT_PTS;
     p_compressor_settings->p_stft_settings = p_stft_settings;
     kenny_compressor_update_hardware(p_compressor_settings);
 }

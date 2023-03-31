@@ -151,8 +151,18 @@ fft_t* fft_create(  int gpio_device_id_FWD,
 		fft_destroy(p_obj);
 		return NULL;
 	}
-	fft_set_scale_sch_FWD(p_obj, 0x2ab);
-	fft_set_scale_sch_INV(p_obj, 0x2ab);
+
+    // NOTE(Kenny): Based on experimental data, a good scaling schedule for a 2048-sized FFT 
+    // is 0x55a (or 0x559)
+    if (INIT_NUM_FFT_PTS == 2048) {
+	    fft_set_scale_sch_FWD(p_obj, 0x55a);
+	    fft_set_scale_sch_INV(p_obj, 0x55a);
+    } else {
+        // According to the provided documentation, a conservative scaling schedule
+        // that guarantees no overflow is 0x2ab.
+	    fft_set_scale_sch_FWD(p_obj, 0x2ab);
+	    fft_set_scale_sch_INV(p_obj, 0x2ab);
+    }
 
 	return p_obj;
 
