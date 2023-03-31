@@ -167,6 +167,8 @@ int main()
         xil_printf("4: Print STFT stuff\n\r");
         xil_printf("5: Print all audio config. stuff\n\r");
         xil_printf("7: Perform FFT and IFFT using current parameters\n\r");
+        xil_printf("8: Print FFT input data\n\r");
+        xil_printf("9: Print IFFT output data\n\r");
         xil_printf("S: Stream Pure Audio\n\r");
         xil_printf("R/P: Record/Play Audio to/from memory\n\r");
         xil_printf("Q: Quit\n\r");
@@ -207,7 +209,6 @@ int main()
         else if (c == '7') // Run FFT
         {
             XTime startcycles, endcycles, totalcycles;
-            int tmp_debug_int = 0;
             float total_time_usec;
             XTime_GetTime(&startcycles);
 
@@ -281,14 +282,14 @@ int main()
         //    }
         //}
         /*******************************************************/
-        //else if (c == '4')
-        //{
-        //    fft_print_stim_buf(p_fft_inst);
-        //}
-        //else if (c == '5')
-        //{
-        //    fft_print_result_buf(p_fft_inst, -1);
-        //}
+        else if (c == '8')
+        {
+            fft_print_stim_buf(p_fft_inst);
+        }
+        else if (c == '9')
+        {
+            fft_print_result_buf(p_fft_inst, -1);
+        }
         else if (c == 's')
         {
             xil_printf("STREAMING AUDIO\r\n");
@@ -455,7 +456,6 @@ void which_fft_param(int *cur_num_fft_pts, fft_t* p_fft_inst)
         }
         else if (c == '2')
         {
-            fft_t* target_fft = NULL;
             int new_sched = 0;
             int lshift_amount = 0;
 

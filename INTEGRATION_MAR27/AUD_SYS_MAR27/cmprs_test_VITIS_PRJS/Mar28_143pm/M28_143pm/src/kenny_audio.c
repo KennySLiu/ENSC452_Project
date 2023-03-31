@@ -7,7 +7,7 @@ extern int sig_two_sine_waves[FFT_MAX_NUM_PTS]; // FFT input data
 int32_t float_to_fixed_point(float value)
 {
     const int fract_bits = 8;
-    const int integer_bits = 16;
+    //const int integer_bits = 16;
     const float scale_factor = 1 << fract_bits;
 
     int32_t fixed_pt = (int32_t)(value*scale_factor);
