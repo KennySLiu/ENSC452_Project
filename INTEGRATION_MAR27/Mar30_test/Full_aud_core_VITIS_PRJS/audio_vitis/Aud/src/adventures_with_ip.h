@@ -37,6 +37,25 @@
 //#include "lms_pcore_addr.h"
 //#include "xnco.h"
 
+
+
+/* ---------------------------------------------------------------------------- *
+ * 							Global Variables for interrupt stuff                *
+ * ---------------------------------------------------------------------------- */
+
+#define LED_CHANNEL 1
+#define PUSH_BTN_CH 1
+#define SLIDE_SWT_CH 1
+XGpio SWs; /* The Instance of the GPIO Driver */
+XGpio BTNs; /* The Instance of the GPIO Driver */
+XGpio LEDs;
+XTmrCtr TimerInstancePtr;
+u32 push_btns;
+u32 slide_sw;
+u32 leds;
+volatile int TIMER_INTR_FLG;
+
+
 /* ---------------------------------------------------------------------------- *
  * 							Prototype Functions									*
  * ---------------------------------------------------------------------------- */

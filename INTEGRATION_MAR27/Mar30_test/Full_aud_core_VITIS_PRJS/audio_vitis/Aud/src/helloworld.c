@@ -51,32 +51,19 @@ void which_fft_param(int* cur_num_fft_pts, fft_t* p_fft_inst);
 
 
 /************************** Abdul's Variable Definitions for timer and I/Os *****************************/
-#define LED_CHANNEL 1
-#define PUSH_BTN_CH 1
-#define SLIDE_SWT_CH 1
 
-XTmrCtr TimerInstancePtr;
+//int option = 4;
+//int freq_op = 1;
+//int O_gain = 4;        //range -20 to 20
+//int C_threshold = -10;    //range -30 to 0
+//int C_ratio = 10;         //range 1 to 50
+//#define MAX_BARS 11
+//int band[MAX_BARS];        //range -30 to 30
 
-volatile int TIMER_INTR_FLG;
 
-int option = 4;
-int freq_op = 1;
-int O_gain = 4;        //range -20 to 20
-int C_threshold = -10;    //range -30 to 0
-int C_ratio = 10;         //range 1 to 50
-#define MAX_BARS 11
-int band[MAX_BARS];        //range -30 to 30
+//XScuGic InterruptController; /* Instance of the Interrupt Controller */
+//static XScuGic_Config *GicConfig;/* The configuration parameters of thecontroller */
 
-XGpio SWs; /* The Instance of the GPIO Driver */
-XGpio BTNs; /* The Instance of the GPIO Driver */
-XGpio LEDs;
-
-XScuGic InterruptController; /* Instance of the Interrupt Controller */
-static XScuGic_Config *GicConfig;/* The configuration parameters of thecontroller */
-
-u32 push_btns = 0;
-u32 slide_sw = 0;
-u32 leds = 0;
 
 /*****************************************************************************/
 
@@ -132,8 +119,6 @@ int main()
     //Configure the Audio Codec's PLL
     AudioPllConfig();
 
-    kenny_init_intc(&intc_inst, XPAR_PS7_SCUGIC_0_DEVICE_ID);
-
     //Configure the Line in and Line out ports.
     //Call LineInLineOutConfig() for a configuration that
     //enables the HP jack too.
@@ -147,7 +132,7 @@ int main()
     int xStatus = 0;
     /* Initialize the drivers */
 
-    xStatus = XTmrCtr_Initialize(&TimerInstancePtr, XPAR_FABRIC_TMRCTR_0_VEC_ID);
+    xStatus = XTmrCtr_Initialize(&TimerInstancePtr, XPAR_AXI_TIMER_0_DEVICE_ID);
     if (xStatus != XST_SUCCESS) {
         xil_printf("Timer Initialization Failed\r\n");
         return XST_FAILURE;
@@ -171,13 +156,19 @@ int main()
     }
 
     //-----------Setup and Initialize Interrupts---------------------------------------
-    xStatus = ScuGicInterrupt_Init();
-    if (xStatus != XST_SUCCESS) {
-        xil_printf("Interrupts Initialization Failed\r\n");
-        return XST_FAILURE;
-    }
+    //xStatus = ScuGicInterrupt_Init();
+    //if (xStatus != XST_SUCCESS) {
+    //    xil_printf("Interrupts Initialization Failed\r\n");
+    //    return XST_FAILURE;
+    //}
 
+    setup_timer();
 
+    kenny_init_intc(&intc_inst, XPAR_PS7_SCUGIC_0_DEVICE_ID);
+    XTmrCtr_Reset(&TimerInstancePtr, XTC_TIMER_0);
+    //XTmrCtr_Start(&TimerInstancePtr, XTC_TIMER_0);
+    XGpio_SetDataDirection(&LEDs, LED_CHANNEL, ~0xFF);
+    XGpio_DiscreteWrite(&LEDs, LED_CHANNEL, 0xFF);
 
 
     /***************/
@@ -613,136 +604,5 @@ void which_fft_param(int *cur_num_fft_pts, fft_t* p_fft_inst)
             xil_printf("q: Exit\n\r");
         }
     }
-}
-
-int read_SW(void) {
-    return XGpio_DiscreteRead(&SWs, SLIDE_SWT_CH);
-}
-
-int read_BTN(void) {
-    return XGpio_DiscreteRead(&BTNs, PUSH_BTN_CH);
-}
-
-int read_LED(void) {
-    return XGpio_DiscreteRead(&LEDs, LED_CHANNEL);
-}
-
-void SW_InterruptHandler(void *InstancePtr) {
-    // Disable GPIO interrupts
-    XGpio_InterruptDisable(&SWs, SW_INT);
-    // Ignore additional button presses
-    if ((XGpio_InterruptGetStatus(&SWs) & SW_INT) != SW_INT) {
-        return;
-    }
-
-    //usleep(DELAYS_10_MS); //serves debouncing purpose of push-button
-    xil_printf("Switches value: %d \r\n", read_SW());
-    (void) XGpio_InterruptClear(&SWs, SW_INT);
-
-    // Enable GPIO interrupts
-    XGpio_InterruptEnable(&SWs, SW_INT);
-}
-
-void BTN_InterruptHandler(void *InstancePtr) {
-    // Disable GPIO interrupts
-    int myBTN = 0;
-    XGpio_InterruptDisable(&BTNs, BTN_INT);
-    // Ignore additional button presses
-    if ((XGpio_InterruptGetStatus(&BTNs) & BTN_INT) != BTN_INT) {
-        return;
-    }
-
-    //usleep(DELAYS_10_MS); //serves debouncing purpose of push-button
-
-    myBTN = read_BTN();
-    if(myBTN != 0) push_btns = read_BTN();
-    xil_printf("Buttons value: %d \r\n", read_BTN());
-    (void) XGpio_InterruptClear(&BTNs, BTN_INT);
-
-    // Enable GPIO interrupts
-    XGpio_InterruptEnable(&BTNs, BTN_INT);
-}
-
-void Timer_InterruptHandler(XTmrCtr *data, u8 TmrCtrNumber) {
-    XTmrCtr_Stop(data, TmrCtrNumber);
-    XTmrCtr_Reset(data, TmrCtrNumber);
-    //Update Stuff
-    //COMM_VAL = 1;
-    xil_printf("Timer Interrupt Called. \r\n");
-    TIMER_INTR_FLG = 1;
-    XTmrCtr_Start(data, TmrCtrNumber);
-}
-
-
-/*Setup all interrupts of the system*/
-int ScuGicInterrupt_Init() {
-    int Status = 0;
-    GicConfig = XScuGic_LookupConfig(XPAR_PS7_SCUGIC_0_DEVICE_ID);
-    if (NULL == GicConfig) {
-        return XST_FAILURE;
-    }
-
-    Status = XScuGic_CfgInitialize(&InterruptController, GicConfig,
-            GicConfig->CpuBaseAddress);
-    if (Status != XST_SUCCESS) {
-        return XST_FAILURE;
-    }
-    Status = SetUpInterruptSystem(&InterruptController);
-    if (Status != XST_SUCCESS) {
-        return XST_FAILURE;
-    }
-    // Set interrupt priorities and trigger type
-    XScuGic_SetPriorityTriggerType(&InterruptController,
-            XPAR_FABRIC_GPIO_SWITCHES_IP2INTC_IRPT_INTR, 0xB0, 0x3
-    );    //SWs, Lowest, rising
-    XScuGic_SetPriorityTriggerType(&InterruptController,
-            XPAR_FABRIC_GPIO_BUTTONS_IP2INTC_IRPT_INTR, 0xA0, 0x3
-    );    //BTNs, Highest, rising
-    XScuGic_SetPriorityTriggerType(&InterruptController,
-            XPAR_FABRIC_AXI_TIMER_0_INTERRUPT_INTR, 0xA8, 0x3
-    );    //TIMER, Middle, rising
-
-    /*Connect device driver handlers that will be called when an interrupt for the device occurs, the device driver handler performs the specific interrupt processing for the device*/
-    //connecting SW
-    Status = XScuGic_Connect(&InterruptController,
-            XPAR_FABRIC_GPIO_SWITCHES_IP2INTC_IRPT_INTR, 
-            (Xil_ExceptionHandler) SW_InterruptHandler,
-            (void *) &SWs
-    );
-    if (Status != XST_SUCCESS) {
-        return XST_FAILURE;
-    }
-    //connecting BTN
-    Status = XScuGic_Connect(&InterruptController,
-            XPAR_FABRIC_GPIO_BUTTONS_IP2INTC_IRPT_INTR, 
-            (Xil_ExceptionHandler) BTN_InterruptHandler,
-            (void *) &BTNs
-    );
-    if (Status != XST_SUCCESS) {
-        return XST_FAILURE;
-    }
-
-    //connecting timer
-    Status = XScuGic_Connect(&InterruptController,
-            XPAR_FABRIC_AXI_TIMER_0_INTERRUPT_INTR, 
-            (Xil_ExceptionHandler) XTmrCtr_InterruptHandler,
-            (void *) &TimerInstancePtr
-    );
-    if (Status != XST_SUCCESS) {
-        return XST_FAILURE;
-    }
-
-    //Enable GPIO interrupts
-    XGpio_InterruptEnable(&SWs, SW_INT);
-    XGpio_InterruptGlobalEnable(&SWs);
-    XGpio_InterruptEnable(&BTNs, BTN_INT);
-    XGpio_InterruptGlobalEnable(&BTNs);
-
-    //Enabling Interrupts inside the controller
-    XScuGic_Enable(&InterruptController, XPAR_FABRIC_GPIO_SWITCHES_IP2INTC_IRPT_INTR);
-    XScuGic_Enable(&InterruptController, XPAR_FABRIC_GPIO_BUTTONS_IP2INTC_IRPT_INTR);
-    XScuGic_Enable(&InterruptController, XPAR_FABRIC_AXI_TIMER_0_INTERRUPT_INTR);
-
-    return XST_SUCCESS;
 }
 
