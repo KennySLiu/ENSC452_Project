@@ -21,6 +21,15 @@
 #include "stdlib.h"
 #include <math.h>
 
+// Required for the buttons/switches interrupts:
+#include "xil_types.h"
+#include "xtmrctr.h"
+#include "xil_exception.h"
+#include "xscugic.h"
+#include "xil_cache.h"
+#include "xil_mmu.h"
+
+
 /* ---------------------------------------------------------------------------- *
  * 							Custom IP Header Files								*
  * ---------------------------------------------------------------------------- */
