@@ -37,6 +37,7 @@
 #include "adventures_with_ip.h"
 #include "kenny_audio.h"
 #include "kenny_hwInit.h"
+#include "xtime_l.h"
 
 
 
@@ -190,6 +191,11 @@ int main()
         // FFT & FILTERING STUFF
         else if (c == '7') // Run FFT
         {
+    	    XTime startcycles, endcycles, totalcycles;
+    	    int tmp_debug_int = 0;
+    	    float total_time_usec;
+    	    XTime_GetTime(&startcycles);
+
             kenny_stft_run_fwd_and_inv(
                 &stft_settings, 
                 p_fft_inst,
@@ -198,6 +204,15 @@ int main()
                 KENNY_AUDIO_OUT_MEM_PTR,
                 result_buf
             );
+
+    	    XTime_GetTime(&endcycles);
+
+    	    totalcycles = 2 * (endcycles-startcycles);
+    	    total_time_usec = ((float) totalcycles) * 1000000 / 2 / COUNTS_PER_SECOND;
+
+    	    printf("\n\n");
+    	    printf("COUNTS_PER_SECOND = %d\n", COUNTS_PER_SECOND);
+    		printf("The start count was %lld\r\nthe end count was %lld\r\nThe total time was %f usec\r\n.", startcycles, endcycles, total_time_usec);
 
             xil_printf("FFT complete!\n\r\n\r");
         }
