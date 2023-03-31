@@ -246,7 +246,15 @@ void kenny_eq_update_hardware(eq_settings_t *p_eq_settings)
 
     for (int i = 0; i < cur_num_bkts; ++i)
     {
-        int32_t cur_bkt_multiplier = float_to_fixed_point(p_eq_settings->parametric_eq_vect[i]);
+        int32_t cur_bkt_multiplier;
+        if (p_eq_settings->bypass == 0)
+        {
+            cur_bkt_multiplier = float_to_fixed_point(p_eq_settings->parametric_eq_vect[i]);
+        }
+        else
+        {
+            cur_bkt_multiplier = float_to_fixed_point(1.0);
+        }
         EQ_CONFIG_mWriteReg(
             XPAR_EQ_CONFIG_0_S00_AXI_BASEADDR, 
             EQ_VECTOR_START_ADDR + (4*i), 
@@ -262,6 +270,7 @@ void kenny_eq_update_hardware(eq_settings_t *p_eq_settings)
     printf("Updated EQ hardware with the following settings:\r\n");
     printf("    cur_num_pts = %ld\r\n", cur_num_fft_pts);
     printf("    cur_num_bkts = %ld\r\n", cur_num_bkts);
+    printf("    bypass = %d\r\n", p_eq_settings->bypass);
 
 
 
