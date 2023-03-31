@@ -394,8 +394,8 @@
       </xilinx:taxonomies>
       <xilinx:displayName>gain_controller_stream_v1_0</xilinx:displayName>
       <xilinx:definitionSource>package_project</xilinx:definitionSource>
-      <xilinx:coreRevision>7</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2023-03-28T23:25:30Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>9</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2023-03-31T00:21:24Z</xilinx:coreCreationDateTime>
       <xilinx:tags>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@6bccb167_ARCHIVE_LOCATION">c:/users/awa159/downloads/fft_to_ifft_direct_connection/ip_repo/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@72c3df7f_ARCHIVE_LOCATION">c:/users/awa159/downloads/fft_to_ifft_direct_connection/ip_repo/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
@@ -481,6 +481,22 @@
         <xilinx:tag xilinx:name="ui.data.coregen.dd@341f9b7a_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@6c68474d_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@3601e2ca_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@117f5f2f_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4fdd9662_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4b55618a_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@c013256_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1f685084_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@15fa079c_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@261a92c9_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@69a2570e_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4c1cf5c_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@576feefb_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@34ed498e_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@3632fb13_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1b38e2b2_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@26e35077_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@60f2fa1_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@62bc6c3e_ARCHIVE_LOCATION">c:/Users/ksl24/E452/INTEGRATION_MAR27/Abduls_IP/gain_controller_ip/gain_controller_ip/gain_controller_ip.srcs/sources_1/new</xilinx:tag>
       </xilinx:tags>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
