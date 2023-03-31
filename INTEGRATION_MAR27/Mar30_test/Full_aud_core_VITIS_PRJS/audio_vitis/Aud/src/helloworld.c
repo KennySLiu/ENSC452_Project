@@ -69,9 +69,9 @@ int main()
     //int         *     KENNY_AUDIO_IN_MEM_PTR = malloc(sizeof(int) * (KENNY_AUDIO_MAX_SAMPLES));
     //cplx_data_t *     KENNY_FFTDATA_MEM_PTR = malloc(sizeof(cplx_data_t) * KENNY_FFTDATA_SZ);
     //int         *     KENNY_AUDIO_OUT_MEM_PTR = malloc(sizeof(int) * (KENNY_AUDIO_MAX_SAMPLES));
-    int         KENNY_AUDIO_IN_MEM_PTR  [KENNY_AUDIO_MAX_SAMPLES];
+    int         KENNY_AUDIO_IN_MEM_PTR  [KENNY_AUDIO_MAX_SAMPLES] = {0};
     cplx_data_t KENNY_FFTDATA_MEM_PTR   [KENNY_FFTDATA_SZ];
-    int         KENNY_AUDIO_OUT_MEM_PTR [KENNY_AUDIO_MAX_SAMPLES];
+    int         KENNY_AUDIO_OUT_MEM_PTR [KENNY_AUDIO_MAX_SAMPLES] = {0};
 
     char         c;
     fft_t*       p_fft_inst;
@@ -121,8 +121,8 @@ int main()
     p_fft_inst = fft_create
     (
     // TODO: Try swapping these two? It should sound basically the same.
-        XPAR_GPIO_0_DEVICE_ID,
-        XPAR_GPIO_1_DEVICE_ID,
+        XPAR_GPIO_3_DEVICE_ID,
+        XPAR_GPIO_4_DEVICE_ID,
         XPAR_AXIDMA_0_DEVICE_ID,
         &intc_inst,
         XPAR_FABRIC_AXI_DMA_0_S2MM_INTROUT_INTR,
