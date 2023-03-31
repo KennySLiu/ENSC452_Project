@@ -487,7 +487,7 @@ void kenny_compressor_init(
     p_compressor_settings->ratio = 10;
     p_compressor_settings->threshold_energy = 50000000;
     p_compressor_settings->bypass = 0;
-    p_compressor_settings->num_pts  = INIT_NUM_FFT_PTS;
+    //p_compressor_settings->num_pts  = INIT_NUM_FFT_PTS;
     p_compressor_settings->p_stft_settings = p_stft_settings;
     kenny_compressor_update_hardware(p_compressor_settings);
 }
@@ -502,7 +502,7 @@ void kenny_compressor_print_threshold(compressor_settings_t *p_compressor_settin
     xil_printf("    compressor threshold = %d\r\n", p_compressor_settings->threshold_energy);
 }
 void kenny_compressor_print_num_pts(compressor_settings_t *p_compressor_settings) {
-    xil_printf("    compressor num_pts = %d\r\n", p_compressor_settings->num_pts);
+    xil_printf("    compressor num_pts = %d\r\n", p_compressor_settings->p_stft_settings->num_fft_pts);
 }
 void kenny_compressor_print(compressor_settings_t *p_compressor_settings) {
     kenny_compressor_print_bypass(p_compressor_settings);
@@ -589,7 +589,7 @@ void kenny_compressor_update_hardware(compressor_settings_t *p_compressor_settin
     K_AUD_CMPRS_CONFIGURATOR_mWriteReg(
         XPAR_K_AUD_CMPRS_CONFIGUR_0_S00_AXI_BASEADDR, 
         CMPRS_NUM_FFT_PTS_REG, 
-        p_compressor_settings->num_pts
+        p_compressor_settings->p_stft_settings->num_fft_pts
     );
     K_AUD_CMPRS_CONFIGURATOR_mWriteReg(
         XPAR_K_AUD_CMPRS_CONFIGUR_0_S00_AXI_BASEADDR, 
@@ -601,7 +601,7 @@ void kenny_compressor_update_hardware(compressor_settings_t *p_compressor_settin
     printf("Updated COMPRESSOR hardware with the following settings:\r\n");
     printf("    threshold = %d\r\n", p_compressor_settings->threshold_energy);
     printf("    ratio = %d\r\n", p_compressor_settings->ratio);
-    printf("    num_pts = %d\r\n", p_compressor_settings->num_pts);
+    printf("    num_pts = %d\r\n", p_compressor_settings->p_stft_settings->num_fft_pts);
     printf("    bypass = %d\r\n", p_compressor_settings->bypass);
 
     for (int i = 0; i < 4; ++i)
@@ -624,7 +624,7 @@ void kenny_compressor_update_interactive(compressor_settings_t *p_compressor_set
         xil_printf("1: Modify compressor RATIO\r\n");
         xil_printf("2: Modify compressor THRESHOLD\r\n");
         xil_printf("3: Toggle compressor BYPASS\r\n");
-        xil_printf("4: Toggle compressor NUM_PTS\r\n");
+        //xil_printf("4: Toggle compressor NUM_PTS\r\n");
         xil_printf("q: Quit back to main menu\r\n");
         c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
 
@@ -658,17 +658,17 @@ void kenny_compressor_update_interactive(compressor_settings_t *p_compressor_set
             p_compressor_settings->bypass = (p_compressor_settings->bypass ? 0 : 1);
             kenny_compressor_print_bypass(p_compressor_settings);
         }
-        else if (c == '4')
-        {
-            int new_num_pts = 0;
-            char new_num_pts_CHAR[8] = {};
-            xil_printf("Please enter your desired num_pts. (up to 4 digits)\r\n");
-            scanf("%4s", new_num_pts_CHAR);
-            new_num_pts = atoi(new_num_pts_CHAR);
-            xil_printf("You entered: %d\r\n", new_num_pts);
-            p_compressor_settings->num_pts = new_num_pts;
-            kenny_compressor_print_num_pts(p_compressor_settings);
-        }
+        //else if (c == '4')
+        //{
+        //    int new_num_pts = 0;
+        //    char new_num_pts_CHAR[8] = {};
+        //    xil_printf("Please enter your desired num_pts. (up to 4 digits)\r\n");
+        //    scanf("%4s", new_num_pts_CHAR);
+        //    new_num_pts = atoi(new_num_pts_CHAR);
+        //    xil_printf("You entered: %d\r\n", new_num_pts);
+        //    p_compressor_settings->num_pts = new_num_pts;
+        //    kenny_compressor_print_num_pts(p_compressor_settings);
+        //}
         else if (c == 'q')
         {
             kenny_compressor_update_hardware(p_compressor_settings);

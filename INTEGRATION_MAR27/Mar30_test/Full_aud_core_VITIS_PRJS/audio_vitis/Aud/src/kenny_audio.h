@@ -52,7 +52,7 @@ typedef struct kenny_compressor_settings
     int     ratio;
     int     threshold_energy;
     int     bypass;
-    int     num_pts;
+    //int     num_pts;
     stft_settings_t* p_stft_settings;
 } compressor_settings_t;
 
