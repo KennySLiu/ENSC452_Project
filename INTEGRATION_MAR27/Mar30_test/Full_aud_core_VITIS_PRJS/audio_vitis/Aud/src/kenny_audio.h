@@ -84,7 +84,7 @@ void audio_stream();
 /******************/
 void kenny_stft_print(stft_settings_t *p_stft_settings);
 void kenny_stft_init(stft_settings_t *p_stft_settings);
-void kenny_stft_update_window(stft_settings_t *p_stft_settings, int new_num_fft_pts);
+void kenny_stft_update_window_func(stft_settings_t *p_stft_settings, int new_num_fft_pts);
 
 void kenny_stft_run_fwd(
                 stft_settings_t *p_stft_settings, 

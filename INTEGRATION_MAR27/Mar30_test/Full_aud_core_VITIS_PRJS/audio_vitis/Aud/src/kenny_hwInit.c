@@ -50,10 +50,71 @@ static void BTN_InterruptHandler(void *InstancePtr) {
 static void Timer_InterruptHandler(XTmrCtr *data, u8 TmrCtrNumber) {
     XTmrCtr_Stop(data, TmrCtrNumber);
     XTmrCtr_Reset(data, TmrCtrNumber);
-    //Update Stuff
 
-    //xil_printf("Timer Interrupt Called. \r\n");
-    TIMER_INTR_FLG = 1;
+    u32  in_left, in_right;
+
+
+    //Update Stuff
+    #ifdef __DEBUGGING__
+    printf("HELLO From the timer handler. num_fft_pts = %d, audio_in_read_ctr = %d\r\n", 
+            num_fft_pts,
+            audio_in_read_ctr
+    );
+    #endif
+
+    //////////////////////////////////
+    // READ AUDIO IN
+    in_left = Xil_In32(I2S_DATA_RX_L_REG);
+    in_right = Xil_In32(I2S_DATA_RX_R_REG);
+    audio_in_read_ctr++;
+    *(cur_audio_in_ptr++) = in_left;
+    *(cur_audio_in_ptr++) = in_right;
+
+    // Perform an STFT window
+    if (audio_in_read_ctr == num_fft_pts/STFT_STRIDE_FACTOR)
+    {
+        //printf("HELLO WERE DOING SOMETHING IN HERE NOW\r\n");
+        audio_in_read_ctr = 0;
+
+        int cur_idx = aud_in_idx;
+        int next_idx = (cur_idx+1)%3;
+        int prev_idx = (cur_idx+2)%3;
+
+        // Copy our current and previous buffers into the FFT Input buffer.
+        memcpy(
+            &(fftdata_in_ptr[0]),
+            AUDIO_IN_MEM_PTRS[prev_idx],
+            sizeof(cplx_data_t)*num_fft_pts
+        );
+        memcpy(
+            &(fftdata_in_ptr[num_fft_pts-1]),
+            AUDIO_IN_MEM_PTRS[cur_idx],
+            sizeof(cplx_data_t)*num_fft_pts
+        );
+
+
+        aud_in_idx = next_idx;
+        cur_audio_in_ptr = &AUDIO_IN_MEM_PTRS[aud_in_idx];
+        FFTDATA_READY = 1;
+        #ifdef __DEBUGGING__
+        printf("awofijawpoefjiawef\r\n");
+        #endif
+    }
+
+    //////////////////////////////////
+    // PLAY AUDIO OUT
+    in_left  = *(cur_audio_out_ptr++);
+    in_right = *(cur_audio_out_ptr++);
+    audio_out_read_ctr++;
+    Xil_Out32(I2S_DATA_TX_L_REG, in_left);
+    Xil_Out32(I2S_DATA_TX_R_REG, in_right);
+
+    if (audio_out_read_ctr == num_fft_pts/STFT_STRIDE_FACTOR)
+    {
+        audio_out_read_ctr = 0;
+        cur_audio_out_ptr = AUDIO_OUT_MEM_PTR;
+    }
+
 
     XTmrCtr_Start(data, TmrCtrNumber);
 }
@@ -105,7 +166,6 @@ int kenny_init_intc(
     int intc_device_id
 ) {
     TIMER_INTR_FLG = 0;
-    aud_sample_num = 0;
 	XScuGic_Config* cfg_ptr;
 	int          status;
 

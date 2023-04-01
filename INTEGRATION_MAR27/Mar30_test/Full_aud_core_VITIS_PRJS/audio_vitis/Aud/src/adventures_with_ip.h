@@ -29,6 +29,9 @@
 #include "xil_cache.h"
 #include "xil_mmu.h"
 
+// Misc
+#include "kenny_audio.h"
+
 
 /* ---------------------------------------------------------------------------- *
  * 							Custom IP Header Files								*
@@ -55,8 +58,18 @@ XTmrCtr TimerInstancePtr;
 u32 push_btns;
 u32 slide_sw;
 u32 leds;
-volatile int aud_sample_num;
 volatile int TIMER_INTR_FLG;
+
+int aud_in_idx;
+int *AUDIO_IN_MEM_PTRS[3];
+int *cur_audio_in_ptr;
+int *AUDIO_OUT_MEM_PTR;
+int *cur_audio_out_ptr;
+int audio_in_read_ctr;
+int audio_out_read_ctr;
+int num_fft_pts;
+int *fftdata_in_ptr;
+int FFTDATA_READY;
 
 
 /* ---------------------------------------------------------------------------- *

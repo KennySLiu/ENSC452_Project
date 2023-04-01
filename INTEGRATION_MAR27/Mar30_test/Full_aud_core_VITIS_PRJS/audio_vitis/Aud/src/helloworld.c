@@ -61,20 +61,37 @@ int main()
     gain_settings_t             gain_settings;
     compressor_settings_t       compressor_settings;
 
+    kenny_stft_init(&stft_settings);
+    kenny_eq_init(&eq_settings, &stft_settings);
+    kenny_gain_init(&gain_settings);
+    kenny_compressor_init(&compressor_settings, &stft_settings);
+
+    num_fft_pts = stft_settings.num_fft_pts;
+
     // Hardware stuff:
     XScuGic intc_inst;
 
+
     // Local variables
-    int         aud_in_idx = 0;
     int         KENNY_AUDIO_IN_MEM_PTRS     [3][KENNY_AUDIO_MAX_SAMPLES] = {{0}, {0}};
     int         KENNY_FFT_INPUT_BUFFER      [KENNY_AUDIO_MAX_SAMPLES*STFT_STRIDE_FACTOR] = {0};
     int         KENNY_AUDIO_OUT_MEM_PTR     [KENNY_AUDIO_MAX_SAMPLES] = {0};
-    int         audio_in_read_ctr = 0;
-    int *       audio_in_ptr = &(KENNY_AUDIO_IN_MEM_PTRS[aud_in_idx][0]);
-    int         audio_in_is_full = 0;
-    int *       audio_out_ptr = &KENNY_AUDIO_OUT_MEM_PTR[0];
-    int         audio_out_read_ctr = 0;
-    int         FFTDATA_READY = 0;
+
+
+
+    // Initializing global variables used by the timer:
+    aud_in_idx = 0;
+    audio_in_read_ctr = 0;
+    AUDIO_IN_MEM_PTRS[0] = &(KENNY_AUDIO_IN_MEM_PTRS[0][0]);
+    AUDIO_IN_MEM_PTRS[1] = &(KENNY_AUDIO_IN_MEM_PTRS[1][0]);
+    AUDIO_IN_MEM_PTRS[2] = &(KENNY_AUDIO_IN_MEM_PTRS[2][0]);
+    cur_audio_in_ptr = AUDIO_IN_MEM_PTRS[0];
+    AUDIO_OUT_MEM_PTR = &KENNY_AUDIO_OUT_MEM_PTR[0];
+    cur_audio_out_ptr = AUDIO_OUT_MEM_PTR[0];
+    audio_out_read_ctr = 0;
+    fftdata_in_ptr = &(KENNY_FFT_INPUT_BUFFER[0]);
+    FFTDATA_READY = 0;
+    //////////
 
     char         c;
     fft_t*       p_fft_inst;
@@ -155,16 +172,6 @@ int main()
     /*LOGIC STARTS */
     /***************/
 
-    #ifdef __DEBUGGING__
-    printf("Address of stft settings = %d\r\n", &stft_settings);
-    c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
-    #endif
-
-    kenny_stft_init(&stft_settings);
-    kenny_eq_init(&eq_settings, &stft_settings);
-    kenny_gain_init(&gain_settings);
-    kenny_compressor_init(&compressor_settings, &stft_settings);
-
     /***********************/
 
     // Create FFT objects
@@ -206,76 +213,18 @@ int main()
     memcpy(input_buf, sig_two_sine_waves, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
 
 
-    int num_fft_pts = 0;
-    u32  in_left, in_right;
     while(1)
     {
-        num_fft_pts = stft_settings.num_fft_pts;
-
-        if (TIMER_INTR_FLG == 1)
-        {
-            //printf("HELLO From the timer handler. Num_fft_pts = %d, audio_in_read_ctr = %d\r\n", 
-            //        num_fft_pts, 
-            //        audio_in_read_ctr
-            //);
-            //////////////////////////////////
-            // READ AUDIO IN
-            in_left = Xil_In32(I2S_DATA_RX_L_REG);
-            in_right = Xil_In32(I2S_DATA_RX_R_REG);
-            audio_in_read_ctr++;
-            *(audio_in_ptr++) = in_left;
-            *(audio_in_ptr++) = in_right;
-
-            // Perform an STFT window
-            if (audio_in_read_ctr == num_fft_pts/STFT_STRIDE_FACTOR)
-            {
-                //printf("HELLO WERE DOING SOMETHING IN HERE NOW\r\n");
-                audio_in_read_ctr = 0;
-
-                int cur_idx = aud_in_idx;
-                int next_idx = (cur_idx+1)%3;
-                int prev_idx = (cur_idx+2)%3;
-
-                // Copy our current and previous buffers into the FFT Input buffer.
-                memcpy(
-                    &(KENNY_FFT_INPUT_BUFFER[0]),
-                    KENNY_AUDIO_IN_MEM_PTRS[prev_idx],
-                    sizeof(cplx_data_t)*num_fft_pts
-                );
-                memcpy(
-                    &(KENNY_FFT_INPUT_BUFFER[num_fft_pts-1]),
-                    KENNY_AUDIO_IN_MEM_PTRS[cur_idx],
-                    sizeof(cplx_data_t)*num_fft_pts
-                );
-
-
-                FFTDATA_READY = 1;
-                aud_in_idx = next_idx;
-                audio_in_ptr = &KENNY_AUDIO_IN_MEM_PTRS[aud_in_idx];
-            }
-
-            //////////////////////////////////
-            // PLAY AUDIO OUT
-            in_left  = *(audio_out_ptr++);
-            in_right = *(audio_out_ptr++);
-            audio_out_read_ctr++;
-            Xil_Out32(I2S_DATA_TX_L_REG, in_left);
-            Xil_Out32(I2S_DATA_TX_R_REG, in_right);
-
-            if (audio_out_read_ctr == num_fft_pts/STFT_STRIDE_FACTOR)
-            {
-                audio_out_read_ctr = 0;
-                audio_out_ptr = &KENNY_AUDIO_OUT_MEM_PTR[0];
-            }
-
-
-            //////////////////////////////////
-            TIMER_INTR_FLG = 0;
-        }
-
         if (FFTDATA_READY == 1)
         {
-            //printf("HELLO From the fft handler\r\n");
+
+            XTime startcycles, endcycles, totalcycles;
+            float total_time_usec;
+            XTime_GetTime(&startcycles);
+
+            #ifdef __DEBUGGING__
+            printf("HELLO From the fft handler\r\n");
+            #endif
             kenny_stft_run_fwd_and_inv(
                 &stft_settings, 
                 p_fft_inst,
@@ -285,6 +234,19 @@ int main()
                 result_buf
             );
             FFTDATA_READY = 0;
+
+
+            #ifdef __DEBUGGING__
+            XTime_GetTime(&endcycles);
+
+            totalcycles = 2 * (endcycles-startcycles);
+            total_time_usec = ((float) totalcycles) * 1000000 / 2 / COUNTS_PER_SECOND;
+
+            printf("\n\n");
+            printf("COUNTS_PER_SECOND = %d\n", COUNTS_PER_SECOND);
+            printf("The start count was %lld\r\nthe end count was %lld\r\nThe total time was %f usec\r\n.", startcycles, endcycles, total_time_usec);
+            #endif
+
         }
     }
 
