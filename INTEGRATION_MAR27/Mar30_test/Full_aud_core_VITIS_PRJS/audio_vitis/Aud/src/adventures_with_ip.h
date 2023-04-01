@@ -46,7 +46,7 @@
  * 							Global Variables for interrupt stuff                *
  * ---------------------------------------------------------------------------- */
 
-#define __DEBUGGING__ (1)
+//#define __DEBUGGING__ (1)
 
 #define LED_CHANNEL 1
 #define PUSH_BTN_CH 1

@@ -101,7 +101,7 @@ static void Timer_InterruptHandler(XTmrCtr *data, u8 TmrCtrNumber) {
 
         aud_in_idx = next_idx;
         cur_audio_in_ptr = AUDIO_IN_MEM_PTRS[aud_in_idx];
-        //FFTDATA_READY = 1;
+        FFTDATA_READY = 1;
         #ifdef __DEBUGGING__
         printf("awofijawpoefjiawef\r\n");
         #endif
