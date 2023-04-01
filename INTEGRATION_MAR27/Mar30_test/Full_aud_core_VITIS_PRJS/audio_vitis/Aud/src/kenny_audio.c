@@ -84,10 +84,17 @@ void kenny_stft_update_window_func(stft_settings_t *p_stft_settings, int new_num
             p_stft_settings->STFT_window_func[i] = p_stft_settings->STFT_window_func[new_num_fft_pts - i - 1];
         }
     }
+
+    #ifdef __DEBUGGING__
+    for (int i = 0; i < new_num_fft_pts; ++i)
+    {
+        printf("STFT Window[%d] = %f\r\n", i, p_stft_settings->STFT_window_func[i]);
+    }
+    #endif
 }
 
 void kenny_stft_apply_window(
-                stft_settings_t *p_stft_settings, 
+                stft_settings_t *p_stft_settings,
                 cplx_data_t* input_buf,
                 cplx_data_t* output_buf
 ){
@@ -99,7 +106,8 @@ void kenny_stft_apply_window(
         in_cplx = input_buf[idx];
         in_re = in_cplx.data_re;
         in_im = in_cplx.data_im;
-        cur_multiplier = (p_stft_settings->STFT_window_func[idx]);
+        //cur_multiplier = (p_stft_settings->STFT_window_func[idx]);
+        cur_multiplier = 0.5;
 
         out_re = in_re*cur_multiplier;
         out_im = in_im*cur_multiplier;
@@ -107,11 +115,18 @@ void kenny_stft_apply_window(
         out_cplx.data_im = out_im;
 
         output_buf[idx] = out_cplx;
+
+        #ifdef __DEBUGGING__
+        printf("STFT Applying Window: idx = %05d, input_buf = %09d. output_buf = %09d. Multiplier = %f\r\n",
+                idx, input_buf[idx], output_buf[idx], cur_multiplier
+        );
+        #endif
+                
     }
 }
 
 void kenny_stft_combine_half_windows(
-                stft_settings_t *p_stft_settings, 
+                stft_settings_t *p_stft_settings,
                 cplx_data_t* secondhalf_buf,
                 cplx_data_t* firsthalf_buf,
                 cplx_data_t* output_buf
@@ -168,7 +183,7 @@ void kenny_stft_run_fwd_and_inv(
         xil_printf("\r\n\r\n !!!!!!!!!!!!!!ERROR!!!!!!!!!!!!! FFT failed.\n\r\n\r\n\r");
         return;
     }
-    
+
     // Window the current FFT output into one of our STFT doublebuffers
     kenny_stft_apply_window(
         p_stft_settings,
@@ -202,12 +217,30 @@ void kenny_stft_run_fwd_and_inv(
 void kenny_eq_init(eq_settings_t *p_eq_settings, stft_settings_t *p_stft_settings)
 {
     p_eq_settings->EQ_cur_num_freq_buckets = (int) log2f(INIT_NUM_FFT_PTS);
-    p_eq_settings->bypass = 1;
+    p_eq_settings->bypass = 0;
 
-    for (int i = 0; i < EQ_MAX_NUM_FREQ_BUCKETS; ++i)
-    {
-        p_eq_settings->parametric_eq_vect[i] = 1.0;
-    }
+    p_eq_settings->parametric_eq_vect[0 ] = 0.0;
+    p_eq_settings->parametric_eq_vect[1 ] = 0.0;
+    p_eq_settings->parametric_eq_vect[2 ] = 0.0;
+    p_eq_settings->parametric_eq_vect[3 ] = 0.0;
+    p_eq_settings->parametric_eq_vect[4 ] = 0.0;
+    p_eq_settings->parametric_eq_vect[5 ] = 0.0;
+    p_eq_settings->parametric_eq_vect[6 ] = 0.0;
+    p_eq_settings->parametric_eq_vect[7 ] = 4.0;
+    p_eq_settings->parametric_eq_vect[8 ] = 4.0;
+    p_eq_settings->parametric_eq_vect[9 ] = 4.0;
+    p_eq_settings->parametric_eq_vect[10] = 0.0;
+    p_eq_settings->parametric_eq_vect[11] = 0.0;
+    p_eq_settings->parametric_eq_vect[12] = 0.0;
+    p_eq_settings->parametric_eq_vect[13] = 0.0;
+    p_eq_settings->parametric_eq_vect[14] = 0.0;
+    p_eq_settings->parametric_eq_vect[15] = 0.0;
+
+
+    //for (int i = 0; i < EQ_MAX_NUM_FREQ_BUCKETS; ++i)
+    //{
+    //    p_eq_settings->parametric_eq_vect[i] = 1.0;
+    //}
     p_eq_settings->p_stft_settings = p_stft_settings;
 
     kenny_eq_update_hardware(p_eq_settings);
@@ -706,6 +739,12 @@ void kenny_convertAudioToCplx(int* inval, cplx_data_t* outval, size_t num_vals_t
          in_idx < num_vals_to_cpy*AUDIO_CHANNELS;
          in_idx += AUDIO_CHANNELS, ++out_idx)
     {
+        #ifdef __DEBUGGING__
+        printf("ConvertAUDIOtoCPLX: inval[%d] = %d\r\n",
+                in_idx, inval[in_idx]
+        );
+        #endif
+
         // Convert input data to mono (assume 2 input channels)
         //cur_re_int = (inval[in_idx] + inval[in_idx+1]) / 2;
         cur_re_int = inval[in_idx];
@@ -742,6 +781,12 @@ void kenny_convertCplxToAudio(cplx_data_t* inval, int* outval, size_t num_vals_t
         // In testing, I find that ignoring the imaginary part is ok. But maybe it should be re + im.
         cur_re = cur_cplx.data_re;
         cur_re_int = kenny_convert_short_to_24bit(cur_re);
+
+        #ifdef __DEBUGGING__
+        printf("ConvertCplxToAudio: outval[%d] = %d\r\n",
+                out_idx, cur_re_int
+        );
+        #endif
 
         // Write to output channels (assume 2 channels)
         outval[out_idx]     = cur_re_int;

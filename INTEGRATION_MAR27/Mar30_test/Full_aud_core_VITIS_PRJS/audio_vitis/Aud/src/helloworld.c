@@ -55,7 +55,7 @@ void which_fft_param(int* cur_num_fft_pts, fft_t* p_fft_inst);
 // Main entry point
 int main()
 {
-    int cur_num_fft_pts         = INIT_NUM_FFT_PTS;
+    int                         cur_num_fft_pts         = INIT_NUM_FFT_PTS;
     eq_settings_t               eq_settings;
     gain_settings_t             gain_settings;
     compressor_settings_t       compressor_settings;
@@ -209,74 +209,63 @@ int main()
 
         if (TIMER_INTR_FLG == 1)
         {
-            if (DEBUGGING)
+            //printf("HELLO From the timer handler. Num_fft_pts = %d, audio_in_read_ctr = %d\r\n", 
+            //        num_fft_pts, 
+            //        audio_in_read_ctr
+            //);
+            //////////////////////////////////
+            // READ AUDIO IN
+            in_left = Xil_In32(I2S_DATA_RX_L_REG);
+            in_right = Xil_In32(I2S_DATA_RX_R_REG);
+            audio_in_read_ctr++;
+            *(audio_in_ptr++) = in_left;
+            *(audio_in_ptr++) = in_right;
+
+            // Perform an STFT window
+            if (audio_in_read_ctr == num_fft_pts/STFT_STRIDE_FACTOR)
             {
-                in_left = Xil_In32(I2S_DATA_RX_L_REG);
-                in_right = Xil_In32(I2S_DATA_RX_R_REG);
-                Xil_Out32(I2S_DATA_TX_L_REG, in_left);
-                Xil_Out32(I2S_DATA_TX_R_REG, in_right);
+                //printf("HELLO WERE DOING SOMETHING IN HERE NOW\r\n");
+                audio_in_read_ctr = 0;
+
+                int cur_idx = aud_in_idx;
+                int next_idx = (cur_idx+1)%3;
+                int prev_idx = (cur_idx+2)%3;
+
+                // Copy our current and previous buffers into the FFT Input buffer.
+                memcpy(
+                    &(KENNY_FFT_INPUT_BUFFER[0]),
+                    KENNY_AUDIO_IN_MEM_PTRS[prev_idx],
+                    sizeof(cplx_data_t)*num_fft_pts
+                );
+                memcpy(
+                    &(KENNY_FFT_INPUT_BUFFER[num_fft_pts-1]),
+                    KENNY_AUDIO_IN_MEM_PTRS[cur_idx],
+                    sizeof(cplx_data_t)*num_fft_pts
+                );
+
+
+                FFTDATA_READY = 1;
+                aud_in_idx = next_idx;
+                audio_in_ptr = &KENNY_AUDIO_IN_MEM_PTRS[aud_in_idx];
             }
 
-            else
+            //////////////////////////////////
+            // PLAY AUDIO OUT
+            in_left  = *(audio_out_ptr++);
+            in_right = *(audio_out_ptr++);
+            audio_out_read_ctr++;
+            Xil_Out32(I2S_DATA_TX_L_REG, in_left);
+            Xil_Out32(I2S_DATA_TX_R_REG, in_right);
+
+            if (audio_out_read_ctr == num_fft_pts/STFT_STRIDE_FACTOR)
             {
-                //printf("HELLO From the timer handler. Num_fft_pts = %d, audio_in_read_ctr = %d\r\n", 
-                //        num_fft_pts, 
-                //        audio_in_read_ctr
-                //);
-                //////////////////////////////////
-                // READ AUDIO IN
-                in_left = Xil_In32(I2S_DATA_RX_L_REG);
-                in_right = Xil_In32(I2S_DATA_RX_R_REG);
-                audio_in_read_ctr++;
-                *(audio_in_ptr++) = in_left;
-                *(audio_in_ptr++) = in_right;
-
-                // Perform an STFT window
-                if (audio_in_read_ctr == num_fft_pts/STFT_STRIDE_FACTOR)
-                {
-                    //printf("HELLO WERE DOING SOMETHING IN HERE NOW\r\n");
-                    audio_in_read_ctr = 0;
-
-                    int cur_idx = aud_in_idx;
-                    int next_idx = (cur_idx+1)%3;
-                    int prev_idx = (cur_idx+2)%3;
-
-                    // Copy our current and previous buffers into the FFT Input buffer.
-                    memcpy(
-                        &(KENNY_FFT_INPUT_BUFFER[0]),
-                        KENNY_AUDIO_IN_MEM_PTRS[prev_idx],
-                        sizeof(cplx_data_t)*num_fft_pts
-                    );
-                    memcpy(
-                        &(KENNY_FFT_INPUT_BUFFER[num_fft_pts-1]),
-                        KENNY_AUDIO_IN_MEM_PTRS[cur_idx],
-                        sizeof(cplx_data_t)*num_fft_pts
-                    );
-
-
-                    FFTDATA_READY = 1;
-                    aud_in_idx = next_idx;
-                    audio_in_ptr = &KENNY_AUDIO_IN_MEM_PTRS[aud_in_idx];
-                }
-
-                //////////////////////////////////
-                // PLAY AUDIO OUT
-                in_left  = *(audio_out_ptr++);
-                in_right = *(audio_out_ptr++);
-                audio_out_read_ctr++;
-                Xil_Out32(I2S_DATA_TX_L_REG, in_left);
-                Xil_Out32(I2S_DATA_TX_R_REG, in_right);
-
-                if (audio_out_read_ctr == num_fft_pts/STFT_STRIDE_FACTOR)
-                {
-                    audio_out_read_ctr = 0;
-                    audio_out_ptr = &KENNY_AUDIO_OUT_MEM_PTR[0];
-                }
-
-
-                //////////////////////////////////
-                TIMER_INTR_FLG = 0;
+                audio_out_read_ctr = 0;
+                audio_out_ptr = &KENNY_AUDIO_OUT_MEM_PTR[0];
             }
+
+
+            //////////////////////////////////
+            TIMER_INTR_FLG = 0;
         }
 
         if (FFTDATA_READY == 1)
@@ -285,7 +274,7 @@ int main()
             kenny_stft_run_fwd_and_inv(
                 &stft_settings, 
                 p_fft_inst,
-                KENNY_AUDIO_IN_MEM_PTRS[aud_in_idx],
+                KENNY_FFT_INPUT_BUFFER,
                 input_buf,
                 KENNY_AUDIO_OUT_MEM_PTR,
                 result_buf
