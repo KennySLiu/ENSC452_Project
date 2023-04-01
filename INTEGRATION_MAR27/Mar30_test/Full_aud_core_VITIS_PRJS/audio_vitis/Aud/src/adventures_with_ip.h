@@ -47,6 +47,13 @@
  * ---------------------------------------------------------------------------- */
 
 //#define __DEBUGGING__ (1)
+#define __PURE_STREAMING__ (1)
+
+/////////////////////// TIMING THE INTERRUPT
+#include "xtime_l.h"
+int TMP_DEBUG_CTR;
+XTime startcycles, endcycles, totalcycles;
+///////////////////////////
 
 #define LED_CHANNEL 1
 #define PUSH_BTN_CH 1

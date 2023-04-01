@@ -161,8 +161,8 @@ void AudioConfigureJacks()
  * ---------------------------------------------------------------------------- */
 void LineinLineoutConfig() {
 
-	//AudioWriteToReg(R17_CONVERTER_CONTROL_0, 0x05);//48 KHz
-	//AudioWriteToReg(R64_SERIAL_PORT_SAMPLING_RATE, 0x05);//48 KHz
+	//AudioWriteToReg(R17_CONVERTER_CONTROL_0, 0x05);//32 KHz
+	//AudioWriteToReg(R64_SERIAL_PORT_SAMPLING_RATE, 0x05);//32 KHz
 	AudioWriteToReg(R17_CONVERTER_CONTROL_0, 0x00);//48 KHz
 	AudioWriteToReg(R64_SERIAL_PORT_SAMPLING_RATE, 0x00);//48 KHz
 	AudioWriteToReg(R19_ADC_CONTROL, 0x13);

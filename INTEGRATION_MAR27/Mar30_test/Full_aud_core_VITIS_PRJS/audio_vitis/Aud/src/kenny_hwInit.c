@@ -53,7 +53,6 @@ static void Timer_InterruptHandler(XTmrCtr *data, u8 TmrCtrNumber) {
 
     u32  in_left, in_right;
 
-
     //Update Stuff
     #ifdef __DEBUGGING__
     printf("HELLO From the timer handler. num_fft_pts = %d, audio_in_read_ctr = %d, audio_out_read_ctr = %d\r\n", 
@@ -68,6 +67,28 @@ static void Timer_InterruptHandler(XTmrCtr *data, u8 TmrCtrNumber) {
     );
     #endif
 
+    float total_time_usec = 0;
+    if (TMP_DEBUG_CTR == 0)
+    {
+        XTime_GetTime(&startcycles);
+        TMP_DEBUG_CTR = 1;
+    } else
+    {
+        XTime_GetTime(&endcycles);
+
+        totalcycles = 2 * (endcycles-startcycles);
+        total_time_usec = ((float) totalcycles) * 1000000 / 2 / COUNTS_PER_SECOND;
+        printf("The start count was %lld\r\nthe end count was %lld\r\nThe total time was %f usec\r\n.", startcycles, endcycles, total_time_usec);
+        TMP_DEBUG_CTR = 0;
+    }
+
+
+    #ifdef __PURE_STREAMING__
+    in_left = Xil_In32(I2S_DATA_RX_L_REG);
+    in_right = Xil_In32(I2S_DATA_RX_R_REG);
+    Xil_Out32(I2S_DATA_TX_L_REG, in_left);
+    Xil_Out32(I2S_DATA_TX_R_REG, in_right);
+    #else
     //////////////////////////////////
     // READ AUDIO IN
     in_left = Xil_In32(I2S_DATA_RX_L_REG);
@@ -120,6 +141,7 @@ static void Timer_InterruptHandler(XTmrCtr *data, u8 TmrCtrNumber) {
         audio_out_read_ctr = 0;
         cur_audio_out_ptr = AUDIO_OUT_MEM_PTR;
     }
+    #endif
 
 
     XTmrCtr_Start(data, TmrCtrNumber);
@@ -133,13 +155,18 @@ void setup_timer() {
             &TimerInstancePtr
     );
     //Reset Values
+    // On April 1st I tested the timer by using XTime_GetTime(). It has a period of 10ns.
     XTmrCtr_SetResetValue(
             &TimerInstancePtr, 
             0,
-            0xFFFFDF7C
+            0xFFFF0000      // random crap
+            //0xFFFFF3CA      //3125, corresponding to 32khz
+            //0xFFFFDF7C  // 2083, corresponding to 48khz
     );
+    // The time per sample = 100,000,000/AUD_SAMPLE_RATE.
     //0xDC3CB9FF); 6sec
 
+    TMP_DEBUG_CTR = 0;
 
     //Interrupt Mode and Auto reload
     XTmrCtr_SetOptions(&TimerInstancePtr,
