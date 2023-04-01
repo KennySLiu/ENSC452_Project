@@ -56,10 +56,10 @@ void which_fft_param(int* cur_num_fft_pts, fft_t* p_fft_inst);
 int main()
 {
     int                         cur_num_fft_pts         = INIT_NUM_FFT_PTS;
+    stft_settings_t             stft_settings;
     eq_settings_t               eq_settings;
     gain_settings_t             gain_settings;
     compressor_settings_t       compressor_settings;
-    stft_settings_t             stft_settings;
 
     // Hardware stuff:
     XScuGic intc_inst;
@@ -154,6 +154,11 @@ int main()
     /***************/
     /*LOGIC STARTS */
     /***************/
+
+    #ifdef __DEBUGGING__
+    printf("Address of stft settings = %d\r\n", &stft_settings);
+    c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+    #endif
 
     kenny_stft_init(&stft_settings);
     kenny_eq_init(&eq_settings, &stft_settings);

@@ -54,7 +54,7 @@ void kenny_stft_init(stft_settings_t *p_stft_settings)
     kenny_stft_update_window_func(p_stft_settings, INIT_NUM_FFT_PTS);
     p_stft_settings->doublebuff_idx = 0;
     
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < 2; ++i)
     {
         for (int j = 0; j < FFT_MAX_NUM_PTS; ++j)
         {
@@ -62,6 +62,12 @@ void kenny_stft_init(stft_settings_t *p_stft_settings)
             p_stft_settings->windows[i][j].data_im = 0;
         }
     }
+    #ifdef __DEBUGGING__
+    for (int i = 0; i < p_stft_settings->num_fft_pts; ++i)
+    {
+        printf("STFT Window[%d] = %f\r\n", i, p_stft_settings->STFT_window_func[i]);
+    }
+    #endif
 }
 
 void kenny_stft_update_window_func(stft_settings_t *p_stft_settings, int new_num_fft_pts)
@@ -84,13 +90,6 @@ void kenny_stft_update_window_func(stft_settings_t *p_stft_settings, int new_num
             p_stft_settings->STFT_window_func[i] = p_stft_settings->STFT_window_func[new_num_fft_pts - i - 1];
         }
     }
-
-    #ifdef __DEBUGGING__
-    for (int i = 0; i < new_num_fft_pts; ++i)
-    {
-        printf("STFT Window[%d] = %f\r\n", i, p_stft_settings->STFT_window_func[i]);
-    }
-    #endif
 }
 
 void kenny_stft_apply_window(
@@ -106,8 +105,8 @@ void kenny_stft_apply_window(
         in_cplx = input_buf[idx];
         in_re = in_cplx.data_re;
         in_im = in_cplx.data_im;
-        //cur_multiplier = (p_stft_settings->STFT_window_func[idx]);
-        cur_multiplier = 0.5;
+        cur_multiplier = (p_stft_settings->STFT_window_func[idx]);
+        //cur_multiplier = 0.5;
 
         out_re = in_re*cur_multiplier;
         out_im = in_im*cur_multiplier;
@@ -120,6 +119,7 @@ void kenny_stft_apply_window(
         printf("STFT Applying Window: idx = %05d, input_buf = %09d. output_buf = %09d. Multiplier = %f\r\n",
                 idx, input_buf[idx], output_buf[idx], cur_multiplier
         );
+        printf("Pointer = %d\r\n", p_stft_settings);
         #endif
                 
     }
@@ -219,22 +219,22 @@ void kenny_eq_init(eq_settings_t *p_eq_settings, stft_settings_t *p_stft_setting
     p_eq_settings->EQ_cur_num_freq_buckets = (int) log2f(INIT_NUM_FFT_PTS);
     p_eq_settings->bypass = 0;
 
-    p_eq_settings->parametric_eq_vect[0 ] = 0.0;
-    p_eq_settings->parametric_eq_vect[1 ] = 0.0;
-    p_eq_settings->parametric_eq_vect[2 ] = 0.0;
-    p_eq_settings->parametric_eq_vect[3 ] = 0.0;
-    p_eq_settings->parametric_eq_vect[4 ] = 0.0;
-    p_eq_settings->parametric_eq_vect[5 ] = 0.0;
-    p_eq_settings->parametric_eq_vect[6 ] = 0.0;
-    p_eq_settings->parametric_eq_vect[7 ] = 4.0;
-    p_eq_settings->parametric_eq_vect[8 ] = 4.0;
-    p_eq_settings->parametric_eq_vect[9 ] = 4.0;
-    p_eq_settings->parametric_eq_vect[10] = 0.0;
-    p_eq_settings->parametric_eq_vect[11] = 0.0;
-    p_eq_settings->parametric_eq_vect[12] = 0.0;
-    p_eq_settings->parametric_eq_vect[13] = 0.0;
-    p_eq_settings->parametric_eq_vect[14] = 0.0;
-    p_eq_settings->parametric_eq_vect[15] = 0.0;
+    p_eq_settings->parametric_eq_vect[0 ] = 1.0;
+    p_eq_settings->parametric_eq_vect[1 ] = 1.0;
+    p_eq_settings->parametric_eq_vect[2 ] = 1.0;
+    p_eq_settings->parametric_eq_vect[3 ] = 1.0;
+    p_eq_settings->parametric_eq_vect[4 ] = 1.0;
+    p_eq_settings->parametric_eq_vect[5 ] = 1.0;
+    p_eq_settings->parametric_eq_vect[6 ] = 1.0;
+    p_eq_settings->parametric_eq_vect[7 ] = 1.0;
+    p_eq_settings->parametric_eq_vect[8 ] = 1.0;
+    p_eq_settings->parametric_eq_vect[9 ] = 1.0;
+    p_eq_settings->parametric_eq_vect[10] = 1.0;
+    p_eq_settings->parametric_eq_vect[11] = 1.0;
+    p_eq_settings->parametric_eq_vect[12] = 1.0;
+    p_eq_settings->parametric_eq_vect[13] = 1.0;
+    p_eq_settings->parametric_eq_vect[14] = 1.0;
+    p_eq_settings->parametric_eq_vect[15] = 1.0;
 
 
     //for (int i = 0; i < EQ_MAX_NUM_FREQ_BUCKETS; ++i)
