@@ -51,9 +51,10 @@ static void Timer_InterruptHandler(XTmrCtr *data, u8 TmrCtrNumber) {
     XTmrCtr_Stop(data, TmrCtrNumber);
     XTmrCtr_Reset(data, TmrCtrNumber);
     //Update Stuff
-    //COMM_VAL = 1;
-    xil_printf("Timer Interrupt Called. \r\n");
+
+    //xil_printf("Timer Interrupt Called. \r\n");
     TIMER_INTR_FLG = 1;
+
     XTmrCtr_Start(data, TmrCtrNumber);
 }
 
@@ -65,12 +66,14 @@ void setup_timer() {
             &TimerInstancePtr
     );
     //Reset Values
-    XTmrCtr_SetResetValue(&TimerInstancePtr, 0, //Change with generic value
-                                                //0xFFF0BDC0);
-                                                //0x23C34600);
-                                                //0xDC3CB9FF); 6sec
-            0xFA0A1EFF
+    XTmrCtr_SetResetValue(
+            &TimerInstancePtr, 
+            0,
+            0xFFFFDF7C
     );
+    //0xDC3CB9FF); 6sec
+
+
     //Interrupt Mode and Auto reload
     XTmrCtr_SetOptions(&TimerInstancePtr,
         XPAR_AXI_TIMER_0_DEVICE_ID, 
@@ -101,6 +104,8 @@ int kenny_init_intc(
     XScuGic * p_intc_inst, 
     int intc_device_id
 ) {
+    TIMER_INTR_FLG = 0;
+    aud_sample_num = 0;
 	XScuGic_Config* cfg_ptr;
 	int          status;
 

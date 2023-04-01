@@ -43,6 +43,8 @@
  * 							Global Variables for interrupt stuff                *
  * ---------------------------------------------------------------------------- */
 
+#define DEBUGGING (1)
+
 #define LED_CHANNEL 1
 #define PUSH_BTN_CH 1
 #define SLIDE_SWT_CH 1
@@ -53,6 +55,7 @@ XTmrCtr TimerInstancePtr;
 u32 push_btns;
 u32 slide_sw;
 u32 leds;
+volatile int aud_sample_num;
 volatile int TIMER_INTR_FLG;
 
 

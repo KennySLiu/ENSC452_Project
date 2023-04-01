@@ -17,13 +17,17 @@
 
 #define AUDIO_SAMPLE_RATE (48000)
 #define AUDIO_CHANNELS (2)
-#define MAX_RECORD_SEC (4)
-#define KENNY_AUDIO_MAX_SAMPLES (AUDIO_SAMPLE_RATE * MAX_RECORD_SEC * AUDIO_CHANNELS)
-#define KENNY_FFTDATA_SZ ((KENNY_AUDIO_MAX_SAMPLES/AUDIO_CHANNELS) * STFT_STRIDE_FACTOR)
-//#define KENNY_AUDIO_MAX_SAMPLES (8192)
 
 #define EQ_MAX_NUM_FREQ_BUCKETS (16)
+
+/// NOTE: As of March 31, we don't support stride factor of 1.
 #define STFT_STRIDE_FACTOR (2)
+
+#define KENNY_AUDIO_MAX_SAMPLES (FFT_MAX_NUM_PTS/STFT_STRIDE_FACTOR * AUDIO_CHANNELS)
+//#define MAX_RECORD_SEC (4)
+//#define KENNY_AUDIO_MAX_SAMPLES (AUDIO_SAMPLE_RATE * MAX_RECORD_SEC * AUDIO_CHANNELS)
+//#define KENNY_FFTDATA_SZ ((KENNY_AUDIO_MAX_SAMPLES/AUDIO_CHANNELS) * STFT_STRIDE_FACTOR)
+
 
 
 // REGISTERS
@@ -42,8 +46,9 @@
 
 typedef struct kenny_stft_settings
 {
-    int num_fft_windows;
     int num_fft_pts;
+    int doublebuff_idx;
+    cplx_data_t windows[2][FFT_MAX_NUM_PTS];
     float STFT_window_func[FFT_MAX_NUM_PTS];
 } stft_settings_t;
 
@@ -108,10 +113,8 @@ void kenny_stft_run_inv(
 /******************/
 void kenny_eq_init(eq_settings_t *p_eq_settings, stft_settings_t *p_stft_settings);
 void kenny_eq_print(eq_settings_t *eq_settings);
-//void kenny_eq_update_buckets(eq_settings_t *eq_settings, int new_num_fft_pts);
 void kenny_eq_update_interactive(eq_settings_t *eq_settings);
 void kenny_eq_update_hardware(eq_settings_t *eq_settings);
-void kenny_eq_run(eq_settings_t *eq_settings, cplx_data_t KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ], int debug_mode);
 
 /******************/
 void kenny_gain_init(gain_settings_t *p_gain_settings);
@@ -126,7 +129,6 @@ void kenny_compressor_init(
 void kenny_compressor_update_interactive(compressor_settings_t *p_compressor_settings);
 void kenny_compressor_update_hardware(compressor_settings_t *p_compressor_settings);
 void kenny_compressor_print(compressor_settings_t *p_compressor_settings);
-void kenny_compressor_run(compressor_settings_t *p_compressor_settings, cplx_data_t KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ], int debug_mode);
 
 /******************/
 void kenny_update_num_fft_pts(eq_settings_t *p_eq_settings, stft_settings_t *p_stft_settings, int new_num_fft_pts);
@@ -139,7 +141,7 @@ void kenny_apply_filter(int num_fft_pts, float filter[num_fft_pts], cplx_data_t*
 
 int kenny_guessFrequencyOfData(fft_t* p_fft_inst);
 void kenny_convertAudioToCplx(int* inval, cplx_data_t* outval, size_t num_vals_to_cpy);
-void kenny_convertCplxToAudio(cplx_data_t* inval, int* outval, float *STFT_window_func, size_t num_vals_to_cpy);
+void kenny_convertCplxToAudio(cplx_data_t* inval, int* outval, size_t num_vals_to_cpy);
 
 
 #endif

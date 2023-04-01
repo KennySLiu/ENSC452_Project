@@ -45,21 +45,28 @@ void audio_stream(){
 // STFT SETTINGS
 void kenny_stft_print(stft_settings_t *p_stft_settings)
 {
-    xil_printf("\tSTFT num windows = %d\r\n", p_stft_settings->num_fft_windows);
     xil_printf("\tSTFT num pts = %d\r\n", p_stft_settings->num_fft_pts);
 }
 
 void kenny_stft_init(stft_settings_t *p_stft_settings)
 {
     p_stft_settings->num_fft_pts = INIT_NUM_FFT_PTS;
-    kenny_stft_update_window(p_stft_settings, INIT_NUM_FFT_PTS);
+    kenny_stft_update_window_func(p_stft_settings, INIT_NUM_FFT_PTS);
+    p_stft_settings->doublebuff_idx = 0;
+    
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < FFT_MAX_NUM_PTS; ++j)
+        {
+            p_stft_settings->windows[i][j].data_re = 0;
+            p_stft_settings->windows[i][j].data_im = 0;
+        }
+    }
 }
 
-void kenny_stft_update_window(stft_settings_t *p_stft_settings, int new_num_fft_pts)
+void kenny_stft_update_window_func(stft_settings_t *p_stft_settings, int new_num_fft_pts)
 {
     p_stft_settings->num_fft_pts = new_num_fft_pts;
-    p_stft_settings->num_fft_windows = 
-        STFT_STRIDE_FACTOR * KENNY_AUDIO_MAX_SAMPLES/(new_num_fft_pts*AUDIO_CHANNELS);
 
     if (STFT_STRIDE_FACTOR == 1)
     {
@@ -79,118 +86,114 @@ void kenny_stft_update_window(stft_settings_t *p_stft_settings, int new_num_fft_
     }
 }
 
-void kenny_stft_run_fwd(
+void kenny_stft_apply_window(
                 stft_settings_t *p_stft_settings, 
-                fft_t* p_fft_inst_FWD,
-                int* KENNY_AUDIO_MEM_PTR,
                 cplx_data_t* input_buf,
-                cplx_data_t* KENNY_FFTDATA_MEM_PTR,
                 cplx_data_t* output_buf
-) {
-    int status = 0;
-    int num_fft_pts = p_stft_settings->num_fft_pts;
-    int num_fft_windows = p_stft_settings->num_fft_windows;
-    int AUDIO_IDX_FACTOR = AUDIO_CHANNELS*num_fft_pts/STFT_STRIDE_FACTOR;
+){
+    cplx_data_t in_cplx, out_cplx;
+    float cur_multiplier;
+    int in_re, in_im, out_re, out_im;
+    for (int idx = 0; idx < p_stft_settings->num_fft_pts; ++idx)
+    {
+        in_cplx = input_buf[idx];
+        in_re = in_cplx.data_re;
+        in_im = in_cplx.data_im;
+        cur_multiplier = (p_stft_settings->STFT_window_func[idx]);
 
-    for (int fft_window_idx = 0; fft_window_idx < num_fft_windows; ++fft_window_idx){
-        kenny_convertAudioToCplx(&(KENNY_AUDIO_MEM_PTR[fft_window_idx*AUDIO_IDX_FACTOR]), input_buf, num_fft_pts);
-        // Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
-        memset(output_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+        out_re = in_re*cur_multiplier;
+        out_im = in_im*cur_multiplier;
+        out_cplx.data_re = out_re;
+        out_cplx.data_im = out_im;
 
-        status = fft(p_fft_inst_FWD, (cplx_data_t*)input_buf, (cplx_data_t*)output_buf);
-        if (status != FFT_SUCCESS)
-        {
-            xil_printf("\r\n\r\n !!!!!!!!!!!!!!ERROR!!!!!!!!!!!!! FFT failed.\n\r\n\r\n\r");
-            return;
-        }
-
-        memcpy(&(KENNY_FFTDATA_MEM_PTR[fft_window_idx*num_fft_pts]), output_buf, sizeof(cplx_data_t)*num_fft_pts);
+        output_buf[idx] = out_cplx;
     }
 }
 
+void kenny_stft_combine_half_windows(
+                stft_settings_t *p_stft_settings, 
+                cplx_data_t* secondhalf_buf,
+                cplx_data_t* firsthalf_buf,
+                cplx_data_t* output_buf
+){
+    int half_window_sz = p_stft_settings->num_fft_pts/2;
+    cplx_data_t in_cplx_1, in_cplx_2, out_cplx;
+    int in_1, in_2, out;
+
+    for (int i = 0; i < half_window_sz; ++i)
+    {
+        in_cplx_1 = secondhalf_buf[half_window_sz-1 + i];
+        in_cplx_2 = firsthalf_buf[i];
+
+        // real part
+        in_1 = in_cplx_1.data_re;
+        in_2 = in_cplx_2.data_re;
+        out = in_1 + in_2;
+        out_cplx.data_re = out;
+
+        // imag part
+        in_1 = in_cplx_1.data_im;
+        in_2 = in_cplx_2.data_im;
+        out = in_1 + in_2;
+        out_cplx.data_im = out;
+
+        output_buf[i] = out_cplx;
+    }
+}
 
 void kenny_stft_run_fwd_and_inv(
                 stft_settings_t *p_stft_settings, 
                 fft_t* p_fft_inst_FWD,
                 int* KENNY_AUDIO_IN_MEM_PTR,
-                cplx_data_t* input_buf,
+                cplx_data_t* fft_input_buf,
                 int* KENNY_AUDIO_OUT_MEM_PTR,
-                cplx_data_t* output_buf
+                cplx_data_t* fft_output_buf
 ) {
     int status = 0;
     int num_fft_pts = p_stft_settings->num_fft_pts;
-    int num_fft_windows = p_stft_settings->num_fft_windows;
-    int AUDIO_IDX_FACTOR = AUDIO_CHANNELS*num_fft_pts/STFT_STRIDE_FACTOR;
+    int doublebuff_idx_1 = p_stft_settings->doublebuff_idx;
+    int doublebuff_idx_2 = !doublebuff_idx_1;
+    //int AUDIO_IDX_FACTOR = AUDIO_CHANNELS*num_fft_pts/STFT_STRIDE_FACTOR;
 
-    memset(KENNY_AUDIO_OUT_MEM_PTR, 0, sizeof(int)*KENNY_AUDIO_MAX_SAMPLES);
-    for (int fft_window_idx = 0; fft_window_idx < num_fft_windows; ++fft_window_idx){
-        kenny_convertAudioToCplx(&(KENNY_AUDIO_IN_MEM_PTR[fft_window_idx*AUDIO_IDX_FACTOR]), input_buf, num_fft_pts);
-        // Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
-        memset(output_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+    memset(KENNY_AUDIO_OUT_MEM_PTR, 0, sizeof(int)*num_fft_pts/2);
 
-        status = fft(p_fft_inst_FWD, (cplx_data_t*)input_buf, (cplx_data_t*)output_buf);
-        if (status != FFT_SUCCESS)
-        {
-            xil_printf("\r\n\r\n !!!!!!!!!!!!!!ERROR!!!!!!!!!!!!! FFT failed.\n\r\n\r\n\r");
-            return;
-        }
+    // RUN THE FFT/IFFT
+    kenny_convertAudioToCplx(&(KENNY_AUDIO_IN_MEM_PTR[0]), fft_input_buf, num_fft_pts);
+    // Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
+    memset(fft_output_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
 
-        kenny_convertCplxToAudio(
-            output_buf,
-            &(KENNY_AUDIO_OUT_MEM_PTR[fft_window_idx*AUDIO_IDX_FACTOR]),
-            p_stft_settings->STFT_window_func, 
-            num_fft_pts
-        );
+    status = fft(p_fft_inst_FWD, (cplx_data_t*)fft_input_buf, (cplx_data_t*)fft_output_buf);
+    if (status != FFT_SUCCESS)
+    {
+        xil_printf("\r\n\r\n !!!!!!!!!!!!!!ERROR!!!!!!!!!!!!! FFT failed.\n\r\n\r\n\r");
+        return;
     }
-    int last_audioidx_written = (num_fft_windows-1)*AUDIO_IDX_FACTOR;
-    // Zero out the part of the audio memory that wasn't part of the FFT, due to windowing.
-    for (int i = last_audioidx_written; i < KENNY_AUDIO_MAX_SAMPLES; ++i){
-        KENNY_AUDIO_OUT_MEM_PTR[i] = 0;
-    }
+    
+    // Window the current FFT output into one of our STFT doublebuffers
+    kenny_stft_apply_window(
+        p_stft_settings,
+        fft_output_buf,
+        p_stft_settings->windows[doublebuff_idx_1]
+    );
+
+    // Combine our already-windowed buffers.
+    kenny_stft_combine_half_windows(
+        p_stft_settings,
+        // THIS ORDERING MATTERS. Do not switch.
+        p_stft_settings->windows[doublebuff_idx_2],
+        p_stft_settings->windows[doublebuff_idx_1],
+        fft_output_buf
+    );
+
+    kenny_convertCplxToAudio(
+        fft_output_buf,
+        &(KENNY_AUDIO_OUT_MEM_PTR[0]),
+        num_fft_pts/2
+    );
+
+    p_stft_settings->doublebuff_idx = !p_stft_settings->doublebuff_idx;
 }
 
-
-
-void kenny_stft_run_inv(
-                stft_settings_t *p_stft_settings, 
-                fft_t* p_fft_inst_INV,
-                cplx_data_t* KENNY_FFTDATA_MEM_PTR,
-                cplx_data_t* input_buf,
-                int* KENNY_AUDIO_MEM_PTR,
-                cplx_data_t* output_buf
-) {
-    int status = 0;
-    int num_fft_pts = p_stft_settings->num_fft_pts;
-    int num_fft_windows = p_stft_settings->num_fft_windows;
-    int AUDIO_IDX_FACTOR = AUDIO_CHANNELS*num_fft_pts/STFT_STRIDE_FACTOR;
-
-    memset(KENNY_AUDIO_MEM_PTR, 0, sizeof(int)*KENNY_AUDIO_MAX_SAMPLES);
-    for (int fft_window_idx = 0; fft_window_idx < num_fft_windows; ++fft_window_idx){
-        memcpy(input_buf, &(KENNY_FFTDATA_MEM_PTR[fft_window_idx*num_fft_pts]), sizeof(cplx_data_t)*num_fft_pts);
-
-        // Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
-        memset(output_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
-
-        status = fft(p_fft_inst_INV, (cplx_data_t*)input_buf, (cplx_data_t*)output_buf);
-        if (status != FFT_SUCCESS)
-        {
-            xil_printf("\r\n\r\n !!!!!!!!!!!!!!ERROR!!!!!!!!!!!!! Inverse FFT failed.\n\r\n\r\n\r");
-            return;
-        }
-
-        kenny_convertCplxToAudio(
-            output_buf,
-            &(KENNY_AUDIO_MEM_PTR[fft_window_idx*AUDIO_IDX_FACTOR]),
-            p_stft_settings->STFT_window_func, 
-            num_fft_pts
-        );
-    }
-    int last_audioidx_written = (num_fft_windows-1)*AUDIO_IDX_FACTOR;
-    // Zero out the part of the audio memory that wasn't part of the FFT, due to windowing.
-    for (int i = last_audioidx_written; i < KENNY_AUDIO_MAX_SAMPLES; ++i){
-        KENNY_AUDIO_MEM_PTR[i] = 0;
-    }
-}
 
 
 /******************************/
@@ -363,41 +366,6 @@ void kenny_eq_update_interactive(eq_settings_t *p_eq_settings)
         }
     }
 }
-void kenny_eq_run(eq_settings_t *p_eq_settings, 
-                    cplx_data_t KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ],
-                    int debug_mode
-) {
-    if (p_eq_settings->bypass) {
-        return;
-    }
-
-    int cur_num_fft_pts = (p_eq_settings->p_stft_settings)->num_fft_pts;
-    float filterdata[cur_num_fft_pts];
-    int current_freq_bucket = 0;
-
-    for (int i = 0; i < cur_num_fft_pts/2; ++i)
-    {
-        // Floor of the log2 of the current index.
-        current_freq_bucket = (int) log2f(i + 1);
-        if (i == cur_num_fft_pts/2 - 1) {
-            // Special handling for the last index, which would overflow otherwise.
-            current_freq_bucket = (int) log2f(i);
-        }
-        filterdata[i] = p_eq_settings->parametric_eq_vect[current_freq_bucket];
-        if (debug_mode) {
-            printf("KDEBUG: Filterdata[%d] = %f\r\n", i, filterdata[i]);
-        }
-    }
-    for (int i = cur_num_fft_pts/2; i < cur_num_fft_pts; ++i)
-    {
-        filterdata[i] = filterdata[cur_num_fft_pts - i - 1];
-    }
-
-    for (int i = 0; i < (p_eq_settings->p_stft_settings)->num_fft_windows; ++i){
-        kenny_apply_filter(cur_num_fft_pts, filterdata, &KENNY_FFTDATA_MEM_PTR[i*cur_num_fft_pts]);
-    }
-}
-
 
 /******************************/
 // GAIN FUNCTIONS
@@ -520,69 +488,6 @@ void kenny_compressor_print(compressor_settings_t *p_compressor_settings) {
     kenny_compressor_print_num_pts(p_compressor_settings);
 }
 
-void kenny_compressor_run(
-            compressor_settings_t *p_compressor_settings,
-            cplx_data_t KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ],
-            int debug_mode
-) {
-    //if (p_compressor_settings->bypass) {
-    //    return;
-    //}
-
-    int num_fft_pts     = (p_compressor_settings->p_stft_settings)->num_fft_pts;
-    int num_fft_windows = (p_compressor_settings->p_stft_settings)->num_fft_windows;
-    unsigned int threshold = (p_compressor_settings->threshold_energy);
-    float ratio = p_compressor_settings->ratio;
-
-    cplx_data_t cur_fft_pt;
-    long long int avg_window_energy = 0;
-    double multiplier = 0;
-
-    for (int win_idx = 0; win_idx < num_fft_windows; ++win_idx)
-    {
-        avg_window_energy = 0;
-        for (int pt_idx = 0; pt_idx < num_fft_pts; ++pt_idx) {
-            cur_fft_pt = KENNY_FFTDATA_MEM_PTR[win_idx * num_fft_pts + pt_idx];
-            avg_window_energy += kenny_cplx_get_magnitude_squared(cur_fft_pt);
-        }
-
-        avg_window_energy = avg_window_energy/num_fft_pts;
-
-        if (debug_mode){
-            printf("BEFORE COMPRESSION: The %d'th window average energy = %lld\r\n", win_idx, avg_window_energy);
-        }
-
-        if (avg_window_energy > p_compressor_settings->threshold_energy) {
-            // The RAW multiplier, for the total energy:
-            multiplier = (threshold + (avg_window_energy - threshold)/ratio) / avg_window_energy;
-
-            // But we're multiplying individual values... so we need to sqrt of the multiplier to be effective.
-            multiplier = sqrt(multiplier);
-
-        } else {
-            multiplier = 1.0;
-        }
-        if (debug_mode){
-            printf("Compressor multiplier = %lf\r\n", multiplier);
-        }
-
-        for (int pt_idx = 0; pt_idx < num_fft_pts; ++pt_idx) {
-            KENNY_FFTDATA_MEM_PTR[win_idx * num_fft_pts + pt_idx].data_re *= multiplier;
-            KENNY_FFTDATA_MEM_PTR[win_idx * num_fft_pts + pt_idx].data_im *= multiplier;
-        }
-
-        if (debug_mode){
-            avg_window_energy = 0;
-            for (int pt_idx = 0; pt_idx < num_fft_pts; ++pt_idx) {
-                cur_fft_pt = KENNY_FFTDATA_MEM_PTR[win_idx * num_fft_pts + pt_idx];
-                avg_window_energy += kenny_cplx_get_magnitude_squared(cur_fft_pt);
-            }
-            avg_window_energy = avg_window_energy/num_fft_pts;
-
-            printf("AFTER COMPRESSION: The %d'th window average energy = %lld\r\n", win_idx, avg_window_energy);
-        }
-    }
-}
 void kenny_compressor_update_hardware(compressor_settings_t *p_compressor_settings)
 {
     K_AUD_CMPRS_CONFIGURATOR_mWriteReg(
@@ -699,7 +604,7 @@ void kenny_update_num_fft_pts(eq_settings_t *p_eq_settings, stft_settings_t *p_s
     // Since the #FFT points can only be a power of 2, this can always be cast to an int.
     // Minus one because the FFT will be symmetric
     p_eq_settings->EQ_cur_num_freq_buckets = (int) log2f(new_num_fft_pts);
-    kenny_stft_update_window(p_stft_settings, new_num_fft_pts);
+    kenny_stft_update_window_func(p_stft_settings, new_num_fft_pts);
 }
 
 
@@ -822,7 +727,7 @@ int kenny_convert_short_to_24bit(short inval){
     return retval;
 }
 
-void kenny_convertCplxToAudio(cplx_data_t* inval, int* outval, float *STFT_window_func, size_t num_vals_to_cpy)
+void kenny_convertCplxToAudio(cplx_data_t* inval, int* outval, size_t num_vals_to_cpy)
 {
     cplx_data_t cur_cplx;
     int cur_re_int;
@@ -839,8 +744,8 @@ void kenny_convertCplxToAudio(cplx_data_t* inval, int* outval, float *STFT_windo
         cur_re_int = kenny_convert_short_to_24bit(cur_re);
 
         // Write to output channels (assume 2 channels)
-        outval[out_idx]     += cur_re_int * STFT_window_func[in_idx];
-        outval[out_idx+1]     += cur_re_int * STFT_window_func[in_idx];
+        outval[out_idx]     = cur_re_int;
+        outval[out_idx+1]   = cur_re_int;
     }
 }
 

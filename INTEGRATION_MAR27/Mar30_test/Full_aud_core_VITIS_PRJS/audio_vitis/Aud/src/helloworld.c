@@ -50,33 +50,12 @@ extern int sig_two_sine_waves[FFT_MAX_NUM_PTS]; // FFT input data
 void which_fft_param(int* cur_num_fft_pts, fft_t* p_fft_inst);
 
 
-/************************** Abdul's Variable Definitions for timer and I/Os *****************************/
-
-//int option = 4;
-//int freq_op = 1;
-//int O_gain = 4;        //range -20 to 20
-//int C_threshold = -10;    //range -30 to 0
-//int C_ratio = 10;         //range 1 to 50
-//#define MAX_BARS 11
-//int band[MAX_BARS];        //range -30 to 30
-
-
-//XScuGic InterruptController; /* Instance of the Interrupt Controller */
-//static XScuGic_Config *GicConfig;/* The configuration parameters of thecontroller */
-
-
-/*****************************************************************************/
-
-
 
 
 // Main entry point
 int main()
 {
-    int cur_num_fft_pts = INIT_NUM_FFT_PTS;
-//    EQ_cur_num_freq_buckets = (int) log2f(INIT_NUM_FFT_PTS) - 1;
-//    float parametric_eq_vect[EQ_MAX_NUM_FREQ_BUCKETS] = {1.0};
-//    float STFT_window_func[FFT_MAX_NUM_PTS] = {0};
+    int cur_num_fft_pts         = INIT_NUM_FFT_PTS;
     eq_settings_t               eq_settings;
     gain_settings_t             gain_settings;
     compressor_settings_t       compressor_settings;
@@ -86,12 +65,16 @@ int main()
     XScuGic intc_inst;
 
     // Local variables
-    //int         *     KENNY_AUDIO_IN_MEM_PTR = malloc(sizeof(int) * (KENNY_AUDIO_MAX_SAMPLES));
-    //cplx_data_t *     KENNY_FFTDATA_MEM_PTR = malloc(sizeof(cplx_data_t) * KENNY_FFTDATA_SZ);
-    //int         *     KENNY_AUDIO_OUT_MEM_PTR = malloc(sizeof(int) * (KENNY_AUDIO_MAX_SAMPLES));
-    int         KENNY_AUDIO_IN_MEM_PTR  [KENNY_AUDIO_MAX_SAMPLES] = {0};
-    cplx_data_t KENNY_FFTDATA_MEM_PTR   [KENNY_FFTDATA_SZ];
-    int         KENNY_AUDIO_OUT_MEM_PTR [KENNY_AUDIO_MAX_SAMPLES] = {0};
+    int         aud_in_idx = 0;
+    int         KENNY_AUDIO_IN_MEM_PTRS     [3][KENNY_AUDIO_MAX_SAMPLES] = {{0}, {0}};
+    int         KENNY_FFT_INPUT_BUFFER      [KENNY_AUDIO_MAX_SAMPLES*STFT_STRIDE_FACTOR] = {0};
+    int         KENNY_AUDIO_OUT_MEM_PTR     [KENNY_AUDIO_MAX_SAMPLES] = {0};
+    int         audio_in_read_ctr = 0;
+    int *       audio_in_ptr = &(KENNY_AUDIO_IN_MEM_PTRS[aud_in_idx][0]);
+    int         audio_in_is_full = 0;
+    int *       audio_out_ptr = &KENNY_AUDIO_OUT_MEM_PTR[0];
+    int         audio_out_read_ctr = 0;
+    int         FFTDATA_READY = 0;
 
     char         c;
     fft_t*       p_fft_inst;
@@ -104,10 +87,7 @@ int main()
     xil_printf("\r\n\r\n\r\n\r\n\r\n\r\n\r\n");
     xil_printf("Entering Main \r\n");
     xil_printf("AUDIO IN MEM PTR = %x to %x\r\n",
-                KENNY_AUDIO_IN_MEM_PTR, &(KENNY_AUDIO_IN_MEM_PTR[KENNY_AUDIO_MAX_SAMPLES-1])
-                );
-    xil_printf("FFT PTR = %x to %x\r\n",
-                KENNY_FFTDATA_MEM_PTR, &(KENNY_FFTDATA_MEM_PTR[KENNY_FFTDATA_SZ-1])
+                KENNY_AUDIO_IN_MEM_PTRS[0], &(KENNY_AUDIO_IN_MEM_PTRS[1][KENNY_AUDIO_MAX_SAMPLES-1])
                 );
     xil_printf("AUDIO OUT MEM PTR = %x to %x\r\n",
                 KENNY_AUDIO_OUT_MEM_PTR, &(KENNY_AUDIO_OUT_MEM_PTR[KENNY_AUDIO_MAX_SAMPLES-1])
@@ -166,7 +146,7 @@ int main()
 
     kenny_init_intc(&intc_inst, XPAR_PS7_SCUGIC_0_DEVICE_ID);
     XTmrCtr_Reset(&TimerInstancePtr, XTC_TIMER_0);
-    //XTmrCtr_Start(&TimerInstancePtr, XTC_TIMER_0);
+    XTmrCtr_Start(&TimerInstancePtr, XTC_TIMER_0);
     XGpio_SetDataDirection(&LEDs, LED_CHANNEL, ~0xFF);
     XGpio_DiscreteWrite(&LEDs, LED_CHANNEL, 0xFF);
 
@@ -220,195 +200,287 @@ int main()
     // Fill stimulus buffer with some signal
     memcpy(input_buf, sig_two_sine_waves, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
 
-    // Main control loop
-    while (1)
+
+    int num_fft_pts = 0;
+    u32  in_left, in_right;
+    while(1)
     {
-        // Get command
-        xil_printf("What would you like to do?\n\r");
-        xil_printf("0: FFT Configuration submenu\n\r");
-        xil_printf("1: EQ Configuration submenu\n\r");
-        xil_printf("2: Compressor Configuration submenu\n\r");
-        xil_printf("3: Output Gain Configuration submenu\n\r");
-        xil_printf("4: Print STFT stuff\n\r");
-        xil_printf("5: Print all audio config. stuff\n\r");
-        xil_printf("7: Perform FFT and IFFT using current parameters\n\r");
-        xil_printf("8: Print FFT input data\n\r");
-        xil_printf("9: Print IFFT output data\n\r");
-        xil_printf("S: Stream Pure Audio\n\r");
-        xil_printf("R/P: Record/Play Audio to/from memory\n\r");
-        xil_printf("Q: Quit\n\r");
-        c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+        num_fft_pts = stft_settings.num_fft_pts;
 
-        if (c == '0')
+        if (TIMER_INTR_FLG == 1)
         {
-            which_fft_param(&cur_num_fft_pts, p_fft_inst);
-            kenny_update_num_fft_pts(&eq_settings, &stft_settings, cur_num_fft_pts);
-        }
-        else if (c == '1')
-        {
-            kenny_eq_update_interactive(&eq_settings);
-        }
-        else if (c == '2')
-        {
-            kenny_compressor_update_interactive(&compressor_settings);
-        }
-        else if (c == '3')
-        {
-            kenny_gain_update_interactive(&gain_settings);
-        }
-        else if (c == '4')
-        {
-            kenny_stft_print(&stft_settings);
-        }
-        else if (c == '5')
-        {
-            printf("\r\n\r\n");
-            kenny_eq_print(&eq_settings);
-            kenny_gain_print(&gain_settings);
-            kenny_compressor_print(&compressor_settings);
-            printf("\r\n");
+            if (DEBUGGING)
+            {
+                in_left = Xil_In32(I2S_DATA_RX_L_REG);
+                in_right = Xil_In32(I2S_DATA_RX_R_REG);
+                Xil_Out32(I2S_DATA_TX_L_REG, in_left);
+                Xil_Out32(I2S_DATA_TX_R_REG, in_right);
+            }
+
+            else
+            {
+                //printf("HELLO From the timer handler. Num_fft_pts = %d, audio_in_read_ctr = %d\r\n", 
+                //        num_fft_pts, 
+                //        audio_in_read_ctr
+                //);
+                //////////////////////////////////
+                // READ AUDIO IN
+                in_left = Xil_In32(I2S_DATA_RX_L_REG);
+                in_right = Xil_In32(I2S_DATA_RX_R_REG);
+                audio_in_read_ctr++;
+                *(audio_in_ptr++) = in_left;
+                *(audio_in_ptr++) = in_right;
+
+                // Perform an STFT window
+                if (audio_in_read_ctr == num_fft_pts/STFT_STRIDE_FACTOR)
+                {
+                    //printf("HELLO WERE DOING SOMETHING IN HERE NOW\r\n");
+                    audio_in_read_ctr = 0;
+
+                    int cur_idx = aud_in_idx;
+                    int next_idx = (cur_idx+1)%3;
+                    int prev_idx = (cur_idx+2)%3;
+
+                    // Copy our current and previous buffers into the FFT Input buffer.
+                    memcpy(
+                        &(KENNY_FFT_INPUT_BUFFER[0]),
+                        KENNY_AUDIO_IN_MEM_PTRS[prev_idx],
+                        sizeof(cplx_data_t)*num_fft_pts
+                    );
+                    memcpy(
+                        &(KENNY_FFT_INPUT_BUFFER[num_fft_pts-1]),
+                        KENNY_AUDIO_IN_MEM_PTRS[cur_idx],
+                        sizeof(cplx_data_t)*num_fft_pts
+                    );
+
+
+                    FFTDATA_READY = 1;
+                    aud_in_idx = next_idx;
+                    audio_in_ptr = &KENNY_AUDIO_IN_MEM_PTRS[aud_in_idx];
+                }
+
+                //////////////////////////////////
+                // PLAY AUDIO OUT
+                in_left  = *(audio_out_ptr++);
+                in_right = *(audio_out_ptr++);
+                audio_out_read_ctr++;
+                Xil_Out32(I2S_DATA_TX_L_REG, in_left);
+                Xil_Out32(I2S_DATA_TX_R_REG, in_right);
+
+                if (audio_out_read_ctr == num_fft_pts/STFT_STRIDE_FACTOR)
+                {
+                    audio_out_read_ctr = 0;
+                    audio_out_ptr = &KENNY_AUDIO_OUT_MEM_PTR[0];
+                }
+
+
+                //////////////////////////////////
+                TIMER_INTR_FLG = 0;
+            }
         }
 
-        /*******************************************************/
-        // FFT & FILTERING STUFF
-        else if (c == '7') // Run FFT
+        if (FFTDATA_READY == 1)
         {
-            XTime startcycles, endcycles, totalcycles;
-            float total_time_usec;
-            XTime_GetTime(&startcycles);
-
+            //printf("HELLO From the fft handler\r\n");
             kenny_stft_run_fwd_and_inv(
                 &stft_settings, 
                 p_fft_inst,
-                KENNY_AUDIO_IN_MEM_PTR,
+                KENNY_AUDIO_IN_MEM_PTRS[aud_in_idx],
                 input_buf,
                 KENNY_AUDIO_OUT_MEM_PTR,
                 result_buf
             );
-
-            XTime_GetTime(&endcycles);
-
-            totalcycles = 2 * (endcycles-startcycles);
-            total_time_usec = ((float) totalcycles) * 1000000 / 2 / COUNTS_PER_SECOND;
-
-            printf("\n\n");
-            printf("COUNTS_PER_SECOND = %d\n", COUNTS_PER_SECOND);
-            printf("The start count was %lld\r\nthe end count was %lld\r\nThe total time was %f usec\r\n.", startcycles, endcycles, total_time_usec);
-
-            xil_printf("FFT complete!\n\r\n\r");
-        }
-        //else if (c == '8') // Run IFFT
-        //{
-        //    kenny_stft_run_inv(
-        //        &stft_settings,
-        //        p_fft_inst_INV,
-        //        KENNY_FFTDATA_MEM_PTR,
-        //        intermediate_buf,
-        //        KENNY_AUDIO_OUT_MEM_PTR,
-        //        result_buf
-        //    );
-        //    xil_printf("Inverse FFT complete!\n\r\n\r");
-        //}
-        /*******************************************************/
-        //else if (c == ',')    // Debugging - print part of the FFT/Audio data.
-        //{
-        //    c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
-
-        //    if (c == ',')
-        //    {
-        //        char str[25];
-        //        cplx_data_t tmp;
-        //        int idx = 0;
-        //        int i = 0;
-        //        for (int jj = 0; jj < cur_num_fft_pts; ++jj)
-        //        {
-        //            idx = i*cur_num_fft_pts + jj;
-        //            tmp = KENNY_FFTDATA_MEM_PTR[idx];
-
-        //            cplx_data_get_string(str, tmp);
-        //            xil_printf("KDEBUG: fftdata[%d] = %s\n\r", idx, str);
-        //        }
-        //    }
-        //    else if (c == '.')
-        //    {
-        //        int tmp;
-        //        int idx = 0;
-        //        int i = 0;
-        //        for (int jj = 0; jj < cur_num_fft_pts; ++jj)
-        //        {
-        //            idx = i*cur_num_fft_pts + jj;
-        //            tmp = KENNY_AUDIO_OUT_MEM_PTR[idx];
-
-        //            xil_printf("KDEBUG: audiodata[%d] = %d\n\r", idx, tmp);
-        //        }
-        //    }
-        //    else{
-        //        xil_printf("Invalid input. Try again\r\n");
-        //    }
-        //}
-        /*******************************************************/
-        else if (c == '8')
-        {
-            fft_print_stim_buf(p_fft_inst);
-        }
-        else if (c == '9')
-        {
-            fft_print_result_buf(p_fft_inst, -1);
-        }
-        else if (c == 's')
-        {
-            xil_printf("STREAMING AUDIO\r\n");
-            xil_printf("Press 'q' to return to the main menu\r\n");
-            audio_stream();
-        }
-        else if (c == 'r')
-        {
-            xil_printf("RECORDING AUDIO\r\n");
-            xil_printf("Press 'q' to stop recording early and return to the main menu\r\n");
-            kenny_RecordAudioIntoMem(KENNY_AUDIO_IN_MEM_PTR);
-        }
-        else if (c == 'p')
-        {
-            xil_printf("Press 'o' to play the ORIGINAL (nonprocessed) sound, or anything else to play processed sound.\n\r");
-            c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
-
-            xil_printf("PLAYING BACK RECORDED AUDIO\r\n");
-            xil_printf("Press 'q' to stop playback early and return to the main menu\r\n");
-            if (c == 'o') {
-                kenny_PlaybackAudioFromMem(KENNY_AUDIO_IN_MEM_PTR);
-            } else {
-                kenny_PlaybackAudioFromMem(KENNY_AUDIO_OUT_MEM_PTR);
-            }
-        }
-        else if (c == 'q')
-        {
-            xil_printf("Are you sure you want to quit? (YES)\r\n");
-            c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
-            if ( c == 'y' )
-            {
-                c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
-                if (c == 'e')
-                {
-                    c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
-                    if (c == 's')
-                    {
-                        break;
-                    }
-                }
-            }
-        }
-        else
-        {
-            xil_printf("Invalid character. Please try again.\n\r");
+            FFTDATA_READY = 0;
         }
     }
+
+
+    //// Main control loop
+    //while (1)
+    //{
+    //    // Get command
+    //    xil_printf("What would you like to do?\n\r");
+    //    xil_printf("0: FFT Configuration submenu\n\r");
+    //    xil_printf("1: EQ Configuration submenu\n\r");
+    //    xil_printf("2: Compressor Configuration submenu\n\r");
+    //    xil_printf("3: Output Gain Configuration submenu\n\r");
+    //    xil_printf("4: Print STFT stuff\n\r");
+    //    xil_printf("5: Print all audio config. stuff\n\r");
+    //    xil_printf("7: Perform FFT and IFFT using current parameters\n\r");
+    //    xil_printf("8: Print FFT input data\n\r");
+    //    xil_printf("9: Print IFFT output data\n\r");
+    //    xil_printf("S: Stream Pure Audio\n\r");
+    //    xil_printf("R/P: Record/Play Audio to/from memory\n\r");
+    //    xil_printf("Q: Quit\n\r");
+    //    c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+
+    //    if (c == '0')
+    //    {
+    //        which_fft_param(&cur_num_fft_pts, p_fft_inst);
+    //        kenny_update_num_fft_pts(&eq_settings, &stft_settings, cur_num_fft_pts);
+    //    }
+    //    else if (c == '1')
+    //    {
+    //        kenny_eq_update_interactive(&eq_settings);
+    //    }
+    //    else if (c == '2')
+    //    {
+    //        kenny_compressor_update_interactive(&compressor_settings);
+    //    }
+    //    else if (c == '3')
+    //    {
+    //        kenny_gain_update_interactive(&gain_settings);
+    //    }
+    //    else if (c == '4')
+    //    {
+    //        kenny_stft_print(&stft_settings);
+    //    }
+    //    else if (c == '5')
+    //    {
+    //        printf("\r\n\r\n");
+    //        kenny_eq_print(&eq_settings);
+    //        kenny_gain_print(&gain_settings);
+    //        kenny_compressor_print(&compressor_settings);
+    //        printf("\r\n");
+    //    }
+
+    //    /*******************************************************/
+    //    // FFT & FILTERING STUFF
+    //    else if (c == '7') // Run FFT
+    //    {
+    //        XTime startcycles, endcycles, totalcycles;
+    //        float total_time_usec;
+    //        XTime_GetTime(&startcycles);
+
+    //        kenny_stft_run_fwd_and_inv(
+    //            &stft_settings, 
+    //            p_fft_inst,
+    //            KENNY_AUDIO_IN_MEM_PTRS,
+    //            input_buf,
+    //            KENNY_AUDIO_OUT_MEM_PTR,
+    //            result_buf
+    //        );
+
+    //        XTime_GetTime(&endcycles);
+
+    //        totalcycles = 2 * (endcycles-startcycles);
+    //        total_time_usec = ((float) totalcycles) * 1000000 / 2 / COUNTS_PER_SECOND;
+
+    //        printf("\n\n");
+    //        printf("COUNTS_PER_SECOND = %d\n", COUNTS_PER_SECOND);
+    //        printf("The start count was %lld\r\nthe end count was %lld\r\nThe total time was %f usec\r\n.", startcycles, endcycles, total_time_usec);
+
+    //        xil_printf("FFT complete!\n\r\n\r");
+    //    }
+    //    //else if (c == '8') // Run IFFT
+    //    //{
+    //    //    kenny_stft_run_inv(
+    //    //        &stft_settings,
+    //    //        p_fft_inst_INV,
+    //    //        KENNY_FFTDATA_MEM_PTR,
+    //    //        intermediate_buf,
+    //    //        KENNY_AUDIO_OUT_MEM_PTR,
+    //    //        result_buf
+    //    //    );
+    //    //    xil_printf("Inverse FFT complete!\n\r\n\r");
+    //    //}
+    //    /*******************************************************/
+    //    //else if (c == ',')    // Debugging - print part of the FFT/Audio data.
+    //    //{
+    //    //    c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+
+    //    //    if (c == ',')
+    //    //    {
+    //    //        char str[25];
+    //    //        cplx_data_t tmp;
+    //    //        int idx = 0;
+    //    //        int i = 0;
+    //    //        for (int jj = 0; jj < cur_num_fft_pts; ++jj)
+    //    //        {
+    //    //            idx = i*cur_num_fft_pts + jj;
+    //    //            tmp = KENNY_FFTDATA_MEM_PTR[idx];
+
+    //    //            cplx_data_get_string(str, tmp);
+    //    //            xil_printf("KDEBUG: fftdata[%d] = %s\n\r", idx, str);
+    //    //        }
+    //    //    }
+    //    //    else if (c == '.')
+    //    //    {
+    //    //        int tmp;
+    //    //        int idx = 0;
+    //    //        int i = 0;
+    //    //        for (int jj = 0; jj < cur_num_fft_pts; ++jj)
+    //    //        {
+    //    //            idx = i*cur_num_fft_pts + jj;
+    //    //            tmp = KENNY_AUDIO_OUT_MEM_PTR[idx];
+
+    //    //            xil_printf("KDEBUG: audiodata[%d] = %d\n\r", idx, tmp);
+    //    //        }
+    //    //    }
+    //    //    else{
+    //    //        xil_printf("Invalid input. Try again\r\n");
+    //    //    }
+    //    //}
+    //    /*******************************************************/
+    //    else if (c == '8')
+    //    {
+    //        fft_print_stim_buf(p_fft_inst);
+    //    }
+    //    else if (c == '9')
+    //    {
+    //        fft_print_result_buf(p_fft_inst, -1);
+    //    }
+    //    else if (c == 's')
+    //    {
+    //        xil_printf("STREAMING AUDIO\r\n");
+    //        xil_printf("Press 'q' to return to the main menu\r\n");
+    //        audio_stream();
+    //    }
+    //    else if (c == 'r')
+    //    {
+    //        xil_printf("RECORDING AUDIO\r\n");
+    //        xil_printf("Press 'q' to stop recording early and return to the main menu\r\n");
+    //        kenny_RecordAudioIntoMem(KENNY_AUDIO_IN_MEM_PTRS);
+    //    }
+    //    else if (c == 'p')
+    //    {
+    //        xil_printf("Press 'o' to play the ORIGINAL (nonprocessed) sound, or anything else to play processed sound.\n\r");
+    //        c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+
+    //        xil_printf("PLAYING BACK RECORDED AUDIO\r\n");
+    //        xil_printf("Press 'q' to stop playback early and return to the main menu\r\n");
+    //        if (c == 'o') {
+    //            kenny_PlaybackAudioFromMem(KENNY_AUDIO_IN_MEM_PTRS);
+    //        } else {
+    //            kenny_PlaybackAudioFromMem(KENNY_AUDIO_OUT_MEM_PTR);
+    //        }
+    //    }
+    //    else if (c == 'q')
+    //    {
+    //        xil_printf("Are you sure you want to quit? (YES)\r\n");
+    //        c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+    //        if ( c == 'y' )
+    //        {
+    //            c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+    //            if (c == 'e')
+    //            {
+    //                c = XUartPs_RecvByte(XPAR_PS7_UART_1_BASEADDR);
+    //                if (c == 's')
+    //                {
+    //                    break;
+    //                }
+    //            }
+    //        }
+    //    }
+    //    else
+    //    {
+    //        xil_printf("Invalid character. Please try again.\n\r");
+    //    }
+    //}
 
     free(input_buf);
     free(intermediate_buf);
     free(result_buf);
-    //free(KENNY_FFTDATA_MEM_PTR);
-    //free(KENNY_AUDIO_IN_MEM_PTR);
-    //free(KENNY_AUDIO_OUT_MEM_PTR);
     fft_destroy(p_fft_inst);
 
     return 0;
