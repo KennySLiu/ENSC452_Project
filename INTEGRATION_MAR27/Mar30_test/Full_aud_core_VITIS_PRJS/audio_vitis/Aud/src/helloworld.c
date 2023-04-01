@@ -87,9 +87,9 @@ int main()
     AUDIO_IN_MEM_PTRS[2] = &(KENNY_AUDIO_IN_MEM_PTRS[2][0]);
     cur_audio_in_ptr = AUDIO_IN_MEM_PTRS[0];
     AUDIO_OUT_MEM_PTR = &KENNY_AUDIO_OUT_MEM_PTR[0];
-    cur_audio_out_ptr = AUDIO_OUT_MEM_PTR[0];
+    cur_audio_out_ptr = AUDIO_OUT_MEM_PTR;
     audio_out_read_ctr = 0;
-    fftdata_in_ptr = &(KENNY_FFT_INPUT_BUFFER[0]);
+    FFTDATA_IN_MEM_PTR = &(KENNY_FFT_INPUT_BUFFER[0]);
     FFTDATA_READY = 0;
     //////////
 

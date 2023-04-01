@@ -56,9 +56,15 @@ static void Timer_InterruptHandler(XTmrCtr *data, u8 TmrCtrNumber) {
 
     //Update Stuff
     #ifdef __DEBUGGING__
-    printf("HELLO From the timer handler. num_fft_pts = %d, audio_in_read_ctr = %d\r\n", 
+    printf("HELLO From the timer handler. num_fft_pts = %d, audio_in_read_ctr = %d, audio_out_read_ctr = %d\r\n", 
             num_fft_pts,
-            audio_in_read_ctr
+            audio_in_read_ctr,
+            audio_out_read_ctr
+    );
+    printf("audio_in_read_ctr = %d, aud_in_ptr = %d, aud_out_ptr = %d\r\n",
+            &audio_in_read_ctr,
+            cur_audio_in_ptr,
+            cur_audio_out_ptr
     );
     #endif
 
@@ -82,20 +88,20 @@ static void Timer_InterruptHandler(XTmrCtr *data, u8 TmrCtrNumber) {
 
         // Copy our current and previous buffers into the FFT Input buffer.
         memcpy(
-            &(fftdata_in_ptr[0]),
+            &(FFTDATA_IN_MEM_PTR[0]),
             AUDIO_IN_MEM_PTRS[prev_idx],
             sizeof(cplx_data_t)*num_fft_pts
         );
         memcpy(
-            &(fftdata_in_ptr[num_fft_pts-1]),
+            &(FFTDATA_IN_MEM_PTR[num_fft_pts-1]),
             AUDIO_IN_MEM_PTRS[cur_idx],
             sizeof(cplx_data_t)*num_fft_pts
         );
 
 
         aud_in_idx = next_idx;
-        cur_audio_in_ptr = &AUDIO_IN_MEM_PTRS[aud_in_idx];
-        FFTDATA_READY = 1;
+        cur_audio_in_ptr = AUDIO_IN_MEM_PTRS[aud_in_idx];
+        //FFTDATA_READY = 1;
         #ifdef __DEBUGGING__
         printf("awofijawpoefjiawef\r\n");
         #endif

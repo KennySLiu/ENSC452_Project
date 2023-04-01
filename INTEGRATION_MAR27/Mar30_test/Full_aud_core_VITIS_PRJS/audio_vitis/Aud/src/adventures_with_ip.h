@@ -46,7 +46,7 @@
  * 							Global Variables for interrupt stuff                *
  * ---------------------------------------------------------------------------- */
 
-//#define __DEBUGGING__ (1)
+#define __DEBUGGING__ (1)
 
 #define LED_CHANNEL 1
 #define PUSH_BTN_CH 1
@@ -68,7 +68,7 @@ int *cur_audio_out_ptr;
 int audio_in_read_ctr;
 int audio_out_read_ctr;
 int num_fft_pts;
-int *fftdata_in_ptr;
+int *FFTDATA_IN_MEM_PTR;
 int FFTDATA_READY;
 
 

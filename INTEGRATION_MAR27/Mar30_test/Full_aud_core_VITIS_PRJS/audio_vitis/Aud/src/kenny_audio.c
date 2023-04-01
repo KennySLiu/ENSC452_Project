@@ -62,12 +62,12 @@ void kenny_stft_init(stft_settings_t *p_stft_settings)
             p_stft_settings->windows[i][j].data_im = 0;
         }
     }
-    #ifdef __DEBUGGING__
-    for (int i = 0; i < p_stft_settings->num_fft_pts; ++i)
-    {
-        printf("STFT Window[%d] = %f\r\n", i, p_stft_settings->STFT_window_func[i]);
-    }
-    #endif
+    //#ifdef __DEBUGGING__
+    //for (int i = 0; i < p_stft_settings->num_fft_pts; ++i)
+    //{
+    //    printf("STFT Window[%d] = %f\r\n", i, p_stft_settings->STFT_window_func[i]);
+    //}
+    //#endif
 }
 
 void kenny_stft_update_window_func(stft_settings_t *p_stft_settings, int new_num_fft_pts)
