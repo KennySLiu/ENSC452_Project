@@ -63,7 +63,7 @@ typedef struct kenny_compressor_settings
 
 typedef struct kenny_gain_settings
 {
-    int32_t output_gain;
+    float   output_gain;
     int     bypass;
 } gain_settings_t;
 
@@ -75,11 +75,19 @@ typedef struct kenny_eq_settings
     stft_settings_t* p_stft_settings;
 } eq_settings_t;
 
+
+eq_settings_t               eq_settings;
+gain_settings_t             gain_settings;
+compressor_settings_t       compressor_settings;
+
+
 /****************************/
 /****************************/
 /****************************/
 
 void audio_stream();
+
+int32_t float_to_fixed_point(float value);
 
 /******************/
 void kenny_stft_print(stft_settings_t *p_stft_settings);

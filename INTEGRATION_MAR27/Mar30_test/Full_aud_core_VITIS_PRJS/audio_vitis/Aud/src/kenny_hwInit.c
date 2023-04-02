@@ -29,19 +29,160 @@ static void SW_InterruptHandler(void *InstancePtr) {
     XGpio_InterruptEnable(&SWs, SW_INT);
 }
 
+static void update_aud_system(int up) {
+    int update_EQ = 0;
+    int update_COMP = 0;
+    int update_GAIN = 0;
+
+    float INCREASE_AMOUNT = 0;
+    int MAX_AMOUNT = 0;
+    int MIN_AMOUNT = 0;
+
+    if (SELECTION_STATE >= 0 && SELECTION_STATE <= 2) {
+        update_COMP = 1;
+        if (SELECTION_STATE == 0) {
+            INCREASE_AMOUNT = 5000000;
+            MAX_AMOUNT = 200000000;
+            MIN_AMOUNT = 0;
+
+            compressor_settings.threshold_energy += (up ? INCREASE_AMOUNT : -INCREASE_AMOUNT);
+            if (compressor_settings.threshold_energy > MAX_AMOUNT){
+                compressor_settings.threshold_energy = MAX_AMOUNT;
+            }
+            else if (compressor_settings.threshold_energy < MIN_AMOUNT){
+                compressor_settings.threshold_energy = MIN_AMOUNT;
+            }
+        }
+        else if (SELECTION_STATE == 1) {
+            INCREASE_AMOUNT = 5;
+            MAX_AMOUNT = 200;
+            MIN_AMOUNT = 5;
+
+            compressor_settings.ratio += (up ? INCREASE_AMOUNT : -INCREASE_AMOUNT);
+            if (compressor_settings.ratio > MAX_AMOUNT){
+                compressor_settings.ratio = MAX_AMOUNT;
+            }
+            else if (compressor_settings.ratio < MIN_AMOUNT){
+                compressor_settings.ratio = MIN_AMOUNT;
+            }
+        } 
+        else {
+            compressor_settings.bypass = !compressor_settings.bypass;
+        }
+    }
+    else if (SELECTION_STATE <= 4)
+    {
+        update_GAIN = 1;
+
+        if (SELECTION_STATE == 3) {
+            INCREASE_AMOUNT = 0.25;
+            MAX_AMOUNT = 5;
+            MIN_AMOUNT = 0;
+
+            gain_settings.output_gain += (up ? INCREASE_AMOUNT : -INCREASE_AMOUNT);
+            if (gain_settings.output_gain > MAX_AMOUNT){
+                gain_settings.output_gain = MAX_AMOUNT;
+            }
+            else if (gain_settings.output_gain < MIN_AMOUNT){
+                gain_settings.output_gain = MIN_AMOUNT;
+            }
+        }
+        else if (SELECTION_STATE == 4) {
+            gain_settings.bypass = !gain_settings.bypass;
+        }
+    }
+    else if (SELECTION_STATE <= 11)
+    {
+        update_EQ = 1;
+        if (SELECTION_STATE >= 5 && SELECTION_STATE <= 10)
+        {
+            INCREASE_AMOUNT = 1.0;
+            MAX_AMOUNT = 8;
+            MIN_AMOUNT = 0;
+
+            int idx = SELECTION_STATE-5 + 3;
+            eq_settings.parametric_eq_vect[idx] += (up ? INCREASE_AMOUNT : -INCREASE_AMOUNT);
+            if (eq_settings.parametric_eq_vect[idx] > MAX_AMOUNT){
+                eq_settings.parametric_eq_vect[idx] = MAX_AMOUNT;
+            }
+            else if (eq_settings.parametric_eq_vect[idx] < MIN_AMOUNT){
+                eq_settings.parametric_eq_vect[idx] = MIN_AMOUNT;
+            }
+        }
+        else if (SELECTION_STATE == 11) {
+            eq_settings.bypass = !eq_settings.bypass;
+        }
+    }
+
+    if (update_COMP) {
+        kenny_compressor_update_hardware(&compressor_settings);
+        return;
+    } else if (update_EQ) {
+        kenny_eq_update_hardware(&eq_settings);
+        return;
+    } else if (update_GAIN) {
+        kenny_gain_update_hardware(&gain_settings);
+        return;
+    }
+
+}
+
 static void BTN_InterruptHandler(void *InstancePtr) {
     // Disable GPIO interrupts
     int myBTN = 0;
+    static int btn_cnt = 0;
     XGpio_InterruptDisable(&BTNs, BTN_INT);
     // Ignore additional button presses
     if ((XGpio_InterruptGetStatus(&BTNs) & BTN_INT) != BTN_INT) {
         return;
     }
+    
+    //if (btn_cnt != 1) {
+    //    btn_cnt = 1;
+    //    return;
+    //} else {
+    //    btn_cnt = 0;
+    //}
 
     myBTN = read_BTN();
     if(myBTN != 0) push_btns = read_BTN();
-    xil_printf("Buttons value: %d \r\n", read_BTN());
+    xil_printf("Buttons value: %d \r\n", push_btns);
     (void) XGpio_InterruptClear(&BTNs, BTN_INT);
+
+    // 1, 2, 4, 8, 16 = mid, down, l, r, up
+
+    switch (push_btns) {
+        case 1:
+            // Center button. do nothing
+            break;
+
+        case 2: 
+            // Down.
+            update_aud_system(0);
+            break;
+
+        case 4:
+            // Left.
+            if (SELECTION_STATE > 0)
+                SELECTION_STATE -= 1;
+            break;
+
+        case 8:
+            // Right.
+            if (SELECTION_STATE < 11)
+                SELECTION_STATE += 1;
+            break;
+
+        case 16:
+            // Up.
+            update_aud_system(1);
+            break;
+
+        default:
+            break;
+    }
+    
+    XGpio_DiscreteWrite(&LEDs, LED_CHANNEL, SELECTION_STATE);
 
     // Enable GPIO interrupts
     XGpio_InterruptEnable(&BTNs, BTN_INT);

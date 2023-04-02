@@ -84,6 +84,8 @@ int num_fft_pts;
 int *FFTDATA_IN_MEM_PTR;
 int FFTDATA_READY;
 
+// 3 for the compressor, 2 for gain, and... for now let's just say 6 for the EQ.
+int SELECTION_STATE;
 
 /* ---------------------------------------------------------------------------- *
  * 							Prototype Functions									*

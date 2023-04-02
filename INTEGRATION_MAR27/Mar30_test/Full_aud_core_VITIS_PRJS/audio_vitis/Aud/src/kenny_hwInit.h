@@ -7,6 +7,7 @@
 #include "adventures_with_ip.h"
 #include "xscugic.h"
 #include "dma_accel.h"
+#include "kenny_audio.h"
 
 #define INIT_FAILED (-1)
 #define INIT_SUCCESS (0)

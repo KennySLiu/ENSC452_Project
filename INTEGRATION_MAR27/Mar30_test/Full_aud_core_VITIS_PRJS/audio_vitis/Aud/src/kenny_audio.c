@@ -382,7 +382,7 @@ void kenny_gain_print_bypass(gain_settings_t *p_gain_settings)
 }
 void kenny_gain_print_gain(gain_settings_t *p_gain_settings)
 {
-    printf("    gain = %ld\r\n", p_gain_settings->output_gain);
+    printf("    gain = %f\r\n", p_gain_settings->output_gain);
 }
 
 void kenny_gain_print(gain_settings_t *p_gain_settings)
@@ -393,7 +393,7 @@ void kenny_gain_print(gain_settings_t *p_gain_settings)
 
 void kenny_gain_init(gain_settings_t *p_gain_settings){
     p_gain_settings->bypass = 0;
-    p_gain_settings->output_gain = float_to_fixed_point(1.0);
+    p_gain_settings->output_gain = 1.0;
     kenny_gain_update_hardware(p_gain_settings);
 }
 void kenny_gain_update_interactive(gain_settings_t *p_gain_settings){
@@ -414,13 +414,11 @@ void kenny_gain_update_interactive(gain_settings_t *p_gain_settings){
         else if (c == '1') {
             char user_input[50] = {};
             float new_gain_FLOAT = 0;
-            uint32_t new_gain = 0;
             printf("Please enter the gain value (as a multiple of 0.25) \r\n");
             scanf("%8s", user_input);
             new_gain_FLOAT = atof(user_input);
-            new_gain = float_to_fixed_point(new_gain_FLOAT);
 
-            p_gain_settings->output_gain = new_gain;
+            p_gain_settings->output_gain = new_gain_FLOAT;
             kenny_gain_print_gain(p_gain_settings);
         }
         else if (c == '2') {
@@ -441,7 +439,7 @@ void kenny_gain_update_hardware(gain_settings_t *p_gain_settings)
     int32_t output_gain_to_write = 0;
     if (p_gain_settings->bypass == 0)
     {
-        output_gain_to_write = p_gain_settings->output_gain;
+        output_gain_to_write = float_to_fixed_point(p_gain_settings->output_gain);
     } else {
         output_gain_to_write = float_to_fixed_point(1.0);
     }

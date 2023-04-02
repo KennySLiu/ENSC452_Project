@@ -57,9 +57,6 @@ int main()
 {
     int                         cur_num_fft_pts         = INIT_NUM_FFT_PTS;
     stft_settings_t             stft_settings;
-    eq_settings_t               eq_settings;
-    gain_settings_t             gain_settings;
-    compressor_settings_t       compressor_settings;
 
     kenny_stft_init(&stft_settings);
     kenny_eq_init(&eq_settings, &stft_settings);
@@ -86,6 +83,8 @@ int main()
     AUDIO_IN_MEM_PTRS[1] = &(KENNY_AUDIO_IN_MEM_PTRS[1][0]);
     AUDIO_IN_MEM_PTRS[2] = &(KENNY_AUDIO_IN_MEM_PTRS[2][0]);
     cur_audio_in_ptr = AUDIO_IN_MEM_PTRS[0];
+
+    SELECTION_STATE = 0;
 
     aud_out_idx = 0;
     AUDIO_OUT_MEM_PTR[0] = &(KENNY_AUDIO_OUT_MEM_PTR[0][0]);
