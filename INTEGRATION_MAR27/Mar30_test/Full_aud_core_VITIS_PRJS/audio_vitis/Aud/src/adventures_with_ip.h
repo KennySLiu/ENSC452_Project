@@ -65,7 +65,6 @@ XGpio SWs; /* The Instance of the GPIO Driver */
 XGpio BTNs; /* The Instance of the GPIO Driver */
 XGpio LEDs;
 XTmrCtr TimerInstancePtr;
-u32 push_btns;
 u32 slide_sw;
 u32 leds;
 volatile int TIMER_INTR_FLG;

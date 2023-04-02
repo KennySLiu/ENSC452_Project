@@ -137,21 +137,23 @@ static void BTN_InterruptHandler(void *InstancePtr) {
         return;
     }
     
+    myBTN = read_BTN();
+    if(myBTN != 0) myBTN = read_BTN();
+    xil_printf("Buttons value: %d \r\n", myBTN);
+    (void) XGpio_InterruptClear(&BTNs, BTN_INT);
+
+
     //if (btn_cnt != 1) {
     //    btn_cnt = 1;
-    //    return;
+    //    myBTN = 0;
     //} else {
     //    btn_cnt = 0;
     //}
 
-    myBTN = read_BTN();
-    if(myBTN != 0) push_btns = read_BTN();
-    xil_printf("Buttons value: %d \r\n", push_btns);
-    (void) XGpio_InterruptClear(&BTNs, BTN_INT);
 
     // 1, 2, 4, 8, 16 = mid, down, l, r, up
 
-    switch (push_btns) {
+    switch (myBTN) {
         case 1:
             // Center button. do nothing
             break;
