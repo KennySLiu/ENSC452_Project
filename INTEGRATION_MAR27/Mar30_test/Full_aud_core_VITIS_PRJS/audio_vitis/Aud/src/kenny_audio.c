@@ -98,10 +98,10 @@ void kenny_stft_apply_window(
 ){
     float cur_multiplier;
     int in_val;
-    for (int idx = 0; idx < p_stft_settings->num_fft_pts; ++idx)
+    for (int idx = 0; idx < p_stft_settings->num_fft_pts*AUDIO_CHANNELS; ++idx)
     {
         in_val = input_buf[idx];
-        cur_multiplier = (p_stft_settings->STFT_window_func[idx]);
+        cur_multiplier = (p_stft_settings->STFT_window_func[idx/AUDIO_CHANNELS]);
         output_buf[idx] = in_val * cur_multiplier;
 
         //#ifdef __DEBUGGING__
@@ -121,7 +121,7 @@ void kenny_stft_combine_half_windows(
     int half_window_sz = p_stft_settings->num_fft_pts/2;
     int in_1, in_2;
 
-    for (int i = 0; i < half_window_sz; ++i)
+    for (int i = 0; i < half_window_sz*AUDIO_CHANNELS; ++i)
     {
         in_1 = secondhalf_buf[half_window_sz-1 + i];
         in_2 = firsthalf_buf[i];
@@ -141,7 +141,7 @@ void kenny_stft_run_fwd_and_inv(
     int num_fft_pts = p_stft_settings->num_fft_pts;
     int doublebuff_idx_1 = p_stft_settings->doublebuff_idx;
     int doublebuff_idx_2 = !doublebuff_idx_1;
-    static int AUD_BUFF[FFT_MAX_NUM_PTS] = {0};
+    static int AUD_BUFF[FFT_MAX_NUM_PTS*AUDIO_CHANNELS] = {0};
 
     memset(KENNY_AUDIO_OUT_MEM_PTR, 0, sizeof(int)*num_fft_pts/2);
 
@@ -164,10 +164,6 @@ void kenny_stft_run_fwd_and_inv(
         num_fft_pts
     );
 
-    printf("STFT: Copying FFT input from %d\r\n",
-            &(KENNY_AUDIO_IN_MEM_PTR[0])
-    );
-
     // Window the current FFT output into one of our STFT doublebuffers
     kenny_stft_apply_window(
         p_stft_settings,
@@ -182,12 +178,6 @@ void kenny_stft_run_fwd_and_inv(
         p_stft_settings->windows[doublebuff_idx_2],
         p_stft_settings->windows[doublebuff_idx_1],
         &(KENNY_AUDIO_OUT_MEM_PTR[0])
-    );
-
-    printf("STFT: Using window buffers (1,2) at %d and %d, writing to output buff at %d\r\n", 
-            p_stft_settings->windows[doublebuff_idx_1],
-            p_stft_settings->windows[doublebuff_idx_2],
-            &(KENNY_AUDIO_OUT_MEM_PTR[0])
     );
 
     p_stft_settings->doublebuff_idx = !p_stft_settings->doublebuff_idx;

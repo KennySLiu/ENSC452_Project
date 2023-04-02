@@ -102,10 +102,6 @@ static void Timer_InterruptHandler(XTmrCtr *data, u8 TmrCtrNumber) {
         aud_in_idx = next_idx;
         cur_audio_in_ptr = AUDIO_IN_MEM_PTRS[aud_in_idx];
         FFTDATA_READY = 1;
-
-        printf("HWINTR: Switching INPUT buffs. Begin writing INTO %d\r\n",
-                cur_audio_in_ptr
-        );
     }
 
     //////////////////////////////////
@@ -121,10 +117,6 @@ static void Timer_InterruptHandler(XTmrCtr *data, u8 TmrCtrNumber) {
         audio_out_read_ctr = 0;
         aud_out_idx = !aud_out_idx;
         cur_audio_out_ptr = AUDIO_OUT_MEM_PTR[aud_out_idx];
-
-        printf("HWINTR: Switching OUTPUT buffs. Begin writing OUT from %d\r\n",
-                cur_audio_out_ptr
-        );
     }
     #endif
 
@@ -154,8 +146,7 @@ void setup_timer() {
     XTmrCtr_SetResetValue(
             &TimerInstancePtr, 
             0,
-            0xFFFF0000        // Random crap.
-            //0xFFFFf8f4        // Random crap.
+            0xFFFFf8f4        // Random crap.
             //0xFFFFf8a4      //1883 , corresponding to 48khz with 2us spent in the interrupt.
             //0xFFFFF3CA      //3125, corresponding to 32khz
             //0xFFFFDF7C  // 2083, corresponding to 48khz
