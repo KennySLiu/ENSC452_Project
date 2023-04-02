@@ -31,6 +31,7 @@
 #include "dma_accel.h"
 #include "xscugic.h"
 
+//#define INIT_NUM_FFT_PTS (2048)
 #define INIT_NUM_FFT_PTS (2048)
 
 // Parameter macros

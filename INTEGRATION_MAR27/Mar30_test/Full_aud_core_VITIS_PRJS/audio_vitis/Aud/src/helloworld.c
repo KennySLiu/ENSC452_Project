@@ -231,8 +231,6 @@ int main()
                 /* Copying the bufferdata into our FFT Input
                  * This logic is horribly confusing, and it DEPENDS ON
                  * THE LOGIC IN THE TIMER ISR. */
-                audio_in_read_ctr = 0;
-
                 // These indices look really weird, but that's because
                 // the timer ISR already swapped them.
                 int cur_idx =  (aud_in_idx+2)%3;
@@ -243,12 +241,12 @@ int main()
                 memcpy(
                     &(FFTDATA_IN_MEM_PTR[0]),
                     AUDIO_IN_MEM_PTRS[prev_idx],
-                    sizeof(cplx_data_t)*num_fft_pts
+                    sizeof(cplx_data_t)*num_fft_pts/STFT_STRIDE_FACTOR * AUDIO_CHANNELS
                 );
                 memcpy(
-                    &(FFTDATA_IN_MEM_PTR[num_fft_pts-1]),
+                    &(FFTDATA_IN_MEM_PTR[num_fft_pts/STFT_STRIDE_FACTOR * AUDIO_CHANNELS - 1]),
                     AUDIO_IN_MEM_PTRS[cur_idx],
-                    sizeof(cplx_data_t)*num_fft_pts
+                    sizeof(cplx_data_t)*num_fft_pts/STFT_STRIDE_FACTOR * AUDIO_CHANNELS
                 );
             }
 

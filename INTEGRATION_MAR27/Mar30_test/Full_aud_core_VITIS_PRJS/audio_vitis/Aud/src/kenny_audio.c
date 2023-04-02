@@ -119,7 +119,6 @@ void kenny_stft_apply_window(
         printf("STFT Applying Window: idx = %05d, input_buf = %09d. output_buf = %09d. Multiplier = %f\r\n",
                 idx, input_buf[idx], output_buf[idx], cur_multiplier
         );
-        printf("Pointer = %d\r\n", p_stft_settings);
         #endif
                 
     }
@@ -168,14 +167,14 @@ void kenny_stft_run_fwd_and_inv(
     int num_fft_pts = p_stft_settings->num_fft_pts;
     int doublebuff_idx_1 = p_stft_settings->doublebuff_idx;
     int doublebuff_idx_2 = !doublebuff_idx_1;
-    //int AUDIO_IDX_FACTOR = AUDIO_CHANNELS*num_fft_pts/STFT_STRIDE_FACTOR;
 
     memset(KENNY_AUDIO_OUT_MEM_PTR, 0, sizeof(int)*num_fft_pts/2);
 
     // RUN THE FFT/IFFT
     kenny_convertAudioToCplx(&(KENNY_AUDIO_IN_MEM_PTR[0]), fft_input_buf, num_fft_pts);
+
     // Make sure the output buffer is clear before we populate it (this is generally not necessary and wastes time doing memory accesses, but for proving the DMA working, we do it anyway)
-    memset(fft_output_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+    //memset(fft_output_buf, 0, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
 
     status = fft(p_fft_inst_FWD, (cplx_data_t*)fft_input_buf, (cplx_data_t*)fft_output_buf);
     if (status != FFT_SUCCESS)
