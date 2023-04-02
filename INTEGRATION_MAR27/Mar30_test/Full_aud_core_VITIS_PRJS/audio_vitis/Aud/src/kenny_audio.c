@@ -58,8 +58,7 @@ void kenny_stft_init(stft_settings_t *p_stft_settings)
     {
         for (int j = 0; j < FFT_MAX_NUM_PTS; ++j)
         {
-            p_stft_settings->windows[i][j].data_re = 0;
-            p_stft_settings->windows[i][j].data_im = 0;
+            p_stft_settings->windows[i][j] = 0;
         }
     }
     //#ifdef __DEBUGGING__
@@ -94,64 +93,39 @@ void kenny_stft_update_window_func(stft_settings_t *p_stft_settings, int new_num
 
 void kenny_stft_apply_window(
                 stft_settings_t *p_stft_settings,
-                cplx_data_t* input_buf,
-                cplx_data_t* output_buf
+                int * input_buf,
+                int * output_buf
 ){
-    cplx_data_t in_cplx, out_cplx;
     float cur_multiplier;
-    int in_re, in_im, out_re, out_im;
+    int in_val;
     for (int idx = 0; idx < p_stft_settings->num_fft_pts; ++idx)
     {
-        in_cplx = input_buf[idx];
-        in_re = in_cplx.data_re;
-        in_im = in_cplx.data_im;
+        in_val = input_buf[idx];
         cur_multiplier = (p_stft_settings->STFT_window_func[idx]);
-        //cur_multiplier = 0.5;
+        output_buf[idx] = in_val * cur_multiplier;
 
-        out_re = in_re*cur_multiplier;
-        out_im = in_im*cur_multiplier;
-        out_cplx.data_re = out_re;
-        out_cplx.data_im = out_im;
-
-        output_buf[idx] = out_cplx;
-
-        #ifdef __DEBUGGING__
-        printf("STFT Applying Window: idx = %05d, input_buf = %09d. output_buf = %09d. Multiplier = %f\r\n",
-                idx, input_buf[idx], output_buf[idx], cur_multiplier
-        );
-        #endif
-                
+        //#ifdef __DEBUGGING__
+        //printf("STFT Applying Window: idx = %05d, input_buf = %09d. output_buf = %09d. Multiplier = %f\r\n",
+        //        idx, input_buf[idx], output_buf[idx], cur_multiplier
+        //);
+        //#endif
     }
 }
 
 void kenny_stft_combine_half_windows(
                 stft_settings_t *p_stft_settings,
-                cplx_data_t* secondhalf_buf,
-                cplx_data_t* firsthalf_buf,
-                cplx_data_t* output_buf
+                int * secondhalf_buf,
+                int * firsthalf_buf,
+                int * output_buf
 ){
     int half_window_sz = p_stft_settings->num_fft_pts/2;
-    cplx_data_t in_cplx_1, in_cplx_2, out_cplx;
-    int in_1, in_2, out;
+    int in_1, in_2;
 
     for (int i = 0; i < half_window_sz; ++i)
     {
-        in_cplx_1 = secondhalf_buf[half_window_sz-1 + i];
-        in_cplx_2 = firsthalf_buf[i];
-
-        // real part
-        in_1 = in_cplx_1.data_re;
-        in_2 = in_cplx_2.data_re;
-        out = in_1 + in_2;
-        out_cplx.data_re = out;
-
-        // imag part
-        in_1 = in_cplx_1.data_im;
-        in_2 = in_cplx_2.data_im;
-        out = in_1 + in_2;
-        out_cplx.data_im = out;
-
-        output_buf[i] = out_cplx;
+        in_1 = secondhalf_buf[half_window_sz-1 + i];
+        in_2 = firsthalf_buf[i];
+        output_buf[i] = in_1 + in_2;
     }
 }
 
@@ -167,6 +141,7 @@ void kenny_stft_run_fwd_and_inv(
     int num_fft_pts = p_stft_settings->num_fft_pts;
     int doublebuff_idx_1 = p_stft_settings->doublebuff_idx;
     int doublebuff_idx_2 = !doublebuff_idx_1;
+    static int AUD_BUFF[FFT_MAX_NUM_PTS] = {0};
 
     memset(KENNY_AUDIO_OUT_MEM_PTR, 0, sizeof(int)*num_fft_pts/2);
 
@@ -183,10 +158,16 @@ void kenny_stft_run_fwd_and_inv(
         return;
     }
 
+    kenny_convertCplxToAudio(
+        fft_output_buf,
+        AUD_BUFF,
+        num_fft_pts
+    );
+
     // Window the current FFT output into one of our STFT doublebuffers
     kenny_stft_apply_window(
         p_stft_settings,
-        fft_output_buf,
+        AUD_BUFF,
         p_stft_settings->windows[doublebuff_idx_1]
     );
 
@@ -196,13 +177,7 @@ void kenny_stft_run_fwd_and_inv(
         // THIS ORDERING MATTERS. Do not switch.
         p_stft_settings->windows[doublebuff_idx_2],
         p_stft_settings->windows[doublebuff_idx_1],
-        fft_output_buf
-    );
-
-    kenny_convertCplxToAudio(
-        fft_output_buf,
-        &(KENNY_AUDIO_OUT_MEM_PTR[0]),
-        num_fft_pts/2
+        &(KENNY_AUDIO_OUT_MEM_PTR[0])
     );
 
     p_stft_settings->doublebuff_idx = !p_stft_settings->doublebuff_idx;

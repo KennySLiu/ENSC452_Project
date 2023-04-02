@@ -48,7 +48,7 @@ typedef struct kenny_stft_settings
 {
     int num_fft_pts;
     int doublebuff_idx;
-    cplx_data_t windows[2][FFT_MAX_NUM_PTS];
+    int windows[2][FFT_MAX_NUM_PTS];
     float STFT_window_func[FFT_MAX_NUM_PTS];
 } stft_settings_t;
 
