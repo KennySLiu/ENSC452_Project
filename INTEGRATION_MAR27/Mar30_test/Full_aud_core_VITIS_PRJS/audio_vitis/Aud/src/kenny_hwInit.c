@@ -51,6 +51,11 @@ static void Timer_InterruptHandler(XTmrCtr *data, u8 TmrCtrNumber) {
     XTmrCtr_Stop(data, TmrCtrNumber);
     XTmrCtr_Reset(data, TmrCtrNumber);
 
+    #ifdef __DO_TIMING__
+    float total_time_usec;
+    XTime_GetTime(&startcycles);
+    #endif
+
     u32  in_left, in_right;
 
     //Update Stuff
@@ -67,22 +72,6 @@ static void Timer_InterruptHandler(XTmrCtr *data, u8 TmrCtrNumber) {
     );
     #endif
 
-    float total_time_usec = 0;
-    if (TMP_DEBUG_CTR == 0)
-    {
-        XTime_GetTime(&startcycles);
-        TMP_DEBUG_CTR = 1;
-    } else
-    {
-        XTime_GetTime(&endcycles);
-
-        totalcycles = 2 * (endcycles-startcycles);
-        total_time_usec = ((float) totalcycles) * 1000000 / 2 / COUNTS_PER_SECOND;
-        printf("The start count was %lld\r\nthe end count was %lld\r\nThe total time was %f usec\r\n.", startcycles, endcycles, total_time_usec);
-        TMP_DEBUG_CTR = 0;
-    }
-
-
     #ifdef __PURE_STREAMING__
     in_left = Xil_In32(I2S_DATA_RX_L_REG);
     in_right = Xil_In32(I2S_DATA_RX_R_REG);
@@ -91,6 +80,7 @@ static void Timer_InterruptHandler(XTmrCtr *data, u8 TmrCtrNumber) {
     #else
     //////////////////////////////////
     // READ AUDIO IN
+
     in_left = Xil_In32(I2S_DATA_RX_L_REG);
     in_right = Xil_In32(I2S_DATA_RX_R_REG);
     audio_in_read_ctr++;
@@ -100,26 +90,15 @@ static void Timer_InterruptHandler(XTmrCtr *data, u8 TmrCtrNumber) {
     // Perform an STFT window
     if (audio_in_read_ctr == num_fft_pts/STFT_STRIDE_FACTOR)
     {
-        //printf("HELLO WERE DOING SOMETHING IN HERE NOW\r\n");
         audio_in_read_ctr = 0;
 
         int cur_idx = aud_in_idx;
         int next_idx = (cur_idx+1)%3;
         int prev_idx = (cur_idx+2)%3;
 
-        // Copy our current and previous buffers into the FFT Input buffer.
-        memcpy(
-            &(FFTDATA_IN_MEM_PTR[0]),
-            AUDIO_IN_MEM_PTRS[prev_idx],
-            sizeof(cplx_data_t)*num_fft_pts
-        );
-        memcpy(
-            &(FFTDATA_IN_MEM_PTR[num_fft_pts-1]),
-            AUDIO_IN_MEM_PTRS[cur_idx],
-            sizeof(cplx_data_t)*num_fft_pts
-        );
+        // The datacopying cannot happen here because it's slow. Handle that in main.
 
-
+        // Swap the buffer indices.
         aud_in_idx = next_idx;
         cur_audio_in_ptr = AUDIO_IN_MEM_PTRS[aud_in_idx];
         FFTDATA_READY = 1;
@@ -139,10 +118,19 @@ static void Timer_InterruptHandler(XTmrCtr *data, u8 TmrCtrNumber) {
     if (audio_out_read_ctr == num_fft_pts/STFT_STRIDE_FACTOR)
     {
         audio_out_read_ctr = 0;
-        cur_audio_out_ptr = AUDIO_OUT_MEM_PTR;
+        aud_out_idx = !aud_out_idx;
+        cur_audio_out_ptr = AUDIO_OUT_MEM_PTR[aud_out_idx];
     }
     #endif
 
+
+    #ifdef __DO_TIMING__
+    XTime_GetTime(&endcycles);
+    totalcycles = 2 * (endcycles-startcycles);
+    total_time_usec = ((float) totalcycles) * 1000000 / 2 / COUNTS_PER_SECOND;
+    printf("\n\n");
+    printf("INTRRUPT: The total time was %f usec\r\n.", total_time_usec);
+    #endif
 
     XTmrCtr_Start(data, TmrCtrNumber);
 }
@@ -155,18 +143,17 @@ void setup_timer() {
             &TimerInstancePtr
     );
     //Reset Values
+
     // On April 1st I tested the timer by using XTime_GetTime(). It has a period of 10ns.
+    // Therefore, the time per sample = 100,000,000/AUD_SAMPLE_RATE.
     XTmrCtr_SetResetValue(
             &TimerInstancePtr, 
             0,
-            0xFFFF0000      // random crap
+            0xFFFFf8f4        // Random crap.
+            //0xFFFFf8a4      //1883 , corresponding to 48khz with 2us spent in the interrupt.
             //0xFFFFF3CA      //3125, corresponding to 32khz
             //0xFFFFDF7C  // 2083, corresponding to 48khz
     );
-    // The time per sample = 100,000,000/AUD_SAMPLE_RATE.
-    //0xDC3CB9FF); 6sec
-
-    TMP_DEBUG_CTR = 0;
 
     //Interrupt Mode and Auto reload
     XTmrCtr_SetOptions(&TimerInstancePtr,

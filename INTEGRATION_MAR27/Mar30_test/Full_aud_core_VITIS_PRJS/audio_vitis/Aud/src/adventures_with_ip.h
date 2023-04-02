@@ -47,12 +47,15 @@
  * ---------------------------------------------------------------------------- */
 
 //#define __DEBUGGING__ (1)
-#define __PURE_STREAMING__ (1)
+//#define __PURE_STREAMING__ (1)
+//#define __DO_TIMING__
 
 /////////////////////// TIMING THE INTERRUPT
+#ifdef __DO_TIMING__
 #include "xtime_l.h"
 int TMP_DEBUG_CTR;
 XTime startcycles, endcycles, totalcycles;
+#endif
 ///////////////////////////
 
 #define LED_CHANNEL 1
@@ -70,10 +73,13 @@ volatile int TIMER_INTR_FLG;
 int aud_in_idx;
 int *AUDIO_IN_MEM_PTRS[3];
 int *cur_audio_in_ptr;
-int *AUDIO_OUT_MEM_PTR;
-int *cur_audio_out_ptr;
 int audio_in_read_ctr;
+
+int aud_out_idx;
+int *AUDIO_OUT_MEM_PTR[2];
+int *cur_audio_out_ptr;
 int audio_out_read_ctr;
+
 int num_fft_pts;
 int *FFTDATA_IN_MEM_PTR;
 int FFTDATA_READY;

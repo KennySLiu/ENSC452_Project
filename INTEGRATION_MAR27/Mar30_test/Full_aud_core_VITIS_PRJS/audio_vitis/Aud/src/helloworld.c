@@ -75,7 +75,7 @@ int main()
     // Local variables
     int         KENNY_AUDIO_IN_MEM_PTRS     [3][KENNY_AUDIO_MAX_SAMPLES] = {{0}, {0}};
     int         KENNY_FFT_INPUT_BUFFER      [KENNY_AUDIO_MAX_SAMPLES*STFT_STRIDE_FACTOR] = {0};
-    int         KENNY_AUDIO_OUT_MEM_PTR     [KENNY_AUDIO_MAX_SAMPLES] = {0};
+    int         KENNY_AUDIO_OUT_MEM_PTR     [2][KENNY_AUDIO_MAX_SAMPLES] = {0};
 
 
 
@@ -86,8 +86,12 @@ int main()
     AUDIO_IN_MEM_PTRS[1] = &(KENNY_AUDIO_IN_MEM_PTRS[1][0]);
     AUDIO_IN_MEM_PTRS[2] = &(KENNY_AUDIO_IN_MEM_PTRS[2][0]);
     cur_audio_in_ptr = AUDIO_IN_MEM_PTRS[0];
-    AUDIO_OUT_MEM_PTR = &KENNY_AUDIO_OUT_MEM_PTR[0];
-    cur_audio_out_ptr = AUDIO_OUT_MEM_PTR;
+
+    aud_out_idx = 0;
+    AUDIO_OUT_MEM_PTR[0] = &(KENNY_AUDIO_OUT_MEM_PTR[0][0]);
+    AUDIO_OUT_MEM_PTR[1] = &(KENNY_AUDIO_OUT_MEM_PTR[1][0]);
+    cur_audio_out_ptr = AUDIO_OUT_MEM_PTR[0];
+
     audio_out_read_ctr = 0;
     FFTDATA_IN_MEM_PTR = &(KENNY_FFT_INPUT_BUFFER[0]);
     FFTDATA_READY = 0;
@@ -217,10 +221,47 @@ int main()
     {
         if (FFTDATA_READY == 1)
         {
-
+            #ifdef __DO_TIMING__
             XTime startcycles, endcycles, totalcycles;
             float total_time_usec;
             XTime_GetTime(&startcycles);
+            #endif
+
+            {
+                /* Copying the bufferdata into our FFT Input
+                 * This logic is horribly confusing, and it DEPENDS ON
+                 * THE LOGIC IN THE TIMER ISR. */
+                audio_in_read_ctr = 0;
+
+                // These indices look really weird, but that's because
+                // the timer ISR already swapped them.
+                int cur_idx =  (aud_in_idx+2)%3;
+                int next_idx = (aud_in_idx);
+                int prev_idx = (aud_in_idx+1)%3;
+
+                // Copy our current and previous buffers into the FFT Input buffer.
+                memcpy(
+                    &(FFTDATA_IN_MEM_PTR[0]),
+                    AUDIO_IN_MEM_PTRS[prev_idx],
+                    sizeof(cplx_data_t)*num_fft_pts
+                );
+                memcpy(
+                    &(FFTDATA_IN_MEM_PTR[num_fft_pts-1]),
+                    AUDIO_IN_MEM_PTRS[cur_idx],
+                    sizeof(cplx_data_t)*num_fft_pts
+                );
+            }
+
+            #ifdef __DO_TIMING__
+            XTime_GetTime(&endcycles);
+
+            totalcycles = 2 * (endcycles-startcycles);
+            total_time_usec = ((float) totalcycles) * 1000000 / 2 / COUNTS_PER_SECOND;
+
+            printf("\n\n");
+            printf("FFT_HANDLE COPY LOGIC: The total time was %f usec\r\n.", total_time_usec);
+            XTime_GetTime(&startcycles);
+            #endif
 
             #ifdef __DEBUGGING__
             printf("HELLO From the fft handler\r\n");
@@ -230,21 +271,20 @@ int main()
                 p_fft_inst,
                 KENNY_FFT_INPUT_BUFFER,
                 input_buf,
-                KENNY_AUDIO_OUT_MEM_PTR,
+                KENNY_AUDIO_OUT_MEM_PTR[!aud_out_idx],
                 result_buf
             );
             FFTDATA_READY = 0;
 
 
-            #ifdef __DEBUGGING__
+            #ifdef __DO_TIMING__
             XTime_GetTime(&endcycles);
 
             totalcycles = 2 * (endcycles-startcycles);
             total_time_usec = ((float) totalcycles) * 1000000 / 2 / COUNTS_PER_SECOND;
 
             printf("\n\n");
-            printf("COUNTS_PER_SECOND = %d\n", COUNTS_PER_SECOND);
-            printf("The start count was %lld\r\nthe end count was %lld\r\nThe total time was %f usec\r\n.", startcycles, endcycles, total_time_usec);
+            printf("FFT_HANDLE FFT: The total time was %f usec\r\n.", total_time_usec);
             #endif
 
         }
