@@ -214,7 +214,7 @@ int main()
     }
 
     // Fill stimulus buffer with some signal
-    memcpy(input_buf, sig_two_sine_waves, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
+    //memcpy(input_buf, sig_two_sine_waves, sizeof(cplx_data_t)*FFT_MAX_NUM_PTS);
 
 
     while(1)
@@ -247,6 +247,12 @@ int main()
                     &(FFTDATA_IN_MEM_PTR[num_fft_pts/STFT_STRIDE_FACTOR * AUDIO_CHANNELS - 1]),
                     AUDIO_IN_MEM_PTRS[cur_idx],
                     sizeof(cplx_data_t)*num_fft_pts/STFT_STRIDE_FACTOR * AUDIO_CHANNELS
+                );
+
+                printf("FFTDATA: Writing into fft input at %d, from aud buffers %d and %d\r\n",
+                        &(FFTDATA_IN_MEM_PTR[0]),
+                        AUDIO_IN_MEM_PTRS[prev_idx],
+                        AUDIO_IN_MEM_PTRS[cur_idx]
                 );
             }
 

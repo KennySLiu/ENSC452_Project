@@ -164,6 +164,10 @@ void kenny_stft_run_fwd_and_inv(
         num_fft_pts
     );
 
+    printf("STFT: Copying FFT input from %d\r\n",
+            &(KENNY_AUDIO_IN_MEM_PTR[0])
+    );
+
     // Window the current FFT output into one of our STFT doublebuffers
     kenny_stft_apply_window(
         p_stft_settings,
@@ -178,6 +182,12 @@ void kenny_stft_run_fwd_and_inv(
         p_stft_settings->windows[doublebuff_idx_2],
         p_stft_settings->windows[doublebuff_idx_1],
         &(KENNY_AUDIO_OUT_MEM_PTR[0])
+    );
+
+    printf("STFT: Using window buffers (1,2) at %d and %d, writing to output buff at %d\r\n", 
+            p_stft_settings->windows[doublebuff_idx_1],
+            p_stft_settings->windows[doublebuff_idx_2],
+            &(KENNY_AUDIO_OUT_MEM_PTR[0])
     );
 
     p_stft_settings->doublebuff_idx = !p_stft_settings->doublebuff_idx;
